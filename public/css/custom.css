@@ -1,0 +1,66 @@
+/* Prevent tooltip from causing horizontal scrollbar */
+.tooltip {
+    pointer-events: none;
+    z-index: 1080;
+    position: fixed;  /* Force tooltips to use fixed positioning */
+}
+
+/* Ensure bootstrap tooltips don't cause horizontal scroll */
+.tooltip-inner {
+    max-width: 200px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Fix table container to prevent horizontal scroll on hover */
+.table-responsive {
+    overflow-x: hidden !important; /* Hide horizontal scroll */
+}
+
+/* Only show horizontal scroll when actively scrolling the table */
+.table-responsive:hover, 
+.table-responsive:focus,
+.table-responsive:active {
+    overflow-x: auto !important; /* Show scroll when needed */
+}
+
+/* Fix for buttons with tooltips in table cells */
+td .btn {
+    position: relative;
+    z-index: 1;
+}
+
+/* Prevent form from expanding beyond the table cell */
+td form.d-inline {
+    display: inline-block !important;
+    max-width: fit-content;
+    overflow: visible;
+}
+
+/* Fix for delete button specifically */
+.delete-request-btn {
+    white-space: nowrap;
+    overflow: visible;
+}
+
+/* Eliminate horizontal scrollbar completely for this specific table */
+.card .table-responsive {
+    max-width: 100%;
+    overflow-x: clip !important;
+}
+
+/* Force remove any tooltips if they appear outside viewport boundaries */
+.tooltip[x-out-of-boundaries] {
+    display: none !important;
+}
+
+/* Add proper styling for pricing column */
+.text-success {
+    color: #198754 !important;
+    font-weight: 500;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+    font-weight: 500;
+} 

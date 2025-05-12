@@ -1,0 +1,505 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url('../images/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/salengap.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    filter: blur(8px) brightness(0.7);
+    -webkit-filter: blur(8px) brightness(0.7);
+    transform: scale(1.1);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.min-h-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.max-w-md {
+    max-width: 24rem;
+    width: 100%;
+}
+
+.bg-white {
+    background-color: #ffffff;
+}
+
+.rounded-3xl {
+    border-radius: 1rem;
+}
+
+.shadow-2xl {
+    box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.1);
+}
+
+.space-y-8 > * + * {
+    margin-top: 1.5rem;
+}
+
+.p-10 {
+    padding: 2rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.text-gray-600 {
+    color: #4b5563;
+}
+
+.text-sm {
+    font-size: 0.9rem;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.mt-8 {
+    margin-top: 1.5rem;
+}
+
+.space-y-6 > * + * {
+    margin-top: 1rem;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-label {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 3px;
+    display: block;
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    z-index: 5;
+    width: 20px;
+    text-align: center;
+    transform: translateY(-1px);
+}
+
+.input-icon i {
+    line-height: 1;
+    display: block;
+    font-size: 14px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 10px 10px 38px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    height: 38px;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #3490dc;
+    box-shadow: 0 0 0 2px rgba(52, 144, 220, 0.25);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    z-index: 10;
+    outline: none;
+}
+
+/* Add specific styles for the icon to prevent button highlight */
+.password-toggle:focus {
+    outline: none;
+    background: none;
+    box-shadow: none;
+    -webkit-tap-highlight-color: transparent; /* Prevent highlight on mobile devices */
+}
+
+.password-toggle::-moz-focus-inner {
+    border: 0; /* Remove Firefox inner border on focus */
+}
+
+/* Style the icon itself */
+.password-toggle i {
+    padding: 5px;
+    border-radius: 50%;
+    transition: color 0.2s ease;
+}
+
+/* Apply highlight only to the icon when focused/active */
+.password-toggle:focus i,
+.password-toggle:active i {
+    color: #3490dc;
+}
+
+/* Ensure consistent dimensions for password fields */
+input[type="password"],
+input[type="text"]#password {
+    width: 100% !important;
+    height: 38px !important;
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 0.875rem !important;
+    letter-spacing: normal !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    transition: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    padding-left: 38px !important;
+}
+
+/* Fix for autofill styling issues */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+    -webkit-text-fill-color: inherit !important;
+}
+
+.password-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.custom-checkbox {
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 0.25rem;
+    border: 1px solid #d1d5db;
+    margin-right: 0.5rem;
+    cursor: pointer;
+}
+
+.text-primary {
+    color: #2563eb;
+}
+
+.text-primary:hover {
+    color: #1d4ed8;
+}
+
+.sign-in-btn {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background-color: #000;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sign-in-btn:hover {
+    background-color: #1a1a1a;
+}
+
+.mb-6 {
+    margin-bottom: 1rem;
+}
+
+.mt-6 {
+    margin-top: 1rem;
+}
+
+.mb-8 {
+    margin-bottom: 1.5rem;
+}
+
+.ml-2 {
+    margin-left: 0.5rem;
+}
+
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.error-message {
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.text-red-600 {
+    color: #dc2626;
+}
+
+.text-green-600 {
+    color: #059669;
+}
+
+@media (max-width: 640px) {
+    .p-10 {
+        padding: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.1rem;
+    }
+    
+    .form-input {
+        font-size: 0.875rem;
+    }
+}
+
+.success-message {
+    background-color: #dcfce7;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.bg-gradient-to-br {
+    background: linear-gradient(to bottom right, #8B5CF6, #3B82F6);
+}
+
+.backdrop-blur-md {
+    backdrop-filter: blur(12px);
+}
+
+.btn-primary {
+    background-color: #8B5CF6;
+    border-color: #8B5CF6;
+}
+
+.btn-primary:hover {
+    background-color: #7C3AED;
+    border-color: #7C3AED;
+}
+
+.alert {
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.form-check {
+    margin-top: -10px;
+    margin-bottom: 15px;
+}
+
+.form-check-label {
+    margin-left: 5px;
+    font-size: 14px;
+    color: #555;
+}
+
+.form-container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 450px;
+    margin: 20px;
+}
+
+.logo-center {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo-center img {
+    max-width: 80px;
+    height: auto;
+}
+
+.form-title {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+.button-primary {
+    width: 100%;
+    padding: 10px 15px;
+    background-color: #3490dc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.button-primary:hover {
+    background-color: #2779bd;
+}
+
+.form-footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+.form-footer a {
+    color: #3490dc;
+    text-decoration: none;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .form-container {
+        margin: 15px;
+        padding: 20px;
+    }
+    
+    .form-title {
+        font-size: 20px;
+    }
+    
+    .button-primary {
+        font-size: 14px;
+    }
+}
+
+/* Autocomplete Styles */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #1a1a1a;
+    -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
+    font-size: 0.8rem !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Style the autocomplete suggestions */
+input::-webkit-credentials-auto-fill-button,
+input::-webkit-contacts-auto-fill-button {
+    visibility: hidden;
+    position: absolute;
+    right: 0;
+}
+
+/* Ensure consistent font size for autocomplete dropdown */
+input:-webkit-autofill-selected,
+input:-webkit-autofill-strong-password {
+    font-size: 0.8rem !important;
+}
+
+/* Firefox specific autocomplete styles */
+input:-moz-autofill,
+input:-moz-autofill-preview {
+    font-size: 0.8rem !important;
+}
+
+.auth-container {
+    font-size: 0.9rem;
+}
+
+.auth-container h1 {
+    font-size: 1.8rem;
+}
+
+.auth-container label {
+    font-size: 0.85rem;
+}
+
+.auth-container .btn {
+    font-size: 0.9rem;
+}
+

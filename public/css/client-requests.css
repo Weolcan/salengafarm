@@ -1,0 +1,320 @@
+/* Client Requests Table Styling */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Natural color palette */
+    --primary-green: #2a9d4e;
+    --light-green: #6cbf84;
+    --dark-green: #1a7a37;
+    --earthy-brown: #8b6f47;
+    --light-brown: #d7c9b7;
+    --leaf-accent: #5cb270;
+    --soft-cream: #f8f5f0;
+    --soft-yellow: #f6e58d;
+    --text-dark: #333333;
+    --text-medium: #555555;
+    --text-light: #777777;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --card-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+    
+    /* Spacing and sizing variables for better consistency */
+    --card-border-radius: 12px;
+    --card-padding: 1rem;
+    --section-spacing: 1rem;
+    --row-spacing: 0.8rem;
+    --header-spacing: 0.75rem;
+}
+
+/* Base styles */
+body {
+    font-family: 'Nunito', 'Poppins', sans-serif;
+    background-color: var(--soft-cream);
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%232a9d4e' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-attachment: fixed;
+}
+
+.client-requests-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+/* Alternating row colors */
+.client-requests-table tbody tr:nth-child(odd) {
+    background-color: #f9fbf7;
+}
+
+.client-requests-table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+/* Hover effect on rows - without transform */
+.client-requests-table tbody tr {
+    transition: background-color 0.2s ease;
+    transform: none !important; /* Fixed position, no transform */
+    position: relative;
+}
+
+.client-requests-table tbody tr:hover {
+    background-color: #f0f5f0;
+    transform: none !important; /* Ensure no transform on hover */
+}
+
+/* Table headers */
+.client-requests-table th {
+    background-color: #4a6741;
+    color: white;
+    font-weight: 500;
+    text-align: left;
+    padding: 12px 15px;
+    font-size: 0.85rem;
+}
+
+/* Table cells */
+.client-requests-table td {
+    padding: 10px 15px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Status labels */
+.status-badge {
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+}
+
+.status-pending {
+    background-color: var(--soft-yellow);
+    color: var(--earthy-brown);
+    border: 1px solid #f8e3a3;
+}
+
+.status-approved {
+    background-color: #e8f5e9;
+    color: var(--primary-green);
+    border: 1px solid #c8e6c9;
+}
+
+.status-rejected {
+    background-color: #fde8e8;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.status-processing {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+}
+
+/* Action buttons - without transform movement */
+.action-btn {
+    padding: 6px 10px;
+    margin: 0 3px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    transform: none !important; /* Fixed position, no transform */
+}
+
+.action-btn:hover {
+    box-shadow: var(--hover-shadow);
+    transform: none !important; /* Ensure no transform on hover */
+}
+
+.view-btn {
+    color: #4a6741;
+    border-color: #4a6741;
+}
+
+.view-btn:hover {
+    background-color: #4a6741;
+    color: white;
+}
+
+.edit-btn {
+    color: #4285f4;
+    border-color: #4285f4;
+}
+
+.edit-btn:hover {
+    background-color: #4285f4;
+    color: white;
+}
+
+.delete-btn {
+    color: #ea4335;
+    border-color: #ea4335;
+}
+
+.delete-btn:hover {
+    background-color: #ea4335;
+    color: white;
+}
+
+/* Tooltip styles */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.75rem;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Card container */
+.request-card {
+    border-radius: var(--card-border-radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 0.3s ease;
+    transform: none !important; /* Fixed position, no transform */
+    background-color: #ffffff;
+}
+
+.request-card:hover {
+    box-shadow: var(--hover-shadow);
+    transform: none !important; /* Ensure no transform on hover */
+}
+
+/* Card styling */
+.card {
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--card-shadow);
+    border: none;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    transform: none !important; /* Fixed position, no transform */
+    background-color: #ffffff;
+    margin-bottom: var(--section-spacing);
+}
+
+.card:hover {
+    box-shadow: var(--hover-shadow);
+    transform: none !important; /* Ensure no transform on hover */
+}
+
+/* Table rows */
+.table tbody tr {
+    transition: background-color 0.2s ease;
+    transform: none !important; /* Fixed position, no transform */
+    position: relative;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(247, 247, 247, 0.5) !important;
+    transform: none !important; /* Ensure no transform on hover */
+}
+
+/* Pagination styling */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination .page-item {
+    margin: 0 3px;
+}
+
+.pagination .page-link {
+    color: #4a6741;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #4a6741;
+    border-color: #4a6741;
+    color: white;
+}
+
+.pagination .page-link:hover {
+    background-color: #f5f5f5;
+}
+
+/* Tooltip styling */
+.action-btn[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(51, 51, 51, 0.9);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    margin-bottom: 5px;
+    z-index: 10;
+}
+
+/* Section dividers */
+.section-divider {
+    border-bottom: 1px solid #e0e8e0;
+    margin: 1.5rem 0;
+    padding-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .client-requests-table {
+        font-size: 0.85rem;
+    }
+    
+    .action-btn {
+        padding: 5px 8px;
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--light-green);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-green);
+} 

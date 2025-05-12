@@ -1,0 +1,127 @@
+/* Plant Details Panel - Direct Fix */
+
+/* Basic panel styling */
+.plant-details-panel {
+    background: rgba(25, 135, 84, 0.95);
+    color: white;
+    padding: 15px;
+}
+
+/* Reset all previous styles */
+.plant-details-panel p,
+.plant-details-panel li,
+.plant-details-panel small,
+.plant-details-panel span,
+.plant-details-panel em {
+    margin: 0;
+    padding: 0;
+    position: static;
+    display: block;
+}
+
+/* Style for all rows in the details panel */
+.plant-details-panel .section-content p,
+.plant-details-panel .measurements li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 0;
+    position: relative;
+    height: 24px;
+    line-height: 24px;
+    width: 100%;
+}
+
+/* Style for labels */
+.plant-details-panel .section-content small.text-muted,
+.plant-details-panel .measurements li small.text-muted {
+    color: white !important;
+    font-weight: 500;
+    float: left;
+    text-align: left;
+    position: absolute;
+    left: 0;
+}
+
+/* Style for values */
+.plant-details-panel .section-content p .value-text,
+.plant-details-panel .section-content p em,
+.plant-details-panel .measurements li .value-text {
+    color: white !important;
+    font-weight: 500;
+    float: right;
+    text-align: right;
+    position: absolute;
+    right: 0;
+}
+
+/* Style for scientific name */
+.plant-details-panel .section-content p em {
+    font-style: italic;
+}
+
+/* Style for input fields */
+.plant-details-panel input[type="number"],
+.plant-details-panel .editable-measurement {
+    color: black !important;
+    background-color: white !important;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 2px 5px;
+    width: 60px;
+    height: 24px;
+    text-align: right;
+    position: absolute;
+    right: 30px;
+    -webkit-text-fill-color: black !important;
+}
+
+/* Style for mm label */
+.plant-details-panel .input-group-text {
+    color: black !important;
+    background-color: #e9ecef !important;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+    padding: 2px 5px;
+    height: 24px;
+    position: absolute;
+    right: 0;
+    width: 30px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fix for the measurement input group */
+.plant-details-panel .measurement-input-group {
+    position: absolute;
+    right: 0;
+    width: 90px;
+    display: flex;
+    align-items: center;
+}
+
+/* Fix for the back button */
+.plant-details-panel .back-to-main {
+    color: white !important;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+/* Fix for the details header */
+.plant-details-panel .details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Fix for the details header title */
+.plant-details-panel .details-header h6 {
+    color: white !important;
+    margin: 0;
+}

@@ -1,0 +1,27 @@
+/* Override any table hover effects */
+.table-hover tbody tr:hover,
+.client-requests-table tbody tr:hover,
+.table tbody tr:hover {
+    background-color: rgba(0,0,0,.04) !important;
+    transform: none !important;
+    box-shadow: none !important;
+    position: static !important;
+    transition: background-color 0.2s ease !important;
+}
+
+/* Ensure no hover background changes for any table if needed */
+table tbody tr:hover.no-hover-effect {
+    background-color: inherit !important;
+}
+
+/* Prevent any movement on hover for all table rows */
+table tr {
+    transition: none !important;
+}
+
+/* Prevent transform effects on hover */
+.table tr:hover,
+.table-hover tr:hover,
+.client-requests-table tr:hover {
+    transform: none !important;
+}

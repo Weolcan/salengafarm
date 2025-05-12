@@ -1,0 +1,136 @@
+/* Plant Request Form Styling */
+
+/* Card styling */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: none;
+    overflow: hidden;
+    width: 100%;
+    min-height: 400px;
+}
+
+.card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-body {
+    padding: 1.5rem !important;
+}
+
+/* Container adjustments */
+.container {
+    max-width: 1200px;
+    width: 100%;
+}
+
+.row {
+    width: 100%;
+}
+
+/* Form elements */
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+}
+
+.alert-info {
+    background-color: #e8f4f8;
+    border-color: #d1e7f0;
+    color: #0c5460;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 8px;
+    padding: 0.6rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.btn-success:hover {
+    background-color: #157347;
+    border-color: #146c43;
+}
+
+/* Selected plants list */
+#selected-plants-list {
+    margin-top: 1rem;
+}
+
+#selected-plants-list .list-group-item {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e9ecef;
+    padding: 0.75rem 1rem;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+    border-radius: 6px;
+}
+
+/* Terms and conditions */
+.terms-container {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+    border: 1px solid #e9ecef;
+}
+
+.terms-container h5 {
+    margin-bottom: 1rem;
+    color: #495057;
+}
+
+.terms-container ol {
+    padding-left: 1.25rem;
+    margin-bottom: 0;
+}
+
+.terms-container li {
+    margin-bottom: 0.5rem;
+    color: #6c757d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.25rem !important;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+    }
+}
