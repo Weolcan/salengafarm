@@ -14,6 +14,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Poppins:wght@400;500;600&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
     <link href="{{ asset('css/inventory.css') }}?v=2" rel="stylesheet">
     <link href="{{ asset('css/dashboard.css') }}?v=4" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -46,90 +47,27 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* All sidebar-related styles removed. */
     </style>
 </head>
-<body class="bg-light">
+<body class="bg-light dashboard-page">
     <!-- Loading Overlay -->
     <div id="loading-overlay">
         <span class="loader"></span>
     </div>
 
-    <!-- Main Navigation -->
-    <nav class="navbar navbar-expand-lg main-nav">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <img src="{{ asset('images/salengap-modified.png') }}" alt="Salenga Logo" class="nav-logo">
-                <span class="brand-text">Salenga Farm</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <div class="navbar-collapse-inner">
-                <ul class="navbar-nav center-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('public.plants') }}"><i class="fas fa-home me-1"></i>Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('requests.index') }}"><i class="fas fa-file-invoice me-1"></i>Request</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ route('dashboard') }}"><i class="fas fa-chart-line me-1"></i>Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('walk-in.index') }}"><i class="fas fa-cash-register me-1"></i>Walk-in</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('plants.index') }}"><i class="fas fa-leaf me-1"></i>Inventory</a>
-                    </li>
-                    @if(auth()->user()->isAdmin())
-                    <li class="nav-item">
-                            <a class="nav-link" href="{{ route('users.index') }}">
-                                <i class="fas fa-users me-1"></i>Users
-                            </a>
-                    </li>
-                    @endif
-                </ul>
-                <div class="user-section">
-                    <div class="dropdown">
-                        <button class="btn btn-link dropdown-toggle profile-btn" type="button" id="profileDropdown" data-bs-toggle="dropdown">
-                            @if(auth()->user()->avatar)
-                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Profile" class="profile-pic">
-                            @else
-                                <div class="profile-pic-placeholder">
-                                        <i class="fas fa-user"></i>
-                                </div>
-                            @endif
-                                <span>{{ auth()->user()->name }}</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                    <i class="fas fa-user me-2"></i>Profile
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form action="{{ route('logout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container-fluid">
+    <div id="sidebarOverlay"></div>
+    <div class="dashboard-flex">
+        @include('layouts.sidebar')
+        <!-- Sidebar Toggle Button for Mobile -->
+        <button id="sidebarToggle" class="btn btn-success d-lg-none" type="button" aria-label="Open sidebar">
+            <i class="fa fa-bars" style="font-size: 1.3rem;"></i>
+        </button>
+        <div class="main-content">
+            <div style="padding-top: 0;">
         <!-- Main Content Area -->
-        <div class="p-3">
-            <h2 class="mb-4 fs-4">Dashboard Overview</h2>
-
+                <div class="p-0">
+                    <h2 class="mb-3 fs-5" style="font-size: 1.1rem; padding-top: 10px;">Dashboard Overview</h2>
             <!-- Summary Cards Row - Reduced height via CSS -->
             <div class="row mb-4">
                 <div class="col-md-6 mb-2 mb-md-0">
@@ -141,7 +79,7 @@
                                 </div>
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-muted">Total Plants in Stock</h6>
-                                    <h2 class="card-title mb-0">{{ number_format($totalStock) }}</h2>
+                                            <h2 class="card-title mb-0">182</h2>
                                 </div>
                             </div>
                         </div>
@@ -156,14 +94,13 @@
                                 </div>
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-muted">Low Stock Items</h6>
-                                    <h2 class="card-title mb-0">{{ $lowStockItems->count() }}</h2>
+                                            <h2 class="card-title mb-0">1</h2>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
             <!-- Main Content Row - Better organized with consistent heights -->
             <div class="main-content-row">
                 <!-- Left Column - Low Stock Alerts -->
@@ -179,29 +116,19 @@
                         </div>
                         <div class="card-body">
                             <div class="list-group list-group-flush">
-                                @foreach($lowStockItems->take(4) as $item)
                                     <div class="list-group-item">
                                         <div class="d-flex justify-content-between align-items-center w-100">
                                             <div>
-                                                <h6 class="mb-0">{{ $item->name }}</h6>
-                                                <small class="text-muted">{{ $item->category }}</small>
+                                                    <h6 class="mb-0">RADDISH</h6>
+                                                    <small class="text-muted">herbs</small>
                                             </div>
-                                            <span class="badge bg-warning">{{ $item->quantity }} left</span>
+                                                <span class="badge bg-warning">5 left</span>
                                         </div>
                                     </div>
-                                @endforeach
                             </div>
-                            @if($lowStockItems->count() > 4)
-                                <div class="d-grid gap-2 p-2 mt-1">
-                                    <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#lowStockModal">
-                                    <i class="fas fa-list-ul me-1"></i> Show All Low Stock Items
-                                </button>
                                 </div>
-                            @endif
                         </div>
                     </div>
-                </div>
-
                 <!-- Middle Column - Stock Distribution -->
                 <div class="col-md-6">
                     <!-- Chart Container with Tabs -->
@@ -230,20 +157,12 @@
                             </div>
                             <div class="tab-pane fade" id="sales-chart" role="tabpanel" aria-labelledby="sales-tab">
                                 <div class="d-flex align-items-center justify-content-center h-100">
-                                    @if(count($salesByPlant) > 0)
                                         <canvas id="salesDistributionChart"></canvas>
-                                    @else
-                                        <div class="text-center text-muted py-5">
-                                            <i class="fas fa-info-circle fa-3x mb-3"></i>
-                                            <p>No sales data available yet. Complete some sales to see the distribution by plant categories.</p>
                                         </div>
-                                    @endif
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
                 <!-- Right Column - Quick Actions and Recent Plants -->
                 <div class="col-md-3">
                     <!-- Quick Actions -->
@@ -263,7 +182,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Recent Plants -->
                     <div class="card recent-plants-card">
                         <div class="card-header">
@@ -275,17 +193,53 @@
                         </div>
                         <div class="card-body">
                             <div class="list-group list-group-flush">
-                                @foreach($recentPlants as $plant)
                                     <div class="list-group-item">
                                         <div class="d-flex justify-content-between align-items-center w-100">
                                             <div>
-                                                <h6 class="mb-0">{{ $plant->name }}</h6>
-                                                <small class="text-muted">Added {{ $plant->created_at->diffForHumans() }}</small>
+                                                    <h6 class="mb-0">TINDALO</h6>
+                                                    <small class="text-muted">Added 1 month ago</small>
                                             </div>
-                                            <span class="badge bg-success">{{ $plant->quantity }}</span>
+                                                <span class="badge bg-success">45</span>
                                         </div>
                                     </div>
-                                @endforeach
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                <div>
+                                                    <h6 class="mb-0">ROYAL PALM</h6>
+                                                    <small class="text-muted">Added 1 month ago</small>
+                                    </div>
+                                                <span class="badge bg-success">34</span>
+                                </div>
+                            </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                <div>
+                                                    <h6 class="mb-0">DATE PALM</h6>
+                                                    <small class="text-muted">Added 1 month ago</small>
+                        </div>
+                                                <span class="badge bg-success">11</span>
+                    </div>
+                </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                <div>
+                                                    <h6 class="mb-0">RADDISH</h6>
+                                                    <small class="text-muted">Added 1 month ago</small>
+                                                </div>
+                                                <span class="badge bg-success">5</span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                <div>
+                                                    <h6 class="mb-0">SPINACH</h6>
+                                                    <small class="text-muted">Added 1 month ago</small>
+                                                </div>
+                                                <span class="badge bg-success">10</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -662,131 +616,39 @@
         });
     </script>
 
-    <style>
-        /* Navigation and general text */
-        .navbar-brand {
-            font-size: 0.9rem;
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.getElementById('sidebarMenu');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggle = document.getElementById('sidebarToggle');
+
+        function openSidebar() {
+            sidebar.classList.add('open');
+            overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
         }
 
-        .nav-link {
-            font-size: 0.8rem;
+        if (toggle) {
+            toggle.addEventListener('click', function () {
+                if (sidebar.classList.contains('open')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            });
         }
-
-        .btn {
-            font-size: 0.8rem;
-            padding: 0.375rem 0.75rem;
+        if (overlay) {
+            overlay.addEventListener('click', closeSidebar);
         }
-
-        /* Summary Cards */
-        .card-subtitle {
-            font-size: 0.75rem;
-        }
-
-        .card-title:not(.chart-card .card-title) {
-            font-size: 1.5rem;  /* Keep numbers relatively large but smaller than default */
-        }
-
-        /* Form Elements */
-        .form-control, .input-group-text {
-            font-size: 0.8rem;
-            padding: 0.375rem 0.75rem;
-        }
-
-        /* Tables */
-        .table {
-            font-size: 0.8rem;
-        }
-
-        .table th {
-            font-size: 0.75rem;
-        }
-
-        /* Dropdown and Modal */
-        .dropdown-item {
-            font-size: 0.8rem;
-            padding: 0.25rem 1rem;
-        }
-
-        .modal-title {
-            font-size: 1rem;
-        }
-
-        .modal-body {
-            font-size: 0.8rem;
-        }
-
-        /* Profile Section */
-        .profile-btn {
-            font-size: 0.8rem;
-        }
-
-        .profile-pic-placeholder {
-            font-size: 0.8rem;
-        }
-
-        /* List Groups */
-        .list-group-item {
-            font-size: 0.8rem;
-            padding: 0.5rem 1rem;
-        }
-
-        /* Labels and Small Text */
-        label, .small {
-            font-size: 0.75rem;
-        }
-
-        /* Spacing Adjustments */
-        .mb-4 {
-            margin-bottom: 1rem !important;
-        }
-
-        .py-4 {
-            padding-top: 1.5rem !important;
-            padding-bottom: 1.5rem !important;
-        }
-
-        .p-4 {
-            padding: 1.5rem !important;
-        }
-
-        /* Table Header and Cells */
-        #plantsTableBody td, 
-        #plantsTableBody th,
-        .table thead th {
-            font-size: 0.8rem;
-            padding: 0.5rem;
-        }
-
-        /* Info Text */
-        #selectedPlantsInfo {
-            font-size: 0.8rem;
-        }
-
-        /* Alert Messages */
-        .alert {
-            font-size: 0.8rem;
-            padding: 0.5rem 1rem;
-        }
-
-        /* Keep chart size unchanged */
-        .chart-container {
-            font-size: initial;  /* Reset font size for charts */
-        }
-
-        .chart-card .card-title {
-            font-size: initial;  /* Keep chart titles at original size */
-        }
-
-        /* Card Headers */
-        .card-header .card-title {
-            font-size: 0.9rem !important;  /* Force smaller size for all card headers */
-            font-weight: 500;
-        }
-
-        /* Make sure chart titles stay readable */
-        .chart-card .card-header .card-title {
-            font-size: 0.9rem !important;
-        }
-    </style>
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeSidebar();
+            });
+        });
+    </script>
 </body>
 </html>

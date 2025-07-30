@@ -24,10 +24,8 @@
 
                     <div class="form-group">
                         <label for="email" class="form-label">Email</label>
-                        <div class="input-group">
-                            <span class="input-icon">
-                                <i class="fas fa-user"></i>
-                            </span>
+                        <div class="clean-input-group">
+                            <i class="fas fa-user input-icon"></i>
                             <input type="text" 
                                 id="email"
                                 name="email" 
@@ -35,23 +33,21 @@
                                 required 
                                 placeholder="Enter your email"
                                 autocomplete="email"
-                                class="form-input">
+                                class="clean-input">
                     </div>
                 </div>
 
                     <div class="form-group">
                         <label for="password" class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-icon">
-                                <i class="fas fa-lock"></i>
-                            </span>
+                        <div class="clean-input-group">
+                            <i class="fas fa-lock input-icon"></i>
                             <input type="password" 
                                 id="password"
                                 name="password" 
                                 required 
                                 placeholder="Enter your password"
                                 autocomplete="current-password"
-                                class="form-input">
+                                class="clean-input">
                             <button type="button" class="password-toggle" onclick="togglePassword('password', 'toggleIcon')">
                                 <i class="fas fa-eye" id="toggleIcon"></i>
                             </button>
@@ -69,6 +65,20 @@
                         Login
                     </button>
                 </div>
+
+                    <!-- OR Divider -->
+                    <div class="divider-container">
+                        <div class="divider-line"></div>
+                        <div class="divider-text">- OR -</div>
+                        <div class="divider-line"></div>
+                    </div>
+                    
+                    <!-- Social Login Buttons -->
+                    <div class="social-login-container">
+                        <a href="{{ route('socialite.redirect', ['provider' => 'google']) }}" class="social-btn google-btn">
+                            <i class="fab fa-google"></i> Sign in using Google
+                        </a>
+                    </div>
 
                     <div class="text-center mt-6">
                     <p class="text-sm text-gray-600">

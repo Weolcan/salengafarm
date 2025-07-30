@@ -10,6 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalkInSalesController;
 use App\Http\Controllers\UserPlantRequestController;
 use App\Http\Controllers\WalkInInventoryController;
+use App\Http\Controllers\Auth\SocialiteController;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Log;
 
@@ -38,6 +39,10 @@ Route::middleware(['auth', 'can:client-access'])->group(function () {
 // For public users without authentication
 Route::post('/client-request-public', [ClientRequestController::class, 'store'])->name('client-request.public');
 Route::get('/request-success-public/{id}', [ClientRequestController::class, 'showSuccess'])->name('request-success-public');
+
+// Social Login Routes
+Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirectToProvider'])->name('socialite.redirect');
+Route::get('/auth/{provider}/callback', [SocialiteController::class, 'handleProviderCallback'])->name('socialite.callback');
 
 // Authentication routes
 Route::middleware(['auth'])->group(function () {
@@ -89,6 +94,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/requests/direct-view/{id}', [ClientRequestController::class, 'plainViewRequest'])->name('requests.direct-view');
         Route::get('/requests/plain-view/{id}', [ClientRequestController::class, 'plainViewRequest'])->name('requests.plain-view');
 
+        // Site Visits placeholder route
+        Route::get('/site-visits', function () {
+            return view('site-visits');
+        })->name('site-visits');
+
         // Move these routes inside the admin middleware group
         Route::post('/plants/photo/upload', [PlantController::class, 'uploadPhoto']);
         Route::delete('/plants/photo/remove/{plant}', [PlantController::class, 'removePhoto']);
@@ -97,6 +107,7 @@ Route::middleware(['auth'])->group(function () {
     // Common routes for all authenticated users
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Add these routes for photo management
     Route::post('/plants', [PlantController::class, 'store']);

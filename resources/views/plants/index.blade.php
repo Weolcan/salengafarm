@@ -15,99 +15,28 @@
     <meta name="msapplication-TileImage" content="{{ asset('tree-leaf.ico') }}?v=2">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link href="{{ asset('css/inventory.css') }}?v=2" rel="stylesheet">
+    <link href="{{ asset('css/dashboard.css') }}?v=4" rel="stylesheet">
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg main-nav">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <img src="{{ asset('images/salengap-modified.png') }}" alt="Salenga Logo" class="nav-logo">
-                <span class="brand-text">Salenga Farm</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <div class="navbar-collapse-inner">
-                    <ul class="navbar-nav center-nav">
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('public.plants') ? 'active' : '' }}" href="{{ route('public.plants') }}">
-                                <i class="fas fa-home me-1"></i>Home
-                            </a>
-                        </li>
-                        @auth
-                            @if(auth()->user()->hasAdminAccess())
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">
-                                    <i class="fas fa-file-invoice me-1"></i>Request
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                                    <i class="fas fa-chart-line me-1"></i>Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('walk-in.*') ? 'active' : '' }}" href="{{ route('walk-in.index') }}">
-                                    <i class="fas fa-cash-register me-1"></i>Walk-in
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('plants.index') ? 'active' : '' }}" href="{{ route('plants.index') }}">
-                                    <i class="fas fa-leaf me-1"></i>Inventory
-                                </a>
-                            </li>
-                            @endif
-                            @if(auth()->user()->isAdmin())
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}" href="{{ route('users.index') }}">
-                                    <i class="fas fa-users me-1"></i>Users
-                                </a>
-                            </li>
-                            @endif
-                        @endauth
-                    </ul>
-                    <div class="user-section">
-                        <div class="dropdown">
-                            <button class="btn btn-link dropdown-toggle profile-btn" type="button" id="profileDropdown" data-bs-toggle="dropdown">
-                                @if(auth()->user()->avatar)
-                                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Profile" class="profile-pic">
-                                @else
-                                    <div class="profile-pic-placeholder">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                @endif
-                                <span>{{ auth()->user()->name }}</span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                        <i class="fas fa-user me-2"></i>Profile
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form action="{{ route('logout') }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item">
-                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body class="bg-light inventory-page">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <span class="loader"></span>
+    </div>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Main Content -->
-            <div class="col-12 p-4">
-                <h2 class="mb-4 fs-4">Plant Inventory</h2>
+    <div id="sidebarOverlay"></div>
+    <div class="dashboard-flex">
+        @include('layouts.sidebar')
+        <!-- Sidebar Toggle Button for Mobile -->
+        <button id="sidebarToggle" class="btn btn-success d-lg-none" type="button" aria-label="Open sidebar">
+            <i class="fa fa-bars" style="font-size: 1.3rem;"></i>
+        </button>
+        <div class="main-content">
+            <div style="padding-top: 0;">
+                <div class="p-0">
+                    <h2 class="mb-4 fs-4" style="font-size: 1.1rem; padding-top: 10px;">Plant Inventory</h2>
 
                 @if(session('success'))
                     <div class="alert alert-success">
@@ -116,28 +45,28 @@
                 @endif
 
                 <!-- Search Bar -->
-                <div class="search-bar mb-4">
-                    <div class="row">
+                    <div class="search-bar mb-4" style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div class="row g-2 align-items-end">
                         <div class="col-md-5">
-                            <div class="mb-3">
-                                <label>Plant Name</label>
-                                <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Search plant name">
+                                <div class="mb-2">
+                                    <label style="font-size: 0.9rem;">Plant Name</label>
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Search plant name" style="font-size: 0.9rem; padding: 0.4rem 0.75rem;">
                             </div>
-                            <div class="d-flex gap-2 mb-3">
-                                <button id="addBtn" class="btn btn-success btn-lg">Add New Plant</button>
+                                <div class="d-flex gap-2 mb-2">
+                                    <button id="addBtn" class="btn btn-success btn-sm">Add New Plant</button>
                                 <div id="bulkActionButtons" class="d-none d-inline">
-                                    <button id="bulkEditBtn" class="btn btn-primary btn-lg">
+                                        <button id="bulkEditBtn" class="btn btn-primary btn-sm">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <button id="bulkDeleteBtn" class="btn btn-danger btn-lg">
+                                        <button id="bulkDeleteBtn" class="btn btn-danger btn-sm">
                                         <i class="fas fa-trash"></i> Delete Selected
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-7">
-                            <label>Category Filter</label>
-                            <div class="category-icons d-flex justify-content-between align-items-center">
+                                <label style="font-size: 0.9rem;">Category Filter</label>
+                                <div class="category-icons d-flex justify-content-between align-items-center" style="padding: 0.7rem;">
                                 <div class="category-icon-item text-center" data-category="all">
                                     <div class="icon-circle active">
                                         <i class="fas fa-border-all"></i>
@@ -218,7 +147,7 @@
                 </div>
 
                 <!-- Plants Table -->
-                <table class="table">
+                    <table class="table" style="font-size: 0.8rem;">
                     <thead>
                         <tr>
                             <th width="50">
@@ -365,6 +294,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>

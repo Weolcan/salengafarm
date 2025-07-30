@@ -38,9 +38,18 @@
 
         // Add scrollToContent function
         function scrollToContent() {
-            const contentSection = document.querySelector('.main-content');
+            // First, add the hidden class to the splash page to trigger its animation
+            const splashPage = document.getElementById('splashPage');
+            if (splashPage) {
+                splashPage.classList.add('hidden');
+            }
+            
+            // Then, scroll to the main content
+            const contentSection = document.querySelector('.container-fluid');
             if (contentSection) {
-                contentSection.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                    contentSection.scrollIntoView({ behavior: 'smooth' });
+                }, 300); // Small delay to let the animation start
             }
         }
     </script>
@@ -134,6 +143,45 @@
             min-width: 100px;
         }
     </style>
+    <style>
+        .menu-btn {
+            font-size: 0.98rem;
+            font-weight: 500;
+            color: #fff;
+            background: transparent;
+            border: none;
+            outline: none;
+            box-shadow: none;
+        }
+        .menu-btn:focus, .menu-btn:hover {
+            color: #e0e0e0;
+            background: #259d4e22;
+        }
+        .profile-btn {
+            font-size: 0.98rem;
+            min-width: 0;
+            padding: 2px 8px;
+        }
+        .profile-pic, .profile-pic-placeholder {
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 50%;
+            object-fit: cover;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+    </style>
+    <style>
+        .compact-dropdown .dropdown-item {
+            font-size: 0.95rem !important;
+            padding: 6px 14px !important;
+        }
+        .compact-dropdown .dropdown-divider {
+            margin: 4px 0 !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg main-nav">
@@ -146,86 +194,64 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarMain">
-                <div class="navbar-collapse-inner">
-                <ul class="navbar-nav center-nav">
+                <div class="navbar-collapse-inner d-flex align-items-center justify-content-end w-100">
+                    <div class="user-section d-flex align-items-center">
                     @auth
                         @if(auth()->user()->hasAdminAccess())
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('public.plants') || request()->is('/') ? 'active' : '' }}" href="{{ route('public.plants') }}">
-                            <i class="fas fa-home me-1"></i>Home
-                        </a>
-                    </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('requests.index') }}">
-                                <i class="fas fa-file-invoice me-1"></i>Request
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('dashboard') }}">
-                                <i class="fas fa-chart-line me-1"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('walk-in.index') }}">
-                                <i class="fas fa-cash-register me-1"></i>Walk-in
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('plants.index') }}">
-                                <i class="fas fa-leaf me-1"></i>Inventory
-                            </a>
-                        </li>
-                        @endif
+                            <div class="dropdown me-2">
+                                <button class="btn btn-link dropdown-toggle menu-btn px-3 py-1" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.98rem; font-weight: 500;">
+                                    <i class="fas fa-bars me-1"></i>Menu
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="menuDropdown">
+                                    <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('plants.index') }}"><i class="fas fa-seedling me-2"></i>Inventory</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('requests.index') }}"><i class="fas fa-envelope-open-text me-2"></i>Request</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('walk-in.index') }}"><i class="fas fa-cash-register me-2"></i>Point-of-Sale</a></li>
+                                    <li><a class="dropdown-item" href="/site-visits"><i class="fas fa-map-marked-alt me-2"></i>Site Visits</a></li>
                         @if(auth()->user()->isAdmin())
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('users.index') }}">
-                                <i class="fas fa-users me-1"></i>Users
-                            </a>
-                        </li>
+                                    <li><a class="dropdown-item" href="{{ route('users.index') }}"><i class="fas fa-users-cog me-2"></i>Users</a></li>
                         @endif
-                    @endauth
                 </ul>
-                @auth
-                <div class="user-section">
+                            </div>
+                            @endif
                     <div class="dropdown">
-                        <button class="btn btn-link dropdown-toggle profile-btn" type="button" id="profileDropdown" data-bs-toggle="dropdown">
-                            @if(auth()->user()->avatar)
-                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Profile" class="profile-pic">
+                            <button class="btn btn-link dropdown-toggle profile-btn px-2 py-1" type="button" id="profileDropdown" data-bs-toggle="dropdown" style="font-size: 0.98rem; min-width: 0;">
+                                @if(auth()->user() && auth()->user()->avatar)
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Profile" class="profile-pic" style="width: 28px; height: 28px;">
                             @else
-                                <div class="profile-pic-placeholder">
+                                    <div class="profile-pic-placeholder" style="width: 28px; height: 28px; font-size: 1.2rem;">
                                         <i class="fas fa-user"></i>
                                 </div>
                             @endif
-                                <span>{{ auth()->user()->name }}</span>
+                                <span style="font-size: 0.98rem;">{{ auth()->user() ? auth()->user()->name : 'Profile' }}</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                            <ul class="dropdown-menu dropdown-menu-end compact-dropdown" style="min-width: 150px;">
                             <li>
-                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                    <a class="dropdown-item" href="{{ route('profile.edit') }}" style="font-size: 0.95rem; padding: 6px 14px;">
                                     <i class="fas fa-user me-2"></i>Profile
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
+                                <li><hr class="dropdown-divider" style="margin: 4px 0;"></li>
                             <li>
-                                <form action="{{ route('logout') }}" method="POST">
+                                    <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                                     @csrf
-                                    <button type="submit" class="dropdown-item">
+                                        <button type="submit" class="dropdown-item" style="font-size: 0.95rem; padding: 6px 14px;">
                                         <i class="fas fa-sign-out-alt me-2"></i>Logout
                                     </button>
                                 </form>
                             </li>
                         </ul>
                     </div>
+                    @endauth
+                    @guest
+                        <a href="{{ route('login') }}" class="btn btn-outline-light me-2">
+                            <i class="fas fa-user me-1"></i>Login
+                        </a>
+                        <a href="{{ route('register') }}" class="btn btn-light">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
+                    @endguest
                 </div>
-                @else
-                <div class="user-section">
-                    <a href="{{ route('login') }}" class="btn btn-outline-light me-2">
-                        <i class="fas fa-user me-1"></i>Login
-                    </a>
-                    <a href="{{ route('register') }}" class="btn btn-light">
-                        <i class="fas fa-user-plus me-1"></i>Register
-                    </a>
-                </div>
-                @endauth
                 </div>
             </div>
         </div>

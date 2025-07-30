@@ -3,8 +3,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <div class="min-h-screen">
         <div class="login-container position-relative">
-            <div class="max-w-md bg-white rounded-3xl shadow-2xl p-2">
-                <div class="text-center mb-1">
+            <div class="max-w-md bg-white rounded-3xl shadow-2xl p-10">
+                <div class="text-center mb-6">
                     <h2>Create Account</h2>
                     <p class="text-gray-600 text-sm">Join us by creating your account</p>
                 </div>
@@ -23,15 +23,17 @@
                     </div>
                 @endif
 
-                <form class="space-y-2" method="POST" action="{{ route('register') }}">
+                <form class="space-y-6" method="POST" action="{{ route('register') }}">
                     @csrf
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="first_name" class="form-label">First Name</label>
-                                <div class="clean-input-group">
-                                    <i class="fas fa-user input-icon"></i>
+                                <div class="input-group">
+                                    <span class="input-icon">
+                                        <i class="fas fa-user"></i>
+                                    </span>
                                     <input type="text" 
                                            id="first_name"
                                            name="first_name" 
@@ -39,15 +41,17 @@
                                            required 
                                            placeholder="First name"
                                            autocomplete="given-name"
-                                           class="clean-input">
+                                           class="form-input">
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="last_name" class="form-label">Last Name</label>
-                                <div class="clean-input-group">
-                                    <i class="fas fa-user input-icon"></i>
+                                <div class="input-group">
+                                    <span class="input-icon">
+                                        <i class="fas fa-user"></i>
+                                    </span>
                                     <input type="text" 
                                            id="last_name"
                                            name="last_name" 
@@ -55,7 +59,7 @@
                                            required 
                                            placeholder="Last name"
                                            autocomplete="family-name"
-                                           class="clean-input">
+                                           class="form-input">
                                 </div>
                             </div>
                         </div>
@@ -63,8 +67,10 @@
 
                     <div class="form-group">
                         <label for="contact_number" class="form-label">Contact Number</label>
-                        <div class="clean-input-group">        
-                            <i class="fas fa-phone input-icon"></i>
+                        <div class="input-group">
+                            <span class="input-icon">
+                                <i class="fas fa-phone"></i>
+                            </span>
                             <input type="tel" 
                                    id="contact_number"
                                    name="contact_number" 
@@ -72,14 +78,16 @@
                                    required 
                                    placeholder="Enter your contact number"
                                    autocomplete="tel"
-                                   class="clean-input">
+                                   class="form-input">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="company_name" class="form-label">Company Name</label>
-                        <div class="clean-input-group">        
-                            <i class="fas fa-building input-icon"></i>
+                        <div class="input-group">
+                            <span class="input-icon">
+                                <i class="fas fa-building"></i>
+                            </span>
                             <input type="text" 
                                    id="company_name"
                                    name="company_name" 
@@ -87,13 +95,13 @@
                                    required 
                                    placeholder="Enter your company name"
                                    autocomplete="organization"
-                                   class="clean-input">
+                                   class="form-input">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="email" class="form-label">Email Address</label>
-                        <div class="clean-input-group">
+                        <div class="input-group">
                             <span class="input-icon">@</span>
                             <input type="email" 
                                    id="email"
@@ -102,39 +110,38 @@
                                    required 
                                    placeholder="Enter your email"
                                    autocomplete="email"
-                                   class="clean-input">
+                                   class="form-input">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group password-field-wrapper">
-                                <!-- Password requirements speech bubble (fixed position above password field) -->
+                                <!-- Password requirements speech bubble -->
                                 <div id="password-requirements" class="password-tooltip">
-                                    <h4 class="font-medium mb-1 text-xs">Password Requirements:</h4>
+                                    <h5>Password Requirements:</h5>
                                     <ul>
                                         <li id="req-length"><i class="fas fa-check-circle"></i> 8+ characters</li>
                                         <li id="req-uppercase"><i class="fas fa-check-circle"></i> At least one uppercase letter</li>
                                         <li id="req-lowercase"><i class="fas fa-check-circle"></i> At least one lowercase letter</li>
                                         <li id="req-number"><i class="fas fa-check-circle"></i> At least one number</li>
                                         <li id="req-special"><i class="fas fa-check-circle"></i> At least one special character (@$!%*#?&)</li>
-                                        <li id="req-sequential"><i class="fas fa-check-circle"></i> No sequential characters (e.g., Amzel1234567)</li>
-                                        <li id="req-dictionary"><i class="fas fa-check-circle"></i> No dictionary words (e.g., Love109274)</li>
                                     </ul>
                                 </div>
                                 <label for="password" class="form-label">Password</label>
-                                <div class="clean-input-group">        
-                                    <i class="fas fa-lock input-icon"></i>
+                                <div class="input-group">
+                                    <span class="input-icon">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
                                     <input type="password" 
                                            id="password"
                                            name="password" 
                                            required 
                                            placeholder="Create a password"
                                            autocomplete="new-password"
+                                           class="form-input"
                                            onfocus="showPasswordRequirements()"
-                                           onblur="hidePasswordRequirements()"
-                                           oninput="validatePassword()"
-                                           class="clean-input password-field">
+                                           onblur="hidePasswordRequirements()">
                                     <button type="button" class="password-toggle" onclick="togglePassword('password', 'toggleIcon1')">
                                         <i class="fas fa-eye" id="toggleIcon1"></i>
                                     </button>
@@ -144,15 +151,17 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="password_confirmation" class="form-label">Confirm Password</label>
-                                <div class="clean-input-group">        
-                                    <i class="fas fa-lock input-icon"></i>
+                                <div class="input-group">
+                                    <span class="input-icon">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
                                     <input type="password" 
                                            id="password_confirmation"
                                            name="password_confirmation" 
                                            required 
-                                           placeholder="Confirm your password"
+                                           placeholder="Confirm password"
                                            autocomplete="new-password"
-                                           class="clean-input password-field">
+                                           class="form-input">
                                     <button type="button" class="password-toggle" onclick="togglePassword('password_confirmation', 'toggleIcon2')">
                                         <i class="fas fa-eye" id="toggleIcon2"></i>
                                     </button>
@@ -161,20 +170,14 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="register-button" class="sign-in-btn">
-                        <span id="button-text">Create Account</span>
-                        <span id="button-loader" class="spinner" style="display: none;"></span>
-                    </button>
-                    
-                    <!-- Full page loading overlay -->
-                    <div id="loading-overlay" class="loading-overlay" style="display: none;">
-                        <div class="loading-spinner-container">
-                            <div class="loading-spinner"></div>
-                            <p>Registration in progress...</p>
-                        </div>
+                    <div>
+                        <button type="submit" id="register-button" class="sign-in-btn">
+                            <span id="button-text">Create Account</span>
+                            <span id="button-loader" class="loader-spinner" style="display: none;"></span>
+                        </button>
                     </div>
 
-                    <div class="mt-4 flex justify-between items-center">
+                    <div class="text-center mt-6">
                         <p class="text-sm text-gray-600">
                             Already have an account? 
                             <a href="{{ route('login') }}" class="text-primary hover:text-primary-dark">Sign In</a>
@@ -191,55 +194,21 @@
             background: transparent !important;
         }
         
-        /* Loading indicator styles */
-        .spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            margin-left: 8px;
-            border: 2px solid rgba(255,255,255,0.3);
+        /* Loading spinner */
+        .loader-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: #fff;
-            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            margin-left: 8px;
+            animation: spin 1s linear infinite;
             vertical-align: middle;
         }
         
-        /* Full page loading overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .loading-spinner-container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            text-align: center;
-        }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-        
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
         
         .login-container {
@@ -252,12 +221,12 @@
         
         .max-w-md {
             width: 100%;
-            max-width: 36rem;
+            max-width: 38rem;
             margin: 0 auto;
             background: white;
             border-radius: 1.5rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            padding: 1rem 1.5rem !important;
+            padding: 1rem !important;
         }
         
         .min-h-screen {
@@ -265,10 +234,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            max-width: 38rem;
+            width: 38rem;
             margin: 0 auto;
-            padding: 1rem 0;
         }
         
         /* Password field wrapper to handle the tooltip positioning */
@@ -280,14 +247,14 @@
         .password-tooltip {
             display: none;
             position: absolute;
-            top: -160px;
+            top: -170px;
             left: 0;
-            width: 260px;
+            width: 280px;
             background-color: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 10px 12px;
+            padding: 12px 15px;
             z-index: 100;
         }
         
@@ -387,7 +354,7 @@
         }
         
         .form-group {
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
         }
         
         /* Submit button */
@@ -446,34 +413,20 @@
     </style>
 
     <script>
-        // Form submission with loading screen
+        // Form submission handling with loading indicator
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
             const buttonText = document.getElementById('button-text');
             const buttonLoader = document.getElementById('button-loader');
-            const loadingOverlay = document.getElementById('loading-overlay');
             
             if (form) {
-                form.addEventListener('submit', function(e) {
-                    // Basic client-side validation first
-                    const password = document.getElementById('password').value;
-                    const passwordConfirm = document.getElementById('password_confirmation').value;
-                    
-                    if (password !== passwordConfirm) {
-                        return; // Let the form validation handle this error
-                    }
-                    
-                    // Show button spinner
+                form.addEventListener('submit', function() {
+                    // Show loading indicator
                     buttonText.textContent = 'Processing...';
                     buttonLoader.style.display = 'inline-block';
-                    document.getElementById('register-button').disabled = true;
                     
-                    // Show the full page loading overlay after a small delay
-                    // This delay prevents flashing for quick submissions but ensures
-                    // users see feedback for longer operations
-                    setTimeout(function() {
-                        loadingOverlay.style.display = 'flex';
-                    }, 500);
+                    // Disable the button to prevent multiple submissions
+                    document.getElementById('register-button').disabled = true;
                 });
             }
         });
@@ -520,53 +473,6 @@
             updateRequirement('req-lowercase', /[a-z]/.test(password));
             updateRequirement('req-number', /[0-9]/.test(password));
             updateRequirement('req-special', /[@$!%*#?&]/.test(password));
-            
-            // Check for sequential characters (e.g., 1234, abcd)
-            updateRequirement('req-sequential', !hasSequentialChars(password));
-            
-            // Check for common dictionary words
-            updateRequirement('req-dictionary', !hasDictionaryWord(password));
-        }
-        
-        function hasSequentialChars(password) {
-            // Check for numeric sequences (e.g., 1234, 4321)
-            for (let i = 0; i < password.length - 3; i++) {
-                // Check ascending sequence (e.g., 1234)
-                if (
-                    password.charCodeAt(i) + 1 === password.charCodeAt(i + 1) &&
-                    password.charCodeAt(i + 1) + 1 === password.charCodeAt(i + 2) &&
-                    password.charCodeAt(i + 2) + 1 === password.charCodeAt(i + 3)
-                ) {
-                    return true;
-                }
-                
-                // Check descending sequence (e.g., 4321)
-                if (
-                    password.charCodeAt(i) - 1 === password.charCodeAt(i + 1) &&
-                    password.charCodeAt(i + 1) - 1 === password.charCodeAt(i + 2) &&
-                    password.charCodeAt(i + 2) - 1 === password.charCodeAt(i + 3)
-                ) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        function hasDictionaryWord(password) {
-            // List of common words to reject
-            const commonWords = ['password', 'love', 'admin', 'welcome', 'qwerty', 'abc', 'secret', 'letmein'];
-            
-            // Convert to lowercase for checking
-            const lowerPassword = password.toLowerCase();
-            
-            // Check if password contains any common word
-            for (const word of commonWords) {
-                if (lowerPassword.includes(word)) {
-                    return true;
-                }
-            }
-            
-            return false;
         }
         
         function updateRequirement(reqId, isValid) {

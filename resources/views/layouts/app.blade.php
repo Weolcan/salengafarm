@@ -14,6 +14,7 @@
         <!-- Bootstrap & Font Awesome -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
         
         <!-- Custom CSS -->
         <link href="{{ asset('css/public.css') }}" rel="stylesheet">
@@ -23,21 +24,22 @@
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
-
+            @include('layouts.sidebar')
+            <div class="container-fluid" style="margin-left: 220px; padding-top: 0.5rem;">
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <header class="bg-white dark:bg-gray-800 shadow" style="padding: 0.5rem 1rem;">
+                        <div class="max-w-7xl mx-auto py-2 px-2 sm:px-4 lg:px-6" style="font-size: 1.1rem;">
                         {{ $header }}
                     </div>
                 </header>
             @endisset
 
             <!-- Page Content -->
-            <main>
+                <main style="font-size: 0.97rem;">
                 @yield('content')
             </main>
+            </div>
         </div>
         
         <!-- Base Scripts -->

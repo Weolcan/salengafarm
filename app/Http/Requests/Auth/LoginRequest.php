@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -46,8 +47,35 @@ class LoginRequest extends FormRequest
             'password' => $this->password
         ];
 
+        // Check for password requirements before attempting authentication
+        $password = $this->password;
+        $passwordErrors = [];
+        
+        // Only check password format if the user exists
+        $user = User::where('email', $this->email)->first();
+        
+        if ($user) {
+            // Only validate password length for login
+            if (strlen($password) < 8) {
+                $passwordErrors[] = 'Password must be at least 8 characters long';
+            }
+            
+            if (strlen($password) > 64) {
+                $passwordErrors[] = 'Password cannot exceed 64 characters';
+            }
+        }
+        
+        // If we have specific password errors, show them
+        if (!empty($passwordErrors)) {
+            RateLimiter::hit($this->throttleKey(), 60);
+            throw ValidationException::withMessages([
+                'password' => $passwordErrors,
+            ]);
+        }
+        
+        // Otherwise, attempt normal authentication
         if (!Auth::attempt($credentials, $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+            RateLimiter::hit($this->throttleKey(), 60); // Add explicit 60 second decay time
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
@@ -79,7 +107,7 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
             return;
         }
 

@@ -22,7 +22,6 @@
                 <div class="form-group">
                     <label for="email" class="form-label">Email Address</label>
                     <div class="input-group">
-                        <span class="input-icon">@</span>
                         <input type="email" 
                                id="email"
                                name="email" 
@@ -38,9 +37,18 @@
                 </div>
 
                 <div>
-                    <button type="submit" class="sign-in-btn">
-                        Send Reset Link
+                    <button type="submit" id="reset-button" class="sign-in-btn">
+                        <span id="button-text">Send Reset Link</span>
+                        <span id="button-loader" class="spinner" style="display: none;"></span>
                     </button>
+                </div>
+                
+                <!-- Full page loading overlay -->
+                <div id="loading-overlay" class="loading-overlay" style="display: none;">
+                    <div class="loading-spinner-container">
+                        <div class="loading-spinner"></div>
+                        <p>Sending reset link...</p>
+                    </div>
                 </div>
 
                 <div class="text-center mt-6">
@@ -58,6 +66,57 @@
         body, .min-h-screen, .bg-gray-100 {
             background: transparent !important;
         }
+        
+        /* Loading indicator styles */
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-left: 8px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+        }
+        
+        /* Full page loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-spinner-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         /* Container positioning */
         .login-container {
@@ -66,6 +125,30 @@
             margin: 0 auto;
             padding-top: 40px;
             background: transparent;
+        }
+        
+        /* Input field styling */
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+        
+        .form-input {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            background-color: #F9FAFB;
+            color: #111827;
+            font-size: 14px;
+            transition: border-color 0.15s ease-in-out;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
         }
 
         /* Panel styling */
@@ -112,4 +195,43 @@
             }
         }
     </style>
+    <script>
+        // Form submission with loading screen
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const buttonText = document.getElementById('button-text');
+            const buttonLoader = document.getElementById('button-loader');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // Show button spinner
+                    buttonText.textContent = 'Processing...';
+                    buttonLoader.style.display = 'inline-block';
+                    document.getElementById('reset-button').disabled = true;
+                    
+                    // Show the full page loading overlay after a small delay
+                    setTimeout(function() {
+                        loadingOverlay.style.display = 'flex';
+                    }, 500);
+                });
+            }
+            
+            // Auto-hide messages after 5 seconds
+            const errorMessage = document.querySelector('.error-message');
+            const successMessage = document.querySelector('.success-message');
+            
+            if (errorMessage) {
+                setTimeout(function() {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+            
+            if (successMessage) {
+                setTimeout(function() {
+                    successMessage.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
 </x-guest-layout>

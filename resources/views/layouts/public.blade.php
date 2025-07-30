@@ -11,14 +11,53 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/public.css') }}?v={{ rand(1000,9999) . time() }}" rel="stylesheet">
-    <link href="{{ asset('css/plant-details.css') }}?v={{ rand(1000,9999) . time() }}" rel="stylesheet">
-    <link href="{{ asset('css/plant-details-fix.css') }}?v={{ rand(1000,9999) . time() }}" rel="stylesheet">
-
-    <!-- Additional styles -->
+    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/dashboard.css') }}?v=4" rel="stylesheet">
+    <link href="{{ asset('css/inventory.css') }}?v=2" rel="stylesheet">
+    <!-- Optionally keep public.css if needed for other elements -->
+    <!-- <link href="{{ asset('css/public.css') }}?v={{ rand(1000,9999) . time() }}" rel="stylesheet"> -->
+    <!-- <link href="{{ asset('css/plant-details.css') }}?v={{ rand(1000,9999) . time() }}" rel="stylesheet"> -->
+    <!-- <link href="{{ asset('css/plant-details-fix.css') }}?v={{ rand(1000,9999) . time() }}" rel="stylesheet"> -->
     @stack('styles')
+    <style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    .dashboard-flex {
+        display: flex !important;
+        flex-direction: row !important;
+        min-height: 100vh;
+        width: 100vw;
+    }
+    .main-content {
+        flex: 1 1 0%;
+        min-width: 0;
+        height: 100vh;
+        overflow-y: auto;
+        display: block;
+    }
+    </style>
 </head>
 <body class="bg-light">
+    @php
+        $noNavbarPatterns = ['/walk-in', '/requests', 'admin/requests'];
+        $currentPath = request()->path();
+        $hideNavbar = false;
+        foreach ($noNavbarPatterns as $pattern) {
+            if ($currentPath === ltrim($pattern, '/')) {
+                $hideNavbar = true;
+                break;
+            }
+            // Also hide for any subroutes (e.g., admin/requests/*)
+            if (str_starts_with($currentPath, ltrim($pattern, '/').'/')) {
+                $hideNavbar = true;
+                break;
+            }
+        }
+    @endphp
+    @if (!$hideNavbar)
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg main-nav">
         <div class="container-fluid">
@@ -31,44 +70,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarMain">
                 <div class="navbar-collapse-inner">
-                <ul class="navbar-nav center-nav" style="min-width: 550px; display: flex; flex-wrap: nowrap;">
-                    @auth
-                        @if(auth()->user()->hasAdminAccess())
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('public.plants') || request()->is('/') ? 'active' : '' }}" href="{{ route('public.plants') }}">
-                            <i class="fas fa-home me-1"></i>Home
-                        </a>
-                    </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">
-                                <i class="fas fa-file-invoice me-1"></i>Request
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                                <i class="fas fa-chart-line me-1"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('walk-in.*') ? 'active' : '' }}" href="{{ route('walk-in.index') }}">
-                                <i class="fas fa-cash-register me-1"></i>Walk-in
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('plants.*') ? 'active' : '' }}" href="{{ route('plants.index') }}">
-                                <i class="fas fa-leaf me-1"></i>Inventory
-                            </a>
-                        </li>
-                        @endif
-                        @if(auth()->user()->isAdmin())
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
-                                <i class="fas fa-users me-1"></i>Users
-                            </a>
-                        </li>
-                        @endif
-                    @endauth
-                </ul>
+                    <ul class="navbar-nav center-nav" style="min-width: 550px; display: flex; flex-wrap: nowrap;"></ul>
                 @auth
                 <div class="user-section">
                     <div class="dropdown">
@@ -114,26 +116,24 @@
             </div>
         </div>
     </nav>
+    @endif
 
-    <!-- Main Content -->
-    <main>
+    <div class="dashboard-flex">
+        @include('layouts.sidebar')
+        <div class="main-content">
         @yield('content')
-    </main>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Custom scripts with dynamic timestamps to prevent caching -->
     @if(request()->routeIs('public.plants') || request()->routeIs('home'))
     <script src="{{ asset('js/home.js') }}?v={{ time() }}"></script>
     @endif
-
     @if(request()->routeIs('requests.*') || request()->is('*/plants'))
     <script src="{{ asset('js/rfq.js') }}?v={{ time() }}"></script>
     @endif
-
-    <!-- Scripts Section -->
     @yield('scripts')
 </body>
 </html>

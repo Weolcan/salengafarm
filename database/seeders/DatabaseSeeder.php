@@ -10,12 +10,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // Create admin user
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin',
-            'password' => Hash::make('admin'),
-            'role' => 'admin',
+        $this->call([
+            AdminUserSeeder::class,
         ]);
 
         // Commented out until plants table is properly migrated
