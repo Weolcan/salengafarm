@@ -413,8 +413,30 @@ class ClientRequestController extends Controller
                 $item['availability'] = $item['availability'] ?? '';
             }
             
-            // Build a enhanced HTML response with improved styling matching the screenshots
-            $html = '<!DOCTYPE html>
+            // Return the Blade view with data
+            return view('requests.view-request', compact('request', 'items'));
+            
+        } catch (\Exception $e) {
+            // Log any errors
+            Log::error('Failed to plain view request', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'id' => $id
+            ]);
+            
+            // Return a simple error page
+            return response('Error viewing request: ' . $e->getMessage(), 500)
+                ->header('Content-Type', 'text/html');
+        }
+    }
+
+    public function showSuccess($id)
+    {
+        $request = PlantRequest::findOrFail($id);
+        return view('user.request-success', compact('request'));
+    }
+
+    public function updatePricing($id, Request $request)
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
