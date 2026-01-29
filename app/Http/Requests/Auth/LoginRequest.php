@@ -82,14 +82,6 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        // Check if user is pending
-        if (Auth::user()->isPending()) {
-            Auth::logout();
-            throw ValidationException::withMessages([
-                'email' => 'Your account is pending approval. Please wait for admin approval.',
-            ]);
-        }
-
         // Set redirect based on role
         if (Auth::user()->hasAdminAccess()) {
             session(['redirect_to' => route('dashboard')]);

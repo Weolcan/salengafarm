@@ -63,4 +63,9 @@ td form.d-inline {
 .text-danger {
     color: #dc3545 !important;
     font-weight: 500;
-} 
+}
+
+/* Tighten spacing in details content */
+.admin-plant-card .plant-details-panel .info-section .section-content p {
+    margin-bottom: 0.4rem;
+}

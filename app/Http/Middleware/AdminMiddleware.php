@@ -26,12 +26,13 @@ class AdminMiddleware
             return redirect()->route('login');
         }
 
-        if (!Auth::user()->isAdmin()) {
-            Log::info('User is not an admin');
-            return redirect()->route('user.dashboard');
+        // Only allow Super Admin role to access
+        if (Auth::user()->role !== 'super_admin') {
+            Log::info('User is not a super admin, access denied');
+            abort(403, 'Unauthorized action.');
         }
 
-        Log::info('User is an admin, proceeding with request');
+        Log::info('User is a super admin, proceeding with request');
         return $next($request);
     }
 } 

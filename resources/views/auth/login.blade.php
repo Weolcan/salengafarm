@@ -1,6 +1,8 @@
 <x-guest-layout>
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/loading.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="{{ asset('js/loading.js') }}"></script>
     <div class="min-h-screen">
         <div class="login-container position-relative">
             <div class="max-w-md bg-white rounded-3xl shadow-2xl p-10">
@@ -106,6 +108,20 @@
                 icon.classList.add("fa-eye");
             }
         }
+
+        // Form submission with loading screen
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // Show the standardized loading overlay
+                    setTimeout(function() {
+                        LoadingManager.show('Logging In...', 'Please wait while we verify your credentials');
+                    }, 300);
+                });
+            }
+        });
     </script>
 </x-guest-layout>
 

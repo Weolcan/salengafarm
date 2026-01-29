@@ -19,13 +19,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link href="{{ asset('css/inventory.css') }}?v=2" rel="stylesheet">
     <link href="{{ asset('css/dashboard.css') }}?v=4" rel="stylesheet">
+    <link href="{{ asset('css/loading.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/push-notifications.css') }}?v={{ time() }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 <body class="bg-light inventory-page">
-    <!-- Loading Overlay -->
-    <div id="loading-overlay">
-        <span class="loader"></span>
-    </div>
-
     <div id="sidebarOverlay"></div>
     <div class="dashboard-flex">
         @include('layouts.sidebar')
@@ -47,26 +45,39 @@
                 <!-- Search Bar -->
                     <div class="search-bar mb-4" style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                         <div class="row g-2 align-items-end">
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                                 <div class="mb-2">
-                                    <label style="font-size: 0.9rem;">Plant Name</label>
                                     <input type="text" id="searchInput" class="form-control" placeholder="Search plant name" style="font-size: 0.9rem; padding: 0.4rem 0.75rem;">
                             </div>
                                 <div class="d-flex gap-2 mb-2">
+                                    @if(Auth::user()->role !== 'super_admin')
                                     <button id="addBtn" class="btn btn-success btn-sm">Add New Plant</button>
                                 <div id="bulkActionButtons" class="d-none d-inline">
                                         <button id="bulkEditBtn" class="btn btn-primary btn-sm">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
+                                        <button id="cancelSelectionBtn" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
                                         <button id="bulkDeleteBtn" class="btn btn-danger btn-sm">
                                         <i class="fas fa-trash"></i> Delete Selected
                                     </button>
                                 </div>
+                                    @endif
                             </div>
                         </div>
-                        <div class="col-md-7">
-                                <label style="font-size: 0.9rem;">Category Filter</label>
-                                <div class="category-icons d-flex justify-content-between align-items-center" style="padding: 0.7rem;">
+                        <div class="col-md-8">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <label style="font-size: 0.9rem; margin: 0;">Category Filter</label>
+                                    @if(Auth::user()->role !== 'super_admin')
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button type="button" id="addCategoryBtn" class="btn btn-outline-success btn-sm" style="padding: 0.25rem 0.5rem;">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    @endif
+                                </div>
+                                <div class="category-icons d-flex align-items-center" style="padding: 0.7rem; gap: 0.5rem !important; justify-content: space-between;">
                                 <div class="category-icon-item text-center" data-category="all">
                                     <div class="icon-circle active">
                                         <i class="fas fa-border-all"></i>
@@ -101,6 +112,9 @@
                                     <img src="{{ asset('images/categories/fertilizer-g.png') }}" alt="Fertilizer" class="category-img">
                                     <span class="d-block mt-1">Fertilizer</span>
                                 </div>
+                            </div>
+                            <div style="text-align: right; margin: 0; padding: 0;">
+                                <a href="#" class="text-success text-decoration-none" style="font-size: 0.875rem;">Show more ▼</a>
                             </div>
                         </div>
                     </div>
@@ -150,12 +164,14 @@
                     <table class="table" style="font-size: 0.8rem;">
                     <thead>
                         <tr>
+                            @if(Auth::user()->role !== 'super_admin')
                             <th width="50">
                                 <label class="container-checkbox">
                                     <input type="checkbox" id="selectAll">
                                     <div class="checkmark"></div>
                                 </label>
                             </th>
+                            @endif
                             <th width="50">#</th>
                             <th width="20%">Name</th>
                             <th width="10%">Code</th>
@@ -181,12 +197,14 @@
                                 data-pieces-per-sqm="{{ $plant->pieces_per_sqm }}"
                                 data-cost-per-mm="{{ $plant->cost_per_mm }}"
                                 data-quantity="{{ $plant->quantity }}">
+                                @if(Auth::user()->role !== 'super_admin')
                                 <td>
                                     <label class="container-checkbox">
                                         <input type="checkbox" class="plant-checkbox" value="{{ $plant->id }}">
                                         <div class="checkmark"></div>
                                     </label>
                                 </td>
+                                @endif
                                 <td class="row-number"></td>
                                 <td class="text-nowrap">{{ $plant->name }}</td>
                                 <td class="text-nowrap">{{ $plant->code }}</td>
@@ -197,15 +215,17 @@
                                 <td>{{ $plant->spacing_mm }}</td>
                                 <td>
                                     <div class="d-flex gap-2 justify-content-end">
+                                        @if(Auth::user()->role !== 'super_admin')
                                         <button class="btn btn-link text-primary edit-plant" data-plant-id="{{ $plant->id }}" title="Edit">
                                             <i class="fas fa-edit fa-lg"></i>
                                         </button>
                                         <button class="btn btn-link text-danger delete-plant" data-plant-id="{{ $plant->id }}" title="Delete">
                                             <i class="fas fa-trash fa-lg"></i>
                                         </button>
+                                        @endif
                                         <button class="btn btn-link text-secondary toggle-details" data-plant-id="{{ $plant->id }}">
                                             <i class="fas fa-chevron-circle-down fa-lg"></i>
-                                    </button>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -340,7 +360,8 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="category" class="form-label">Category</label>
-                                            <select class="form-select" id="category" name="category">
+                                            <select class="form-select" id="category" name="category" required>
+                                            <option value="" selected disabled>Select Category</option>
                                             <option value="shrub">Shrub</option>
                                             <option value="herbs">Herbs</option>
                                             <option value="palm">Palm</option>
@@ -469,8 +490,38 @@
         </div>
     </div>
 
+    <!-- Bulk Delete Confirmation Modal -->
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirm Bulk Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-exclamation-triangle text-danger delete-icon"></i>
+                    </div>
+                    <p class="text-center fs-5">Are you sure you want to delete <span id="bulkDeleteCount" class="fw-bold text-danger">0</span> selected plant(s)?</p>
+                    <p class="text-center text-muted">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> No, Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmBulkDelete">
+                        <i class="fas fa-trash me-1"></i> Yes, Delete All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/loading.js') }}"></script>
+    <script src="{{ asset('js/push-notifications.js') }}?v={{ time() }}"></script>
     <script>
         $(document).ready(function() {
             let selectedPlant = null;
@@ -478,6 +529,9 @@
             const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
             let isEditing = false;
             let editingPlantId = null;
+
+            // Setup sidebar toggle for mobile
+            setupSidebarToggle();
 
             // Function to update row numbers
             function updateRowNumbers() {
@@ -493,21 +547,32 @@
             // Category icon selection
             $('.category-icon-item').click(function() {
                 const category = $(this).data('category');
+                const isAlreadyActive = $(this).hasClass('active') && category !== 'all';
                 
-                // Update active state
-                $('.category-icon-item').removeClass('active');
-                $(this).addClass('active');
-                $('.icon-circle').removeClass('active');
-                if (category === 'all') {
-                    $(this).find('.icon-circle').addClass('active');
-                }
-                
-                // Filter plants
-                if (category === 'all') {
+                // If clicking on already active category (except "All"), switch to "All"
+                if (isAlreadyActive) {
+                    // Reset to "All" category
+                    $('.category-icon-item').removeClass('active');
+                    $('.category-icon-item[data-category="all"]').addClass('active');
+                    $('.icon-circle').removeClass('active');
+                    $('.category-icon-item[data-category="all"]').find('.icon-circle').addClass('active');
                     $('.plant-row').show();
                 } else {
-                    $('.plant-row').hide();
-                    $(`.plant-row[data-category="${category}"]`).show();
+                    // Update active state
+                    $('.category-icon-item').removeClass('active');
+                    $(this).addClass('active');
+                    $('.icon-circle').removeClass('active');
+                    if (category === 'all') {
+                        $(this).find('.icon-circle').addClass('active');
+                    }
+                    
+                    // Filter plants
+                    if (category === 'all') {
+                        $('.plant-row').show();
+                    } else {
+                        $('.plant-row').hide();
+                        $(`.plant-row[data-category="${category}"]`).show();
+                    }
                 }
                 updateRowNumbers();
             });
@@ -516,7 +581,7 @@
             $('#searchInput').on('input', function() {
                 const searchText = $(this).val().toLowerCase();
                 $('.plant-row').each(function() {
-                    const name = $(this).find('td:eq(1)').text().toLowerCase(); // Updated index due to new number column
+                    const name = $(this).find('td:eq(2)').text().toLowerCase(); // Column 2 is the Name column
                     $(this).toggle(name.includes(searchText));
                 });
                 updateRowNumbers(); // Update numbers after search
@@ -617,6 +682,39 @@
                         .after('<div class="invalid-feedback">Plant name is required</div>');
                     return;
                 }
+                
+                // Validate category selection
+                const categoryValue = $('#category').val();
+                if (!categoryValue || categoryValue === '') {
+                    Swal.fire({
+                        title: 'No Category Selected',
+                        text: 'You have not selected a category. Do you want to continue without a category?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#28a745',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, Continue',
+                        cancelButtonText: 'No, Select Category',
+                        width: '400px',
+                        padding: '1.5rem',
+                        customClass: {
+                            popup: 'compact-swal',
+                            title: 'compact-swal-title',
+                            htmlContainer: 'compact-swal-text'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // User chose to continue without category
+                            formData.set('category', '');
+                            submitPlantForm(formData);
+                        } else {
+                            // User chose not to continue, highlight the field
+                            $('#category').addClass('is-invalid')
+                                .after('<div class="invalid-feedback">Please select a category</div>');
+                        }
+                    });
+                    return;
+                }
 
                 // Ensure numeric fields have valid values
                 const numericFields = ['price', 'cost_per_sqm', 'cost_per_mm', 'pieces_per_sqm', 'quantity'];
@@ -627,10 +725,20 @@
                     }
                 });
 
-                // Show loading state
-                const $saveBtn = $(this);
-                const originalText = $saveBtn.html();
-                $saveBtn.html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+                // If category is selected, submit directly
+                submitPlantForm(formData);
+            });
+            
+            // Function to submit plant form
+            function submitPlantForm(formData) {
+                // Show loading state with domino loader
+                const $saveBtn = $('#saveBtn');
+                LoadingManager.buttonStart($saveBtn[0], 'Saving...');
+                
+                // Show full page loading
+                setTimeout(() => {
+                    LoadingManager.show('Saving Plant...', 'Please wait');
+                }, 300);
 
                 // Determine URL based on whether we're editing or adding
                 const url = isEditing ? `/plants/${editingPlantId}` : '/plants';
@@ -658,11 +766,12 @@
                         showNotification(errorMessage, 'error');
                     },
                     complete: function() {
-                        // Reset button state
-                        $saveBtn.html(originalText).prop('disabled', false);
+                        // Hide loading and reset button state
+                        LoadingManager.hide();
+                        LoadingManager.buttonStop($saveBtn[0]);
                     }
                 });
-            });
+            }
 
             // Add button click handler
             $('#addBtn').click(function() {
@@ -672,8 +781,30 @@
                 $('#modalTitle').text('Add New Plant');
                 $('#plantForm')[0].reset();
                 $('#editBtn, #deleteBtn').prop('disabled', true);
+                
+                // Populate category dropdown with custom categories
+                populateCategoryDropdown();
+                
                 modal.show();
             });
+            
+            // Function to populate category dropdown with custom categories
+            function populateCategoryDropdown() {
+                const categorySelect = $('#category');
+                const additionalCategories = JSON.parse(localStorage.getItem('additionalCategories') || '[]');
+                
+                // Remove any previously added custom categories
+                categorySelect.find('option[data-custom="true"]').remove();
+                
+                // Add custom categories
+                additionalCategories.forEach(cat => {
+                    const option = $('<option>')
+                        .val(cat.name.toLowerCase())
+                        .text(cat.name)
+                        .attr('data-custom', 'true');
+                    categorySelect.append(option);
+                });
+            }
 
             // Edit button click handler
             $(document).on('click', '.edit-plant', function(e) {
@@ -730,8 +861,12 @@
                 if (!selectedPlant || !selectedPlant.id) return;
                 
                 const $btn = $(this);
-                const originalText = $btn.html();
-                $btn.html('<i class="fas fa-spinner fa-spin"></i> Deleting...').prop('disabled', true);
+                LoadingManager.buttonStart($btn[0], 'Deleting...');
+                
+                // Show full page loading
+                setTimeout(() => {
+                    LoadingManager.show('Deleting Plant...', 'Please wait');
+                }, 300);
 
                 $.ajax({
                     url: `/plants/${selectedPlant.id}`,
@@ -748,7 +883,8 @@
                         alert('Error deleting plant: ' + (xhr.responseJSON?.message || 'Unknown error'));
                     },
                     complete: function() {
-                        $btn.html(originalText).prop('disabled', false);
+                        LoadingManager.hide();
+                        LoadingManager.buttonStop($btn[0]);
                     }
                 });
             });
@@ -799,6 +935,14 @@
                 $('#bulkEditSection').removeClass('d-none');
             });
 
+            // Cancel selection button - uncheck all and hide bulk actions
+            $('#cancelSelectionBtn').click(function() {
+                $('.plant-checkbox').prop('checked', false);
+                $('#selectAll').prop('checked', false);
+                $('#bulkActionButtons').addClass('d-none');
+                $('#bulkEditSection').addClass('d-none');
+            });
+
             $('#cancelBulkEdit').click(function() {
                 $('#bulkEditSection').addClass('d-none');
             });
@@ -832,9 +976,121 @@
                     }
                 });
             });
+
+            // Bulk delete functionality
+            $('#bulkDeleteBtn').click(function() {
+                const selectedIds = $('.plant-checkbox:checked').map(function() {
+                    return $(this).val();
+                }).get();
+
+                if (selectedIds.length === 0) {
+                    alert('Please select plants to delete');
+                    return;
+                }
+
+                // Update count in modal and show it
+                $('#bulkDeleteCount').text(selectedIds.length);
+                const bulkDeleteModal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
+                bulkDeleteModal.show();
+            });
+
+            // Confirm bulk delete button
+            $('#confirmBulkDelete').click(function() {
+                const selectedIds = $('.plant-checkbox:checked').map(function() {
+                    return $(this).val();
+                }).get();
+
+                // Hide modal
+                const bulkDeleteModal = bootstrap.Modal.getInstance(document.getElementById('bulkDeleteModal'));
+                bulkDeleteModal.hide();
+
+                // Show loading
+                LoadingManager.show('Deleting Plants...', 'Please wait');
+
+                // Delete each plant one by one
+                let deletePromises = selectedIds.map(id => {
+                    return $.ajax({
+                        url: `/plants/${id}`,
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        }
+                    });
+                });
+
+                // Wait for all deletions to complete
+                Promise.all(deletePromises)
+                    .then(() => {
+                        LoadingManager.hide();
+                        window.location.reload();
+                    })
+                    .catch((error) => {
+                        LoadingManager.hide();
+                        alert('Error deleting some plants. Please try again.');
+                        console.error(error);
+                    });
+            });
+
+            // Sidebar toggle function for mobile
+            function setupSidebarToggle() {
+                const sidebarToggle = document.getElementById('sidebarToggle');
+                const sidebar = document.getElementById('sidebarMenu');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                if (!sidebarToggle || !sidebar || !overlay) return;
+                
+                // Toggle sidebar on button click
+                sidebarToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+                
+                // Close sidebar when clicking overlay
+                overlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+                
+                // Close sidebar when clicking a link (mobile only)
+                if (window.innerWidth <= 991) {
+                    const sidebarLinks = sidebar.querySelectorAll('.sidebar-link');
+                    sidebarLinks.forEach(link => {
+                        link.addEventListener('click', function() {
+                            sidebar.classList.remove('active');
+                            overlay.classList.remove('active');
+                        });
+                    });
+                }
+            }
         });
     </script>
     <style>
+        /* Compact SweetAlert styling */
+        .compact-swal {
+            font-size: 0.9rem !important;
+        }
+        .compact-swal-title {
+            font-size: 1.2rem !important;
+            padding: 0.5rem 0 !important;
+        }
+        .compact-swal-text {
+            font-size: 0.85rem !important;
+            padding: 0.5rem 0 !important;
+        }
+        .swal2-icon {
+            width: 60px !important;
+            height: 60px !important;
+            margin: 1rem auto 0.5rem !important;
+        }
+        .swal2-actions {
+            margin: 1rem 0 0.5rem !important;
+        }
+        .swal2-styled {
+            font-size: 0.85rem !important;
+            padding: 0.5rem 1.5rem !important;
+        }
+        
         /* Navigation and general text */
         .navbar-brand {
             font-size: 0.9rem;
@@ -1135,6 +1391,17 @@
             border-color: #80bdff;
             box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
         }
+        
+        /* Make category dropdown scrollable */
+        #category {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        /* Style the dropdown options container */
+        select#category option {
+            padding: 0.5rem;
+        }
 
         .invalid-feedback {
             font-size: 0.875rem;
@@ -1185,6 +1452,319 @@
                 opacity: 1;
             }
         }
+
+        /* Delete badge for categories - positioned absolutely to not affect layout */
+        .delete-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: white;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            z-index: 100;
+            pointer-events: none; /* Badge doesn't interfere with clicks */
+        }
+
+        .delete-badge i {
+            font-size: 22px;
+        }
+
+        #additionalCategoriesList .category-icon-item {
+            position: relative;
+            min-width: 70px !important;
+            max-width: 80px !important;
+            transition: transform 0.2s;
+            display: inline-flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0.35rem 0.25rem !important;
+            gap: 0.15rem !important;
+            border-radius: 8px !important;
+        }
+
+        #additionalCategoriesList .category-icon-item.active {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+            border: 2px solid #198754 !important;
+            padding: calc(0.35rem - 2px) 0.25rem !important; /* Subtract border width from padding */
+        }
+
+        #additionalCategoriesList .category-icon-item .icon-circle,
+        #additionalCategoriesList .category-icon-item .category-img {
+            width: 40px !important;
+            height: 40px !important;
+            margin: 0 !important;
+        }
+
+        #additionalCategoriesList .category-icon-item span {
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.2 !important;
+            font-size: 0.75rem !important;
+        }
+
+        #additionalCategoriesList .category-icon-item:hover {
+            background-color: rgba(13, 104, 50, 0.08) !important;
+        }
+
+        /* Fixed width for delete mode button to prevent layout shift */
+        #deleteModeCategoryBtn {
+            white-space: nowrap;
+        }
     </style>
+
+    <!-- Show More Categories Modal -->
+    <div class="modal fade" id="showMoreCategoriesModal" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false">
+        <div class="modal-dialog" style="position: absolute; top: 180px; right: 20px; margin: 0; width: 650px; max-width: 650px;">
+            <div class="modal-content" style="box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Additional Categories</h5>
+                    <button type="button" class="btn-close btn-close-white" id="closeModalBtn"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="text-muted mb-0" style="font-size: 0.9rem;">Click on a category to filter plants</p>
+                        <button type="button" id="deleteModeCategoryBtn" class="btn btn-outline-danger btn-sm" style="min-width: 130px;">
+                            <i class="fas fa-trash"></i> Delete Mode
+                        </button>
+                    </div>
+                    <div id="additionalCategoriesList" class="d-flex flex-wrap gap-3" style="max-height: 100px; overflow-y: auto; overflow-x: hidden; background: transparent !important;">
+                        <!-- Additional categories will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCategoryForm">
+                        <div class="mb-3">
+                            <label class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="newCategoryName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category Icon (optional)</label>
+                            <input type="file" class="form-control" id="newCategoryIcon" accept="image/*">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="saveCategoryBtn">Add Category</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Category Confirmation Modal -->
+    <div class="modal fade" id="deleteCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Delete Category</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                    <p class="mt-3">Are you sure you want to delete this category?</p>
+                    <p class="text-muted" id="categoryToDelete"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteCategoryBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Category management functionality
+        let deleteMode = false;
+        let selectedCategoryToDelete = null;
+        let additionalCategories = JSON.parse(localStorage.getItem('additionalCategories') || '[]');
+
+        // Add category button
+        $('#addCategoryBtn').on('click', function() {
+            $('#addCategoryModal').modal('show');
+        });
+
+        // Save new category
+        $('#saveCategoryBtn').on('click', function() {
+            const categoryName = $('#newCategoryName').val().trim();
+            const iconFile = $('#newCategoryIcon')[0].files[0];
+            
+            if (!categoryName) {
+                alert('Please enter a category name');
+                return;
+            }
+
+            const newCategory = {
+                id: 'custom_' + Date.now(),
+                name: categoryName,
+                icon: iconFile ? URL.createObjectURL(iconFile) : null
+            };
+
+            additionalCategories.push(newCategory);
+            localStorage.setItem('additionalCategories', JSON.stringify(additionalCategories));
+            
+            $('#addCategoryModal').modal('hide');
+            $('#addCategoryForm')[0].reset();
+            alert('Category added successfully!');
+        });
+
+        // Show more button - display modal with additional categories
+        $('a:contains("Show more")').on('click', function(e) {
+            e.preventDefault();
+            deleteMode = false; // Reset delete mode when opening modal
+            renderAdditionalCategories();
+            $('#showMoreCategoriesModal').modal('show');
+        });
+
+        // Render additional categories in modal
+        function renderAdditionalCategories() {
+            const modalBody = $('#additionalCategoriesList');
+            
+            // Get currently active category before clearing
+            const activeCategory = $('.category-icons .category-icon-item.active').data('category');
+            
+            modalBody.empty();
+            
+            // Update delete button state with fixed width text
+            if (deleteMode) {
+                $('#deleteModeCategoryBtn')
+                    .removeClass('btn-outline-danger')
+                    .addClass('btn-danger')
+                    .html('<i class="fas fa-times"></i> Cancel');
+            } else {
+                $('#deleteModeCategoryBtn')
+                    .removeClass('btn-danger')
+                    .addClass('btn-outline-danger')
+                    .html('<i class="fas fa-trash"></i> Delete Mode');
+            }
+            
+            if (additionalCategories.length === 0) {
+                modalBody.html('<p class="text-muted">No additional categories yet. Click the <i class="fas fa-plus"></i> button to add one.</p>');
+                $('#deleteModeCategoryBtn').prop('disabled', true);
+            } else {
+                $('#deleteModeCategoryBtn').prop('disabled', false);
+                additionalCategories.forEach(cat => {
+                    const isActive = activeCategory === cat.name.toLowerCase() ? 'active' : '';
+                    const badgeVisibility = deleteMode ? 'visible' : 'hidden';
+                    const catHtml = `
+                        <div class="category-icon-item text-center position-relative ${isActive}" data-category-id="${cat.id}" data-category="${cat.name.toLowerCase()}" style="cursor: pointer;">
+                            <span class="delete-badge" style="visibility: ${badgeVisibility};"><i class="fas fa-times-circle text-danger"></i></span>
+                            ${cat.icon ? `<img src="${cat.icon}" alt="${cat.name}" class="category-img" style="width: 40px; height: 40px;">` : `<div class="icon-circle"><i class="fas fa-leaf"></i></div>`}
+                            <span class="d-block mt-1">${cat.name}</span>
+                        </div>
+                    `;
+                    modalBody.append(catHtml);
+                });
+            }
+        }
+
+        // Delete mode toggle button
+        $(document).on('click', '#deleteModeCategoryBtn', function() {
+            if (deleteMode) {
+                // Cancel delete mode
+                deleteMode = false;
+                renderAdditionalCategories();
+            } else {
+                // Enter delete mode
+                deleteMode = true;
+                renderAdditionalCategories();
+                alert('Delete mode activated! Click on any custom category to delete it.');
+            }
+        });
+
+        // Close modal button
+        $('#closeModalBtn').on('click', function() {
+            $('#showMoreCategoriesModal').modal('hide');
+        });
+
+        // Handle category click in modal
+        $(document).on('click', '#additionalCategoriesList .category-icon-item', function() {
+            const categoryId = $(this).data('category-id');
+            const categoryName = $(this).data('category');
+            
+            if (deleteMode) {
+                // Delete the category
+                const category = additionalCategories.find(c => c.id === categoryId);
+                
+                if (category) {
+                    selectedCategoryToDelete = categoryId;
+                    $('#categoryToDelete').text(category.name);
+                    $('#deleteCategoryModal').modal('show');
+                }
+            } else {
+                // Check if clicking on already active category
+                const isAlreadyActive = $(this).hasClass('active');
+                
+                if (isAlreadyActive) {
+                    // Toggle back to "All" category
+                    $('#additionalCategoriesList .category-icon-item').removeClass('active');
+                    $('.category-icons .category-icon-item').removeClass('active');
+                    $('.category-icons .category-icon-item[data-category="all"]').addClass('active');
+                    $('.icon-circle').removeClass('active');
+                    $('.category-icons .category-icon-item[data-category="all"]').find('.icon-circle').addClass('active');
+                    filterPlants('all');
+                } else {
+                    // Filter by this category - add active class to modal item
+                    $('#additionalCategoriesList .category-icon-item').removeClass('active');
+                    $(this).addClass('active');
+                    
+                    // Also update main categories if it exists there
+                    $('.category-icons .category-icon-item').removeClass('active');
+                    $('.category-icons .category-icon-item[data-category="' + categoryName + '"]').addClass('active');
+                    
+                    filterPlants(categoryName);
+                }
+                // Don't close the modal - keep it open
+            }
+        });
+
+        // Confirm delete
+        $('#confirmDeleteCategoryBtn').on('click', function() {
+            if (selectedCategoryToDelete) {
+                additionalCategories = additionalCategories.filter(c => c.id !== selectedCategoryToDelete);
+                localStorage.setItem('additionalCategories', JSON.stringify(additionalCategories));
+                
+                $('#deleteCategoryModal').modal('hide');
+                
+                selectedCategoryToDelete = null;
+                deleteMode = false;
+                renderAdditionalCategories();
+                alert('Category deleted successfully!');
+            }
+        });
+
+        // Filter plants by category
+        function filterPlants(category) {
+            if (category === 'all') {
+                $('.plant-row').show();
+            } else {
+                $('.plant-row').each(function() {
+                    if ($(this).data('category') === category) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
+            updateRowNumbers();
+        }
+    </script>
 </body>
 </html> 

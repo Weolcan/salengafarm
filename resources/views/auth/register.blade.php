@@ -1,6 +1,8 @@
 <x-guest-layout>
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/loading.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="{{ asset('js/loading.js') }}"></script>
     <div class="min-h-screen">
         <div class="login-container position-relative">
             <div class="max-w-md bg-white rounded-3xl shadow-2xl p-2">
@@ -69,24 +71,8 @@
                                    id="contact_number"
                                    name="contact_number" 
                                    value="{{ old('contact_number') }}" 
-                                   required 
-                                   placeholder="Enter your contact number"
+                                   placeholder="Enter your contact number (optional)"
                                    autocomplete="tel"
-                                   class="clean-input">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="company_name" class="form-label">Company Name</label>
-                        <div class="clean-input-group">        
-                            <i class="fas fa-building input-icon"></i>
-                            <input type="text" 
-                                   id="company_name"
-                                   name="company_name" 
-                                   value="{{ old('company_name') }}" 
-                                   required 
-                                   placeholder="Enter your company name"
-                                   autocomplete="organization"
                                    class="clean-input">
                         </div>
                     </div>
@@ -165,14 +151,6 @@
                         <span id="button-text">Create Account</span>
                         <span id="button-loader" class="spinner" style="display: none;"></span>
                     </button>
-                    
-                    <!-- Full page loading overlay -->
-                    <div id="loading-overlay" class="loading-overlay" style="display: none;">
-                        <div class="loading-spinner-container">
-                            <div class="loading-spinner"></div>
-                            <p>Registration in progress...</p>
-                        </div>
-                    </div>
 
                     <div class="mt-4 flex justify-between items-center">
                         <p class="text-sm text-gray-600">
@@ -203,17 +181,6 @@
             animation: spin 0.8s linear infinite;
             vertical-align: middle;
         }
-        
-        /* Full page loading overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            z-index: 9999;
-            display: flex;
             justify-content: center;
             align-items: center;
         }
@@ -451,7 +418,6 @@
             const form = document.querySelector('form');
             const buttonText = document.getElementById('button-text');
             const buttonLoader = document.getElementById('button-loader');
-            const loadingOverlay = document.getElementById('loading-overlay');
             
             if (form) {
                 form.addEventListener('submit', function(e) {
@@ -468,12 +434,10 @@
                     buttonLoader.style.display = 'inline-block';
                     document.getElementById('register-button').disabled = true;
                     
-                    // Show the full page loading overlay after a small delay
-                    // This delay prevents flashing for quick submissions but ensures
-                    // users see feedback for longer operations
+                    // Show the standardized loading overlay
                     setTimeout(function() {
-                        loadingOverlay.style.display = 'flex';
-                    }, 500);
+                        LoadingManager.show('Creating Your Account...', 'Please wait while we set up your profile');
+                    }, 300);
                 });
             }
         });

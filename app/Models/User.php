@@ -22,6 +22,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'last_name',
         'contact_number',
         'company_name',
+        'company_address',
+        'address',
+        'gender',
+        'account_type',
         'email',
         'password',
         'role',
@@ -84,24 +88,25 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Check if the user is a super admin.
+     *
+     * @return bool
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    /**
      * Check if the user has access to admin features.
      *
      * @return bool
      */
     public function hasAdminAccess(): bool
     {
-        return in_array($this->role, ['admin', 'manager']);
+        return in_array($this->role, ['super_admin', 'admin']);
     }
 
-    /**
-     * Check if the user is pending approval.
-     *
-     * @return bool
-     */
-    public function isPending(): bool
-    {
-        return $this->role === 'pending';
-    }
 
     /**
      * Check if the user is a client.
@@ -120,6 +125,14 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function hasClientAccess(): bool
     {
-        return (bool)$this->is_client || in_array($this->role, ['admin', 'manager']);
+        return (bool)$this->is_client || in_array($this->role, ['super_admin', 'admin']);
+    }
+
+    /**
+     * Get the notifications for the user.
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
     }
 }

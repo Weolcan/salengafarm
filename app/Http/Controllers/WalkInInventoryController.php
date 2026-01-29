@@ -45,6 +45,12 @@ class WalkInInventoryController extends Controller
                 $plant = Plant::find($update['id']);
                 if ($plant) {
                     $plant->quantity = max(0, $update['quantity']);
+                    
+                    // Update price if provided
+                    if (isset($update['price'])) {
+                        $plant->price = max(0, $update['price']);
+                    }
+                    
                     $plant->save();
                 }
             }

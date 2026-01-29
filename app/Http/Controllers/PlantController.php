@@ -17,34 +17,52 @@ class PlantController extends Controller
 
     public function store(Request $request)
     {
+        try {
             $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50',
-            'scientific_name' => 'nullable|string|max:255',
-            'category' => 'required|string',
-            'description' => 'nullable|string',
-            'height_mm' => 'nullable|numeric',
-            'spread_mm' => 'nullable|numeric',
-            'spacing_mm' => 'nullable|numeric',
-            'photo' => 'nullable|image|max:2048',
-            'oc' => 'nullable|string|max:50',
-            'price' => 'nullable|numeric|min:0',
-            'cost_per_sqm' => 'nullable|numeric|min:0',
-            'pieces_per_sqm' => 'nullable|numeric|min:0',
-            'cost_per_mm' => 'nullable|numeric|min:0',
-            'quantity' => 'nullable|numeric|min:0'
-        ]);
+                'name' => 'required|string|max:255',
+                'code' => 'nullable|string|max:50',
+                'scientific_name' => 'nullable|string|max:255',
+                'category' => 'required|string',
+                'description' => 'nullable|string',
+                'height_mm' => 'nullable|numeric',
+                'spread_mm' => 'nullable|numeric',
+                'spacing_mm' => 'nullable|numeric',
+                'photo' => 'nullable|image|max:2048',
+                'oc' => 'nullable|string|max:50',
+                'price' => 'nullable|numeric|min:0',
+                'cost_per_sqm' => 'nullable|numeric|min:0',
+                'pieces_per_sqm' => 'nullable|numeric|min:0',
+                'cost_per_mm' => 'nullable|numeric|min:0',
+                'quantity' => 'nullable|numeric|min:0'
+            ]);
 
-        $plant = new Plant($validated);
+            $plant = new Plant($validated);
 
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('plant-photos', 'public');
-            $plant->photo_path = $path;
+            if ($request->hasFile('photo')) {
+                $path = $request->file('photo')->store('plant-photos', 'public');
+                $plant->photo_path = $path;
+            }
+
+            $plant->save();
+
+            Log::info('Plant created', ['id' => $plant->id, 'name' => $plant->name, 'category' => $plant->category]);
+
+            return response()->json([
+                'message' => 'Plant added successfully',
+                'plant' => $plant
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error creating plant: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error creating plant',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $plant->save();
-
-        return response()->json(['message' => 'Plant added successfully']);
     }
 
     public function update(Request $request, Plant $plant)

@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('plants', function (Blueprint $table) {
-            //
+            // Add photo_path column for storing uploaded image path
+            if (!Schema::hasColumn('plants', 'photo_path')) {
+                $table->string('photo_path')->nullable()->after('quantity');
+            }
         });
     }
 
@@ -22,7 +25,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('plants', function (Blueprint $table) {
-            //
+            if (Schema::hasColumn('plants', 'photo_path')) {
+                $table->dropColumn('photo_path');
+            }
         });
     }
 };

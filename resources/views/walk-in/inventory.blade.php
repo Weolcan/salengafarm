@@ -1,247 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    @php
-        use Illuminate\Support\Facades\Auth;
-    @endphp
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Inventory Management - Plant Inventory</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('tree-leaf.ico') }}?v=2">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Poppins:wght@400;500;600&family=Pacifico&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/inventory.css') }}?v=2" rel="stylesheet">
-    <link href="{{ asset('css/dashboard.css') }}?v=4" rel="stylesheet">
-    <style>
-        .inventory-card {
-            border: none;
-            border-radius: var(--card-border-radius);
-            box-shadow: var(--card-shadow);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            overflow: hidden;
-            height: 100%;
-        }
+@extends('layouts.public')
 
-        .inventory-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--hover-shadow);
-        }
+@section('content')
+<style>
+    /* Fix spacing between Low Stock Alert header and first item */
+    #low-stock-list .list-group-item {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        margin-bottom: 0 !important;
+        border: none !important;
+    }
+    
+    #low-stock-list .list-group-item:first-child {
+        padding-top: 0.75rem !important;
+    }
+    
+    /* Status badge styles */
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .status-badge.status-good {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .status-badge.status-medium {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .status-badge.status-low {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
 
-        .editable-quantity {
-            width: 80px;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            padding: 5px 10px;
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-
-        .editable-quantity:focus {
-            border-color: var(--primary-green);
-            box-shadow: 0 0 0 0.2rem rgba(42, 157, 78, 0.25);
-            outline: none;
-        }
-
-        .table th {
-            font-weight: 600;
-            color: var(--text-dark);
-            background-color: rgba(247, 247, 247, 0.5);
-        }
-
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .status-low {
-            background-color: rgba(255, 107, 107, 0.1);
-            color: #ff6b6b;
-        }
-
-        .status-medium {
-            background-color: rgba(246, 229, 141, 0.2);
-            color: var(--earthy-brown);
-        }
-
-        .status-good {
-            background-color: rgba(42, 157, 78, 0.1);
-            color: var(--primary-green);
-        }
-
-        .sidebar-card {
-            height: auto;
-            max-height: 300px;
-            margin-bottom: 1rem;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            border: none;
-        }
-
-        .sidebar-card .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            padding: 0.75rem 1rem;
-        }
-
-        .sidebar-card .card-body {
-            overflow-y: auto;
-            padding: 0;
-            flex: 1;
-            max-height: 250px;
-        }
-
-        .sidebar-card .list-group-item {
-            padding: 0.75rem 1rem;
-            border-left: none;
-            border-right: none;
-            border-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .sidebar-card .list-group-item:first-child {
-            border-top: none;
-        }
-
-        .tooltip-inner {
-            background-color: var(--text-dark);
-            color: white;
-            font-size: 0.75rem;
-            padding: 5px 10px;
-        }
-
-        .btn-success {
-            background-color: var(--primary-green);
-            border-color: var(--primary-green);
-        }
-
-        .btn-success:hover {
-            background-color: var(--dark-green);
-            border-color: var(--dark-green);
-        }
-
-        #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s ease-out;
-        }
-
-        .loader {
-            width: 48px;
-            height: 48px;
-            border: 5px solid #2a9d4e;
-            border-bottom-color: transparent;
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-        }
-
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Truncated text with tooltip */
-        .truncate-text {
-            max-width: 150px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            display: inline-block;
-        }
-    </style>
-</head>
-<body>
-    <!-- Loading Overlay -->
-    <div id="loading-overlay">
-        <span class="loader"></span>
-    </div>
-
-    <!-- Main Navigation -->
-    <nav class="navbar navbar-expand-lg main-nav">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <img src="{{ asset('images/salengap-modified.png') }}" alt="Salenga Logo" class="nav-logo">
-                <span class="brand-text">Salenga Farm</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <div class="navbar-collapse-inner">
-                <ul class="navbar-nav center-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('public.plants') }}"><i class="fas fa-home me-1"></i>Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('requests.index') }}"><i class="fas fa-file-invoice me-1"></i>Request</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('dashboard') }}"><i class="fas fa-chart-line me-1"></i>Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ route('walk-in.index') }}"><i class="fas fa-cash-register me-1"></i>Walk-in</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('plants.index') }}"><i class="fas fa-leaf me-1"></i>Inventory</a>
-                    </li>
-                    @if(Auth::user()->isAdmin())
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('users.index') }}"><i class="fas fa-users me-1"></i>Users</a>
-                    </li>
-                    @endif
-                </ul>
-
-                <ul class="navbar-nav ms-auto user-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle user-dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" class="user-avatar me-2">
-                            <span class="d-none d-lg-inline">{{ Auth::user()->name }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="fas fa-user-edit me-2"></i>Edit Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container-fluid py-4">
+    <div class="container-fluid" style="min-height: 100vh; display: flex; flex-direction: column; padding: 1rem; background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);">
         <div class="row mb-4">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h2 class="mb-0 fs-4">Walk-in Inventory Management</h2>
+                    <h2 class="mb-0 fs-4" style="color: #2e7d32; font-weight: 600; font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-boxes me-2" style="color: #4caf50;"></i>Point of Sale Inventory Management
+                    </h2>
                     <div class="btn-group">
-                        <a href="{{ route('walk-in.index') }}" class="btn btn-primary">
+                        @if(auth()->user()->role !== 'super_admin')
+                        <a href="{{ route('walk-in.index') }}" class="btn btn-primary" style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%); border: none; box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);">
                             <i class="fas fa-cash-register me-1"></i> Back to Sales
                         </a>
-                        <button id="refresh-btn" class="btn btn-success ms-2">
+                        @endif
+                        @if(auth()->user()->role === 'super_admin')
+                        <button id="records-btn" class="btn btn-success" style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%); border: none; box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);" data-bs-toggle="modal" data-bs-target="#salesRecordsModal">
+                            <i class="fas fa-list me-1"></i> Records
+                        </button>
+                        @endif
+                        <button id="refresh-btn" class="btn btn-success ms-2" style="background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%); border: none; box-shadow: 0 2px 4px rgba(102, 187, 106, 0.3);">
                             <i class="fas fa-sync-alt me-1"></i> Refresh Data
                         </button>
                     </div>
@@ -250,49 +71,19 @@
         </div>
 
         <!-- Summary Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card inventory-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stats-icon bg-light-success me-3">
-                                <i class="fas fa-leaf text-success"></i>
+        <div class="row g-2 mb-3">
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0" style="height: 70px; border-radius: 10px; background: linear-gradient(135deg, #ffffff 0%, #f1f8f4 100%);">
+                    <div class="card-body d-flex align-items-center justify-content-center" style="padding: 0.6rem 0.8rem !important; height: 100%;">
+                        <div class="d-flex align-items-center w-100">
+                            <div class="flex-shrink-0 me-2">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);">
+                                    <i class="fas fa-leaf text-white" style="font-size: 1rem;"></i>
+                                </div>
                             </div>
-                            <div>
-                                <h6 class="text-muted mb-1">Total Inventory</h6>
-                                <h3 class="mb-0" id="total-inventory-count">Loading...</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card inventory-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stats-icon bg-light-warning me-3">
-                                <i class="fas fa-exclamation-triangle text-warning"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-1">Low Stock Items</h6>
-                                <h3 class="mb-0" id="low-stock-count">Loading...</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card inventory-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stats-icon bg-light-info me-3">
-                                <i class="fas fa-shopping-cart text-info"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-1">Today's Sales</h6>
-                                <h3 class="mb-0" id="today-sales-count">Loading...</h3>
+                            <div class="flex-grow-1">
+                                <p class="text-muted mb-0" style="font-size: 0.65rem;">Total Inventory</p>
+                                <h3 class="mb-0 fw-bold" style="font-size: 1.25rem; color: #2e7d32;" id="total-inventory-count">0</h3>
                             </div>
                         </div>
                     </div>
@@ -300,15 +91,53 @@
             </div>
 
             <div class="col-md-3">
-                <div class="card inventory-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stats-icon bg-light-primary me-3">
-                                <i class="fas fa-peso-sign text-primary"></i>
+                <div class="card shadow-sm border-0" style="height: 70px; border-radius: 10px; background: linear-gradient(135deg, #ffffff 0%, #fff8e1 100%);">
+                    <div class="card-body d-flex align-items-center justify-content-center" style="padding: 0.6rem 0.8rem !important; height: 100%;">
+                        <div class="d-flex align-items-center w-100">
+                            <div class="flex-shrink-0 me-2">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, #ffb74d 0%, #ffa726 100%);">
+                                    <i class="fas fa-exclamation-triangle text-white" style="font-size: 1rem;"></i>
+                                </div>
                             </div>
-                            <div>
-                                <h6 class="text-muted mb-1">Revenue (30 days)</h6>
-                                <h3 class="mb-0" id="total-revenue">Loading...</h3>
+                            <div class="flex-grow-1">
+                                <p class="text-muted mb-0" style="font-size: 0.65rem;">Low Stock Items</p>
+                                <h3 class="mb-0 fw-bold" style="font-size: 1.25rem; color: #f57c00;" id="low-stock-count">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0" style="height: 70px; border-radius: 10px; background: linear-gradient(135deg, #ffffff 0%, #e0f2f1 100%);">
+                    <div class="card-body d-flex align-items-center justify-content-center" style="padding: 0.6rem 0.8rem !important; height: 100%;">
+                        <div class="d-flex align-items-center w-100">
+                            <div class="flex-shrink-0 me-2">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%);">
+                                    <i class="fas fa-shopping-cart text-white" style="font-size: 1rem;"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <p class="text-muted mb-0" style="font-size: 0.65rem;">Today's Sales</p>
+                                <h3 class="mb-0 fw-bold" style="font-size: 1.25rem; color: #00897b;" id="today-sales-count">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0" style="height: 70px; border-radius: 10px; background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%);">
+                    <div class="card-body d-flex align-items-center justify-content-center" style="padding: 0.6rem 0.8rem !important; height: 100%;">
+                        <div class="d-flex align-items-center w-100">
+                            <div class="flex-shrink-0 me-2">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%);">
+                                    <i class="fas fa-peso-sign text-white" style="font-size: 1rem;"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <p class="text-muted mb-0" style="font-size: 0.65rem;">Revenue (30 days)</p>
+                                <h3 class="mb-0 fw-bold" style="font-size: 1.25rem; color: #2e7d32;" id="total-revenue">₱0.00</h3>
                             </div>
                         </div>
                     </div>
@@ -317,28 +146,29 @@
         </div>
 
         <!-- Main Content Row -->
-        <div class="row">
-            <div class="col-md-9">
-                <div class="card mb-4">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-boxes me-2"></i>Inventory Management</h5>
+        <div class="row" style="flex: 1; overflow: hidden;">
+            <div class="col-md-9" style="display: flex; flex-direction: column;">
+                <div class="card mb-4" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; border: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 12px;">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%); color: white; border-radius: 12px 12px 0 0; border: none;">
+                        <h5 class="mb-0" style="font-weight: 600; font-family: 'Poppins', sans-serif;"><i class="fas fa-seedling me-2"></i>Inventory Management</h5>
                         <div class="input-group" style="width: 300px;">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" class="form-control" id="inventory-search" placeholder="Search plants...">
+                            <span class="input-group-text" style="background-color: rgba(255, 255, 255, 0.9); border: none;"><i class="fas fa-search text-success"></i></span>
+                            <input type="text" class="form-control" id="inventory-search" placeholder="Search plants..." style="border: none;">
                         </div>
                     </div>
                     <div class="card-body p-0">
-                        <div class="table-responsive" style="max-height: 650px; overflow-y: auto;">
-                            <table class="table table-hover mb-0">
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="table table-hover table-sm mb-0">
                                 <thead class="sticky-top bg-white">
                                     <tr>
                                         <th>Plant Name</th>
                                         <th>Code</th>
                                         <th>Price</th>
-                                        <th>Current Stock</th>
-                                        <th>New Stock</th>
+                                        <th>Stock</th>
                                         <th>Status</th>
+                                        @if(auth()->user()->role !== 'super_admin')
                                         <th>Actions</th>
+                                        @endif
                                     </tr>
                                 </thead>
                                 <tbody id="inventory-table-body">
@@ -346,10 +176,22 @@
                                         <tr data-id="{{ $plant->id }}">
                                             <td class="align-middle">{{ $plant->name }}</td>
                                             <td class="align-middle">{{ $plant->code }}</td>
-                                            <td class="align-middle">₱{{ number_format($plant->price, 2) }}</td>
-                                            <td class="align-middle">{{ $plant->quantity }}</td>
                                             <td class="align-middle">
-                                                <input type="number" class="editable-quantity" value="{{ $plant->quantity }}" min="0">
+                                                @if(auth()->user()->role === 'super_admin')
+                                                    <span class="fw-semibold">₱{{ number_format($plant->price, 2) }}</span>
+                                                @else
+                                                    <div class="input-group input-group-sm" style="width: 120px;">
+                                                        <span class="input-group-text">₱</span>
+                                                        <input type="number" class="form-control form-control-sm editable-price" value="{{ $plant->price }}" min="0" step="0.01">
+                                                    </div>
+                                                @endif
+                                            </td>
+                                            <td class="align-middle">
+                                                @if(auth()->user()->role === 'super_admin')
+                                                    <span class="fw-semibold">{{ $plant->quantity }}</span>
+                                                @else
+                                                    <input type="number" class="form-control form-control-sm editable-quantity" value="{{ $plant->quantity }}" min="0" style="width: 80px;">
+                                                @endif
                                             </td>
                                             <td class="align-middle">
                                                 @if($plant->quantity < 5)
@@ -366,11 +208,13 @@
                                                     </span>
                                                 @endif
                                             </td>
+                                            @if(auth()->user()->role !== 'super_admin')
                                             <td class="align-middle">
                                                 <button class="btn btn-sm btn-success save-btn" data-id="{{ $plant->id }}">
                                                     <i class="fas fa-save"></i> Save
                                                 </button>
                                             </td>
+                                            @endif
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -380,44 +224,50 @@
                 </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3" style="display: flex; flex-direction: column;">
                 <!-- Recent Sales Card -->
-                <div class="card sidebar-card mb-3">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0 fs-6"><i class="fas fa-receipt me-2 text-primary"></i>Recent Sales</h5>
+                <div class="card sidebar-card mb-3" style="height: 280px; display: flex; flex-direction: column; border: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 12px;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%); color: white; border-radius: 12px 12px 0 0; border: none; padding: 0.5rem 0.75rem;">
+                        <h5 class="mb-0" style="font-weight: 600; font-family: 'Poppins', sans-serif; font-size: 0.9rem;"><i class="fas fa-receipt me-2"></i>Recent Sales</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="flex: 1; overflow-y: auto; padding: 0.75rem;">
                         <div class="list-group list-group-flush" id="recent-sales-list">
-                            @foreach($recentSales as $sale)
-                                <div class="list-group-item">
+                            @forelse($recentSales as $sale)
+                                <div class="list-group-item" style="border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid #e0e0e0; background-color: white;">
                                     <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1 truncate-text" title="{{ $sale->plant->name }}">{{ $sale->plant->name }}</h6>
-                                            <small class="text-muted">
+                                        <div style="flex: 1; min-width: 0;">
+                                            <h6 class="mb-1" style="font-size: 0.85rem; font-weight: 600; color: #2e7d32; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $sale->plant->name }}">{{ $sale->plant->name }}</h6>
+                                            <small class="text-muted" style="font-size: 0.75rem;">
                                                 {{ $sale->created_at->format('M d, Y h:i A') }}
                                             </small>
                                         </div>
-                                        <span class="badge bg-success">{{ $sale->quantity }} sold</span>
+                                        <span class="badge" style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%); color: white; font-size: 0.75rem; padding: 0.35rem 0.6rem;">{{ $sale->quantity }} sold</span>
                                     </div>
                                 </div>
-                            @endforeach
+                            @empty
+                                <div class="text-center py-5">
+                                    <i class="fas fa-receipt fa-3x text-muted mb-3" style="opacity: 0.3;"></i>
+                                    <p class="text-muted mb-0" style="font-size: 0.9rem;">No recent sales</p>
+                                    <small class="text-muted" style="font-size: 0.8rem;">Sales will appear here</small>
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
 
                 <!-- Low Stock Card -->
-                <div class="card sidebar-card mb-3">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fs-6"><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Low Stock Alert</h5>
-                        <button id="show-all-low-stock" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#lowStockModal">
+                <div class="card sidebar-card" style="flex: 1; display: flex; flex-direction: column; min-height: 0; border: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 12px;">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #ffb74d 0%, #ffa726 100%); color: white; border-radius: 12px 12px 0 0; border: none; padding: 0.5rem 0.75rem;">
+                        <h5 class="mb-0" style="font-weight: 600; font-family: 'Poppins', sans-serif; font-size: 0.9rem;"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Alert</h5>
+                        <button id="show-all-low-stock" class="btn btn-sm" style="background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.25rem 0.5rem; font-size: 0.75rem;" data-bs-toggle="modal" data-bs-target="#lowStockModal">
                             <i class="fas fa-list-ul me-1"></i> Show All
                         </button>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="flex: 1; overflow-y: auto; padding: 1rem; padding-top: 0.5rem !important;">
                         <div class="list-group list-group-flush" id="low-stock-list">
                             <!-- Low stock items will be populated here via AJAX -->
-                            <div class="list-group-item text-center py-4">
-                                <div class="spinner-border text-success" role="status">
+                            <div class="list-group-item text-center py-4" style="background-color: transparent; border: none;">
+                                <div class="spinner-border" style="color: #ffa726;" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
                                 <p class="mt-2 text-muted">Loading low stock items...</p>
@@ -464,7 +314,7 @@
                                         <tr>
                                             <th>Plant Name</th>
                                             <th>Category</th>
-                                            <th>Current Stock</th>
+                                            <th>Stock</th>
                                         </tr>
                                     </thead>
                                     <tbody id="lowStockModalBody">
@@ -482,10 +332,77 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        $(document).ready(function() {
+    <!-- Sales Records Modal -->
+    <div class="modal fade" id="salesRecordsModal" tabindex="-1" aria-labelledby="salesRecordsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="salesRecordsModalLabel">Sales Records</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">From</span>
+                                <input type="date" class="form-control" id="start-date">
+                                <span class="input-group-text">To</span>
+                                <input type="date" class="form-control" id="end-date">
+                                <button class="btn btn-primary" id="filter-records-btn">Filter</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6;">
+                        <table class="table table-striped table-bordered mb-0">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 10; background-color: #f8f9fa;">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Plant</th>
+                                    <th>Height</th>
+                                    <th>Spread</th>
+                                    <th>Spacing</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                    <th>Customer</th>
+                                    <th>Payment Method</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sales-records-body">
+                                <!-- Sales records will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="sales-records-pagination" class="d-flex justify-content-center mt-3" style="padding: 10px 0;">
+                        <!-- Pagination will be added here dynamically -->
+                    </div>
+                    
+                    <div id="no-records-message" class="text-center py-3 d-none">
+                        <i class="fas fa-info-circle fa-2x mb-2 text-info"></i>
+                        <p>No sales records found for the selected period.</p>
+                    </div>
+                    
+                    <div id="records-loading" class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading records...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@endsection
+
+@section('scripts')
+<script>
+    $(document).ready(function() {
             // Initialize tooltips
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
@@ -503,7 +420,7 @@
             // Refresh button click handler
             $('#refresh-btn').on('click', function() {
                 loadInventoryStats();
-                showToast('Refresh', 'Data has been refreshed', 'info');
+                showToast('Refresh', 'Data has been refreshed', 'success');
             });
 
             // Search functionality
@@ -530,11 +447,19 @@
                 var btn = $(this);
                 var originalBtnText = btn.html();
                 var plantId = btn.data('id');
-                var newQuantity = btn.closest('tr').find('.editable-quantity').val();
+                var row = btn.closest('tr');
+                var newQuantity = row.find('.editable-quantity').val();
+                var newPrice = row.find('.editable-price').val();
 
-                // Validate input
+                // Validate quantity input
                 if (newQuantity === '' || isNaN(newQuantity) || parseInt(newQuantity) < 0) {
                     showToast('Error', 'Please enter a valid quantity', 'error');
+                    return;
+                }
+                
+                // Validate price input
+                if (newPrice === '' || isNaN(newPrice) || parseFloat(newPrice) < 0) {
+                    showToast('Error', 'Please enter a valid price', 'error');
                     return;
                 }
 
@@ -551,17 +476,18 @@
                         updates: [
                             {
                                 id: plantId,
-                                quantity: parseInt(newQuantity)
+                                quantity: parseInt(newQuantity),
+                                price: parseFloat(newPrice)
                             }
                         ]
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Update current stock display
-                            btn.closest('tr').find('td:eq(3)').text(newQuantity);
+                            // Update stock display (column 3)
+                            btn.closest('tr').find('td:eq(3) input').val(newQuantity);
 
-                            // Update status badge
-                            var statusCell = btn.closest('tr').find('td:eq(5)');
+                            // Update status badge (column 4)
+                            var statusCell = btn.closest('tr').find('td:eq(4)');
                             var quantity = parseInt(newQuantity);
 
                             if (quantity < 5) {
@@ -649,6 +575,13 @@
                     showAllButton.prop('disabled', false);
                     showAllButton.removeClass('disabled');
 
+                    // Collect unique categories from ALL items first
+                    $.each(lowStockItems, function(index, item) {
+                        if (item.category && categories.indexOf(item.category) === -1) {
+                            categories.push(item.category);
+                        }
+                    });
+
                     // Display only the first 4 items in the sidebar
                     $.each(lowStockItems.slice(0, 4), function(index, item) {
                         lowStockList.append(`
@@ -662,11 +595,6 @@
                                 </div>
                             </div>
                         `);
-
-                        // Collect unique categories
-                        if (categories.indexOf(item.category) === -1) {
-                            categories.push(item.category);
-                        }
                     });
 
                     // Populate all items in the modal table
@@ -750,7 +678,149 @@
                     $(this).remove();
                 });
             }
-        });
-    </script>
-</body>
-</html>
+
+            // Sales Records functionality
+            let currentPage = 1;
+
+            // Records button click handler
+            $('#records-btn').on('click', function() {
+                loadSalesRecords();
+            });
+
+            // Filter button click handler
+            $('#filter-records-btn').on('click', function() {
+                currentPage = 1;
+                loadSalesRecords();
+            });
+
+            // Function to load sales records
+            function loadSalesRecords(page = 1) {
+                currentPage = page;
+                $('#no-records-message').addClass('d-none');
+                $('#records-loading').removeClass('d-none');
+                $('#sales-records-body').empty();
+                $('#sales-records-pagination').empty();
+                
+                // Prepare query parameters
+                const params = new URLSearchParams();
+                params.append('page', page);
+                
+                const startDate = $('#start-date').val();
+                const endDate = $('#end-date').val();
+                
+                if (startDate) {
+                    params.append('start_date', startDate);
+                }
+                
+                if (endDate) {
+                    params.append('end_date', endDate);
+                }
+                
+                // Fetch records from server
+                $.ajax({
+                    url: '/walk-in/records?' + params.toString(),
+                    type: 'GET',
+                    success: function(response) {
+                        $('#records-loading').addClass('d-none');
+                        
+                        if (response.success) {
+                            const records = response.data.data;
+                            
+                            if (records.length === 0) {
+                                $('#no-records-message').removeClass('d-none');
+                                return;
+                            }
+                            
+                            // Populate records table
+                            records.forEach(record => {
+                                const saleDate = new Date(record.sale_date);
+                                const formattedDate = saleDate.toLocaleDateString() + ' ' + 
+                                                    saleDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                
+                                $('#sales-records-body').append(`
+                                    <tr>
+                                        <td>${formattedDate}</td>
+                                        <td><span class="truncate-text" title="${record.plant ? record.plant.name : 'Unknown'}">${record.plant ? record.plant.name : 'Unknown'}</span></td>
+                                        <td>${record.height || 'N/A'}</td>
+                                        <td>${record.spread || 'N/A'}</td>
+                                        <td>${record.spacing || 'N/A'}</td>
+                                        <td>${record.quantity}</td>
+                                        <td>₱${parseFloat(record.price).toFixed(2)}</td>
+                                        <td>₱${parseFloat(record.total_price).toFixed(2)}</td>
+                                        <td><span class="truncate-text" title="${record.customer_name || 'N/A'}">${record.customer_name || 'N/A'}</span></td>
+                                        <td>${record.payment_method}</td>
+                                    </tr>
+                                `);
+                            });
+                            
+                            // Create pagination
+                            createPagination(response.data);
+                        } else {
+                            $('#no-records-message').removeClass('d-none')
+                                .find('p').text('Error loading records: ' + response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        $('#records-loading').addClass('d-none');
+                        $('#no-records-message').removeClass('d-none')
+                            .find('p').text('Error loading records. Please try again.');
+                        console.error(xhr);
+                    }
+                });
+            }
+            
+            // Function to create pagination links
+            function createPagination(data) {
+                if (data.last_page <= 1) return;
+                
+                const pagination = $('#sales-records-pagination');
+                
+                // Create pagination container
+                const paginationNav = $('<nav aria-label="Sales records pagination"></nav>');
+                const paginationList = $('<ul class="pagination"></ul>');
+                
+                // Previous page link
+                const prevLi = $('<li class="page-item"></li>');
+                if (data.current_page === 1) {
+                    prevLi.addClass('disabled');
+                } else {
+                    prevLi.click(function() {
+                        loadSalesRecords(data.current_page - 1);
+                    });
+                }
+                prevLi.append('<a class="page-link" href="javascript:void(0)">Previous</a>');
+                paginationList.append(prevLi);
+                
+                // Page number links
+                for (let i = 1; i <= data.last_page; i++) {
+                    const pageLi = $('<li class="page-item"></li>');
+                    if (i === data.current_page) {
+                        pageLi.addClass('active');
+                    } else {
+                        pageLi.click(function() {
+                            loadSalesRecords(i);
+                        });
+                    }
+                    pageLi.append(`<a class="page-link" href="javascript:void(0)">${i}</a>`);
+                    paginationList.append(pageLi);
+                }
+                
+                // Next page link
+                const nextLi = $('<li class="page-item"></li>');
+                if (data.current_page === data.last_page) {
+                    nextLi.addClass('disabled');
+                } else {
+                    nextLi.click(function() {
+                        loadSalesRecords(data.current_page + 1);
+                    });
+                }
+                nextLi.append('<a class="page-link" href="javascript:void(0)">Next</a>');
+                paginationList.append(nextLi);
+                
+                // Add to DOM
+                paginationNav.append(paginationList);
+                pagination.append(paginationNav);
+            }
+    });
+</script>
+@endsection

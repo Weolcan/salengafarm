@@ -182,4 +182,41 @@ class WalkInSalesController extends Controller
             ], 500);
         }
     }
+    
+    /**
+     * Bulk delete sales records
+     */
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|integer|exists:sales,id'
+            ]);
+            
+            $ids = $request->input('ids');
+            
+            // Delete the sales records
+            $deletedCount = Sale::whereIn('id', $ids)->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully deleted {$deletedCount} sales record(s).",
+                'deleted_count' => $deletedCount
+            ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage(),
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error bulk deleting sales records: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete sales records: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 

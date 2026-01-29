@@ -1,0 +1,1294 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Create Site Visit - Plant Inventory</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('tree-leaf.ico') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .form-section {
+            background: #f8f9fa;
+            border-left: 4px solid #198754;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.375rem;
+        }
+        .form-section h5 {
+            color: #198754;
+            margin-bottom: 1rem;
+        }
+        #map {
+            height: 400px;
+            border-radius: 0.375rem;
+        }
+        .coordinate-display {
+            background: #e9ecef;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-family: monospace;
+        }
+        .checkbox-group {
+            border: 1px solid #dee2e6;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            background-color: #ffffff;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.25rem;
+        }
+        .form-check {
+            margin-bottom: 0.25rem;
+        }
+        .form-check-label {
+            margin-left: 0.25rem;
+            font-size: 0.9em;
+        }
+        /* Fix main container positioning */
+        .main-content {
+            margin-left: 240px;
+            padding: 1rem 2rem;
+            max-width: calc(100vw - 260px);
+            overflow-x: hidden;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .checkbox-group {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                max-width: 100vw;
+                padding: 1rem;
+            }
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* FontAwesome spin fix */
+        .fa-spin,
+        .fas.fa-spin,
+        .far.fa-spin,
+        .fab.fa-spin,
+        .fal.fa-spin,
+        i.fa-spin,
+        i.fas.fa-spin,
+        .fa-spinner.fa-spin {
+            -webkit-animation: custom-fa-spin 1s infinite linear !important;
+            animation: custom-fa-spin 1s infinite linear !important;
+            -webkit-transform-origin: center !important;
+            transform-origin: center !important;
+        }
+        
+        @-webkit-keyframes custom-fa-spin {
+            0% { 
+                -webkit-transform: rotate(0deg); 
+                transform: rotate(0deg); 
+            }
+            100% { 
+                -webkit-transform: rotate(360deg); 
+                transform: rotate(360deg); 
+            }
+        }
+        
+        @keyframes custom-fa-spin {
+            0% { 
+                -webkit-transform: rotate(0deg); 
+                transform: rotate(0deg); 
+            }
+            100% { 
+                -webkit-transform: rotate(360deg); 
+                transform: rotate(360deg); 
+            }
+        }
+        
+        /* Larger radios/checkboxes for Physical Factors, Topography, Geotechnical Soils, Utilities, Immediate Surroundings, Tools, Additional Services */
+        .physical-factors input[type="radio"],
+        .physical-factors input[type="checkbox"],
+        .topography input[type="radio"],
+        .topography input[type="checkbox"],
+        .geotechnical-soils input[type="radio"],
+        .geotechnical-soils input[type="checkbox"],
+        .utilities input[type="radio"],
+        .utilities input[type="checkbox"],
+        .immediate-surroundings input[type="radio"],
+        .immediate-surroundings input[type="checkbox"],
+        .tools-checklist input[type="checkbox"],
+        .additional-services input[type="radio"],
+        .additional-services input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: #198754;
+        }
+
+        /* Render radios as square checkboxes (visual only) in tabular sections */
+        .physical-factors input[type="radio"],
+        .topography input[type="radio"],
+        .geotechnical-soils input[type="radio"],
+        .utilities input[type="radio"],
+        .immediate-surroundings input[type="radio"],
+        .additional-services input[type="radio"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #198754;
+            border-radius: 0.25rem; /* square corners like a checkbox */
+            background-color: #fff;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+        }
+        .physical-factors input[type="radio"]:checked,
+        .topography input[type="radio"]:checked,
+        .geotechnical-soils input[type="radio"]:checked,
+        .utilities input[type="radio"]:checked,
+        .immediate-surroundings input[type="radio"]:checked,
+        .additional-services input[type="radio"]:checked {
+            background-color: #198754;
+            border-color: #198754;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"><path d="M6.173 11.414L2.757 8l1.414-1.414L6.173 8.586l5.657-5.657L13.243 4.343z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 12px 12px;
+        }
+        .physical-factors input[type="radio"]:focus,
+        .topography input[type="radio"]:focus,
+        .geotechnical-soils input[type="radio"]:focus,
+        .utilities input[type="radio"]:focus,
+        .immediate-surroundings input[type="radio"]:focus,
+        .additional-services input[type="radio"]:focus {
+            outline: 2px solid rgba(25, 135, 84, 0.3);
+            outline-offset: 2px;
+        }
+
+        /* Tools checkboxes: green border + filled green when checked */
+        .tools-checklist input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #198754;
+            border-radius: 0.25rem;
+            background-color: #fff;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+        }
+        .tools-checklist input[type="checkbox"]:checked {
+            background-color: #198754;
+            border-color: #198754;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"><path d="M6.173 11.414L2.757 8l1.414-1.414L6.173 8.586l5.657-5.657L13.243 4.343z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 12px 12px;
+        }
+        .tools-checklist input[type="checkbox"]:focus {
+            outline: 2px solid rgba(25, 135, 84, 0.3);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="dashboard-flex">
+        @include('layouts.sidebar')
+        
+        <div class="main-content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-map-marker-alt me-2 text-success"></i>Create New Site Visit</h2>
+                    <a href="{{ route('site-visits.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Site Visits
+                    </a>
+                </div>
+
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form action="{{ route('site-visits.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    
+                    <!-- Location Section -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-map-pin me-2"></i>Location Information</h5>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Click on the map to set location:</label>
+                                <div class="mb-2">
+                                    <button type="button" id="currentLocationBtn" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-location-arrow me-2"></i>Use Current Location
+                                    </button>
+                                    <small class="text-muted ms-2">Or click anywhere on the map</small>
+                                    <div class="text-info mt-1">
+                                        <small><i class="fas fa-info-circle me-1"></i>If location is inaccurate, manually click on the correct spot on the map</small>
+                                    </div>
+                                </div>
+                                <div id="map"></div>
+                                <div class="coordinate-display mt-2">
+                                    <strong>Selected Coordinates:</strong>
+                                    <span id="coordinates">Click on map to select location</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="latitude" class="form-label">Latitude *</label>
+                                <input type="number" step="any" class="form-control" id="latitude" name="latitude" 
+                                       value="{{ old('latitude', $latitude ?? '') }}" required readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="longitude" class="form-label">Longitude *</label>
+                                <input type="number" step="any" class="form-control" id="longitude" name="longitude" 
+                                       value="{{ old('longitude', $longitude ?? '') }}" required readonly>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="location_address" class="form-label">Address</label>
+                                <textarea class="form-control" name="location_address" rows="2" 
+                                          placeholder="Full address of the site">{{ old('location_address', $address ?? '') }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Topography moved below Physical Factors -->
+
+                    <!-- Client Information -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-user me-2"></i>Client Information</h5>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="user_id" class="form-label">Link Existing User (optional)</label>
+                                <select class="form-select" id="user_id" name="user_id">
+                                    <option value="">Select user</option>
+                                    @foreach(($clients ?? []) as $u)
+                                        @php($displayName = $u->name ?? trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? '')))
+                                        <option value="{{ $u->id }}"
+                                                data-name="{{ $displayName }}"
+                                                data-email="{{ $u->email }}"
+                                                data-contact="{{ $u->contact_number }}"
+                                                {{ old('user_id') == $u->id ? 'selected' : '' }}>
+                                            {{ $displayName }} ({{ $u->email }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Selecting a user will auto-fill Client Name, Email, and Contact Number.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="client" class="form-label">Client Name *</label>
+                                <input type="text" class="form-control" id="client" name="client" value="{{ old('client') }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="contact_number" class="form-label">Contact Number *</label>
+                                <input type="text" class="form-control" id="contact_number" name="contact_number" value="{{ old('contact_number') }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="job_no" class="form-label">Job Number</label>
+                                <input type="text" class="form-control" name="job_no" value="{{ old('job_no') }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Information -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-project-diagram me-2"></i>Project Information</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="project_code" class="form-label">Project Code</label>
+                                <input type="text" class="form-control" name="project_code" value="{{ old('project_code') }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="project_no" class="form-label">Project Number</label>
+                                <input type="text" class="form-control" name="project_no" value="{{ old('project_no') }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="landscape_area" class="form-label">Landscape Area</label>
+                                <input type="text" class="form-control" name="landscape_area" value="{{ old('landscape_area') }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="location" class="form-label">Site Location *</label>
+                                <input type="text" class="form-control" name="location" value="{{ old('location') }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="site_inspector" class="form-label">Site Inspector *</label>
+                                <input type="text" class="form-control" name="site_inspector" value="{{ old('site_inspector', auth()->user()->name) }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="visit_date" class="form-label">Visit Date *</label>
+                                <input type="date" class="form-control" name="visit_date" value="{{ old('visit_date', date('Y-m-d')) }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="status" class="form-label">Status *</label>
+                                <select class="form-select" name="status" required>
+                                    <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                                    <option value="follow_up" {{ old('status') == 'follow_up' ? 'selected' : '' }}>Follow-up Required</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scope of Work (Static Text) -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-tasks me-2"></i>Scope of Work</h5>
+                        @include('site-visits._scope_of_work_text')
+                    </div>
+
+                    <!-- Physical Factors -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-cloud-sun me-2"></i>Physical Factors</h5>
+                        <div class="mb-2 text-muted">Climate</div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle physical-factors">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 4rem;">&nbsp;</th>
+                                        <th>Item</th>
+                                        <th style="width: 6rem;" class="text-center">Yes</th>
+                                        <th style="width: 6rem;" class="text-center">No</th>
+                                        <th style="width: 40%;">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold">A</td>
+                                        <td>Prevailing Winds</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="physical_factors[prevailing_winds][value]" value="yes" 
+                                                   {{ old('physical_factors.prevailing_winds.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="physical_factors[prevailing_winds][value]" value="no" 
+                                                   {{ old('physical_factors.prevailing_winds.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="physical_factors[prevailing_winds][remarks]" 
+                                                   value="{{ old('physical_factors.prevailing_winds.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">B</td>
+                                        <td>Solar Orientation / North</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="physical_factors[solar_orientation][value]" value="yes" 
+                                                   {{ old('physical_factors.solar_orientation.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="physical_factors[solar_orientation][value]" value="no" 
+                                                   {{ old('physical_factors.solar_orientation.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="physical_factors[solar_orientation][remarks]" 
+                                                   value="{{ old('physical_factors.solar_orientation.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">C</td>
+                                        <td>Humidity</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="physical_factors[humidity][value]" value="yes" 
+                                                   {{ old('physical_factors.humidity.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="physical_factors[humidity][value]" value="no" 
+                                                   {{ old('physical_factors.humidity.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="physical_factors[humidity][remarks]" 
+                                                   value="{{ old('physical_factors.humidity.remarks') }}">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="physical_factors[notes]" rows="3" placeholder="Additional notes about climate conditions">{{ old('physical_factors.notes') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Topography -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-mountain me-2"></i>Topography</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle topography">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 4rem;">&nbsp;</th>
+                                        <th>Item</th>
+                                        <th style="width: 6rem;" class="text-center">Yes</th>
+                                        <th style="width: 6rem;" class="text-center">No</th>
+                                        <th style="width: 40%;">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold">A</td>
+                                        <td>Legal Properties Description</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[legal_properties_description][value]" value="yes" 
+                                                   {{ old('topography.legal_properties_description.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[legal_properties_description][value]" value="no" 
+                                                   {{ old('topography.legal_properties_description.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="topography[legal_properties_description][remarks]" 
+                                                   value="{{ old('topography.legal_properties_description.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">B</td>
+                                        <td>Topographic Maps & Aerial Photos</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[topographic_maps_aerial_photos][value]" value="yes" 
+                                                   {{ old('topography.topographic_maps_aerial_photos.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[topographic_maps_aerial_photos][value]" value="no" 
+                                                   {{ old('topography.topographic_maps_aerial_photos.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="topography[topographic_maps_aerial_photos][remarks]" 
+                                                   value="{{ old('topography.topographic_maps_aerial_photos.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">C</td>
+                                        <td>Existing Access and Circulation</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[existing_access_circulation][value]" value="yes" 
+                                                   {{ old('topography.existing_access_circulation.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[existing_access_circulation][value]" value="no" 
+                                                   {{ old('topography.existing_access_circulation.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="topography[existing_access_circulation][remarks]" 
+                                                   value="{{ old('topography.existing_access_circulation.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">D</td>
+                                        <td>Vegetation</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[vegetation][value]" value="yes" 
+                                                   {{ old('topography.vegetation.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[vegetation][value]" value="no" 
+                                                   {{ old('topography.vegetation.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="topography[vegetation][remarks]" 
+                                                   value="{{ old('topography.vegetation.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">E</td>
+                                        <td>Existing Water Bodies</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[existing_water_bodies][value]" value="yes" 
+                                                   {{ old('topography.existing_water_bodies.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[existing_water_bodies][value]" value="no" 
+                                                   {{ old('topography.existing_water_bodies.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="topography[existing_water_bodies][remarks]" 
+                                                   value="{{ old('topography.existing_water_bodies.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">F</td>
+                                        <td>Drainage Canals</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[drainage_canals][value]" value="yes" 
+                                                   {{ old('topography.drainage_canals.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[drainage_canals][value]" value="no" 
+                                                   {{ old('topography.drainage_canals.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="topography[drainage_canals][remarks]" 
+                                                   value="{{ old('topography.drainage_canals.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">G</td>
+                                        <td>Existing Waterway</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[existing_waterway][value]" value="yes" 
+                                                   {{ old('topography.existing_waterway.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[existing_waterway][value]" value="no" 
+                                                   {{ old('topography.existing_waterway.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="topography[existing_waterway][remarks]" 
+                                                   value="{{ old('topography.existing_waterway.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">H</td>
+                                        <td>Unique Site Features</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[unique_site_features][value]" value="yes" 
+                                                   {{ old('topography.unique_site_features.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="topography[unique_site_features][value]" value="no" 
+                                                   {{ old('topography.unique_site_features.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="topography[unique_site_features][remarks]" 
+                                                   value="{{ old('topography.unique_site_features.remarks') }}">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="topography[notes]" rows="3" placeholder="Additional notes about topography">{{ old('topography.notes') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Geotechnical Soils -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-microscope me-2"></i>Geotechnical Soils</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle geotechnical-soils">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 4rem;">&nbsp;</th>
+                                        <th>Item</th>
+                                        <th style="width: 6rem;" class="text-center">Yes</th>
+                                        <th style="width: 6rem;" class="text-center">No</th>
+                                        <th style="width: 40%;">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold">A</td>
+                                        <td>Basic Soil Type</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="geotechnical_soils[basic_soil_type][value]" value="yes" 
+                                                   {{ old('geotechnical_soils.basic_soil_type.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="geotechnical_soils[basic_soil_type][value]" value="no" 
+                                                   {{ old('geotechnical_soils.basic_soil_type.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="geotechnical_soils[basic_soil_type][remarks]" 
+                                                   value="{{ old('geotechnical_soils.basic_soil_type.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">B</td>
+                                        <td>Soil Conditions</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="geotechnical_soils[soil_conditions][value]" value="yes" 
+                                                   {{ old('geotechnical_soils.soil_conditions.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="geotechnical_soils[soil_conditions][value]" value="no" 
+                                                   {{ old('geotechnical_soils.soil_conditions.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="geotechnical_soils[soil_conditions][remarks]" 
+                                                   value="{{ old('geotechnical_soils.soil_conditions.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">C</td>
+                                        <td>Earthfill Requirement</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="geotechnical_soils[earthfill_requirement][value]" value="yes" 
+                                                   {{ old('geotechnical_soils.earthfill_requirement.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="geotechnical_soils[earthfill_requirement][value]" value="no" 
+                                                   {{ old('geotechnical_soils.earthfill_requirement.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="geotechnical_soils[earthfill_requirement][remarks]" 
+                                                   value="{{ old('geotechnical_soils.earthfill_requirement.remarks') }}">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="geotechnical_soils[notes]" rows="3" placeholder="Additional notes about geotechnical soils">{{ old('geotechnical_soils.notes') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Utilities -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-plug me-2"></i>Utilities</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle utilities">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 4rem;">&nbsp;</th>
+                                        <th>Item</th>
+                                        <th style="width: 6rem;" class="text-center">Yes</th>
+                                        <th style="width: 6rem;" class="text-center">No</th>
+                                        <th style="width: 40%;">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold">A</td>
+                                        <td>Potable Water</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="utilities[potable_water][value]" value="yes" 
+                                                   {{ old('utilities.potable_water.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="utilities[potable_water][value]" value="no" 
+                                                   {{ old('utilities.potable_water.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="utilities[potable_water][remarks]" 
+                                                   value="{{ old('utilities.potable_water.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">B</td>
+                                        <td>Electricity</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="utilities[electricity][value]" value="yes" 
+                                                   {{ old('utilities.electricity.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="utilities[electricity][value]" value="no" 
+                                                   {{ old('utilities.electricity.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="utilities[electricity][remarks]" 
+                                                   value="{{ old('utilities.electricity.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">C</td>
+                                        <td>Storm Drainage</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="utilities[storm_drainage][value]" value="yes" 
+                                                   {{ old('utilities.storm_drainage.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="utilities[storm_drainage][value]" value="no" 
+                                                   {{ old('utilities.storm_drainage.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="utilities[storm_drainage][remarks]" 
+                                                   value="{{ old('utilities.storm_drainage.remarks') }}">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="utilities[notes]" rows="3" placeholder="Additional notes about utilities">{{ old('utilities.notes') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Immediate Surroundings -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-city me-2"></i>Immediate Surroundings</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle immediate-surroundings">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 4rem;">&nbsp;</th>
+                                        <th>Item</th>
+                                        <th style="width: 6rem;" class="text-center">Yes</th>
+                                        <th style="width: 6rem;" class="text-center">No</th>
+                                        <th style="width: 40%;">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold">A</td>
+                                        <td>Neighborhood Structures</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="immediate_surroundings[neighborhood_structures][value]" value="yes" 
+                                                   {{ old('immediate_surroundings.neighborhood_structures.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="immediate_surroundings[neighborhood_structures][value]" value="no" 
+                                                   {{ old('immediate_surroundings.neighborhood_structures.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="immediate_surroundings[neighborhood_structures][remarks]" 
+                                                   value="{{ old('immediate_surroundings.neighborhood_structures.remarks') }}">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="immediate_surroundings[notes]" rows="3" placeholder="Additional notes about immediate surroundings">{{ old('immediate_surroundings.notes') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Additional Services -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-people-carry-box me-2"></i>Additional Services</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle additional-services">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 4rem;">&nbsp;</th>
+                                        <th>Item</th>
+                                        <th style="width: 6rem;" class="text-center">Yes</th>
+                                        <th style="width: 6rem;" class="text-center">No</th>
+                                        <th style="width: 40%;">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold">A</td>
+                                        <td>Land Preperation</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="additional_services[land_preparation][value]" value="yes" 
+                                                   {{ old('additional_services.land_preparation.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="additional_services[land_preparation][value]" value="no" 
+                                                   {{ old('additional_services.land_preparation.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="additional_services[land_preparation][remarks]" 
+                                                   value="{{ old('additional_services.land_preparation.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">B</td>
+                                        <td>Grading</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="additional_services[grading][value]" value="yes" 
+                                                   {{ old('additional_services.grading.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="additional_services[grading][value]" value="no" 
+                                                   {{ old('additional_services.grading.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="additional_services[grading][remarks]" 
+                                                   value="{{ old('additional_services.grading.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">C</td>
+                                        <td>Leveling</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="additional_services[leveling][value]" value="yes" 
+                                                   {{ old('additional_services.leveling.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="additional_services[leveling][value]" value="no" 
+                                                   {{ old('additional_services.leveling.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="additional_services[leveling][remarks]" 
+                                                   value="{{ old('additional_services.leveling.remarks') }}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold">D</td>
+                                        <td>Stacking</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="additional_services[stacking][value]" value="yes" 
+                                                   {{ old('additional_services.stacking.value') === 'yes' ? 'checked' : '' }}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="additional_services[stacking][value]" value="no" 
+                                                   {{ old('additional_services.stacking.value') === 'no' ? 'checked' : '' }}>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" name="additional_services[stacking][remarks]" 
+                                                   value="{{ old('additional_services.stacking.remarks') }}">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="additional_services[notes]" rows="3" placeholder="Additional notes about additional services">{{ old('additional_services.notes') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Tools -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-toolbox me-2"></i>Tools</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle tools-checklist">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5rem;" class="text-center">Check</th>
+                                        <th>Safety</th>
+                                        <th style="width: 5rem;" class="text-center">Check</th>
+                                        <th>Documentation</th>
+                                        <th style="width: 5rem;" class="text-center">Check</th>
+                                        <th>Drawing</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[safety][vest]" 
+                                                   {{ old('tools_checklist.safety.vest') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Vest</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[documentation][scale]" 
+                                                   {{ old('tools_checklist.documentation.scale') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Scale</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[drawing][clip_board]" 
+                                                   {{ old('tools_checklist.drawing.clip_board') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Clip Board</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[safety][hard_hat]" 
+                                                   {{ old('tools_checklist.safety.hard_hat') ? 'checked' : '' }}>
+                                        </td>
+                    					<td>Hard Hat</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[documentation][steel_tape]" 
+                                                   {{ old('tools_checklist.documentation.steel_tape') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Steel Tape</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[drawing][plans]" 
+                                                   {{ old('tools_checklist.drawing.plans') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Plans</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[safety][safety_shoes]" 
+                                                   {{ old('tools_checklist.safety.safety_shoes') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Safety Shoes</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[documentation][tape_measures_long]" 
+                                                   {{ old('tools_checklist.documentation.tape_measures_long') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Tape Measures Long</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[drawing][bond_papers]" 
+                                                   {{ old('tools_checklist.drawing.bond_papers') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Bond Papers</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[safety][mask]" 
+                                                   {{ old('tools_checklist.safety.mask') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Mask</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[documentation][tape_measures_short]" 
+                                                   {{ old('tools_checklist.documentation.tape_measures_short') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Tape Measures Short</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[drawing][pens]" 
+                                                   {{ old('tools_checklist.drawing.pens') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Pens</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[safety][face_shield_medical_cert]" 
+                                                   {{ old('tools_checklist.safety.face_shield_medical_cert') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Face Shield. Medical Cert</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" value="1" name="tools_checklist[documentation][camera]" 
+                                                   {{ old('tools_checklist.documentation.camera') ? 'checked' : '' }}>
+                                        </td>
+                                        <td>Camera</td>
+                                        <td class="text-center">&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    
+
+                    <!-- Media Files -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-camera me-2"></i>Media Files</h5>
+                        <div class="mb-3">
+                            <label for="media_files" class="form-label">Upload Photos/Videos</label>
+                            <input type="file" class="form-control" name="media_files[]" accept="image/*,video/*" multiple>
+                            <div class="form-text">You can upload multiple images (JPG, PNG) or videos (MP4, MOV). Max size: 10MB per file.</div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-file-contract me-2"></i>Terms and Conditions</h5>
+                        <div class="mb-3">
+                            <textarea class="form-control" name="terms_and_conditions" rows="6" 
+                                      placeholder="Enter terms and conditions for this site visit or project...">{{ old('terms_and_conditions') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Design Quotation -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-calculator me-2"></i>Design Quotation</h5>
+                        <div class="mb-3">
+                            <textarea class="form-control" name="design_quotation" rows="6" 
+                                      placeholder="Enter design quotation details, pricing, and specifications...">{{ old('design_quotation') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-sticky-note me-2"></i>Additional Notes</h5>
+                        <div class="mb-3">
+                            <textarea class="form-control" name="notes" rows="4" 
+                                      placeholder="Additional observations, recommendations, or notes...">{{ old('notes') }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ route('site-visits.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Save Site Visit
+                        </button>
+                    </div>
+                </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map;
+        let marker;
+
+        function setupCurrentLocationButton() {
+            const currentLocationBtn = document.getElementById('currentLocationBtn');
+            
+            currentLocationBtn.addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    // Show loading state
+                    currentLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Getting location...';
+                    currentLocationBtn.disabled = true;
+                    
+                    // Add a fallback timeout to prevent hanging
+                    const locationTimeout = setTimeout(() => {
+                        currentLocationBtn.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Use Current Location';
+                        currentLocationBtn.disabled = false;
+                        showLocationMessage('Location request is taking too long. Please try again or click on the map manually.', 'error');
+                    }, 15000);
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            clearTimeout(locationTimeout);
+                            
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            
+                            // Add marker and update form
+                            addMarker(lat, lng);
+                            
+                            // Center map on current location
+                            map.setView([lat, lng], 16);
+                            
+                            // Try to get address from coordinates (with timeout)
+                            reverseGeocode(lat, lng);
+                            
+                            // Reset button
+                            currentLocationBtn.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Use Current Location';
+                            currentLocationBtn.disabled = false;
+                            
+                            // Show success message with accuracy info
+                            const accuracy = position.coords.accuracy ? Math.round(position.coords.accuracy) : 'Unknown';
+                            showLocationMessage(`Location detected! Accuracy: ${accuracy}m. Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+                        },
+                        function(error) {
+                            clearTimeout(locationTimeout);
+                            
+                            // Reset button
+                            currentLocationBtn.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Use Current Location';
+                            currentLocationBtn.disabled = false;
+                            
+                            let errorMessage = 'Unable to get your location. ';
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMessage += 'Please allow location access in your browser.';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMessage += 'Location information is unavailable. Try again or click on the map manually.';
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMessage += 'Location request timed out. Try again or click on the map manually.';
+                                    break;
+                                default:
+                                    errorMessage += 'An unknown error occurred. Try clicking on the map manually.';
+                                    break;
+                            }
+                            
+                            showLocationMessage(errorMessage, 'error');
+                        },
+                        {
+                            enableHighAccuracy: false, // Changed to false for faster response
+                            timeout: 10000, // Reduced to 10 seconds
+                            maximumAge: 60000 // Reduced to 1 minute
+                        }
+                    );
+                } else {
+                    showLocationMessage('Geolocation is not supported by this browser.', 'error');
+                }
+            });
+        }
+        
+        function showLocationMessage(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : (type === 'info' ? 'alert-info' : 'alert-danger');
+            const alert = document.createElement('div');
+            alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '9999';
+            alert.style.maxWidth = '400px';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            const timeout = type === 'info' ? 7000 : 5000;
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, timeout);
+        }
+
+        function initMap() {
+            // Default to center of Philippines if no coordinates provided
+            const defaultLat = {{ $latitude ?? '12.8797' }};
+            const defaultLng = {{ $longitude ?? '121.7740' }};
+            
+            // Philippines bounds (southwest and northeast corners)
+            const philippinesBounds = [
+                [4.5, 116.0],  // Southwest corner (Mindanao south, western edge)
+                [21.0, 127.0]  // Northeast corner (Luzon north, eastern edge)
+            ];
+            
+            // Initialize Leaflet map with Philippines restrictions
+            map = L.map('map', {
+                center: [defaultLat, defaultLng],
+                zoom: 6,  // Show whole Philippines initially
+                minZoom: 6,  // Prevent zooming out too far
+                maxZoom: 18, // Allow detailed zoom
+                maxBounds: philippinesBounds, // Restrict panning to Philippines
+                maxBoundsViscosity: 1.0 // Make bounds solid (can't drag outside)
+            });
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Don't place initial marker - let user click to place marker
+            // This prevents marker appearing in the ocean on page load
+
+            // Add click listener to map
+            map.on('click', function(e) {
+                addMarker(e.latlng.lat, e.latlng.lng);
+            });
+        }
+
+        function addMarker(lat, lng) {
+            // Remove existing marker
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            // Add new marker
+            marker = L.marker([lat, lng]).addTo(map);
+
+            // Update form fields
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lng;
+            document.getElementById('coordinates').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        }
+
+        function reverseGeocode(lat, lng) {
+            // Create an AbortController for timeout handling
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+            
+            // Use Nominatim (OpenStreetMap) reverse geocoding service
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`, {
+                signal: controller.signal,
+                headers: {
+                    'User-Agent': 'Plant Inventory Site Visit Form'
+                }
+            })
+                .then(response => {
+                    clearTimeout(timeoutId);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.display_name) {
+                        document.querySelector('textarea[name="location_address"]').value = data.display_name;
+                        
+                        // Show a notification about the detected address
+                        showLocationMessage(`Address detected: ${data.display_name}`, 'info');
+                    }
+                })
+                .catch(error => {
+                    clearTimeout(timeoutId);
+                    console.log('Reverse geocoding failed:', error);
+                    
+                    // Only show error if it's not an abort (timeout) or user cancellation
+                    if (error.name !== 'AbortError') {
+                        console.warn('Address lookup failed, but location coordinates were still captured.');
+                    }
+                    // Don't show error to user as this is optional
+                });
+        }
+
+        // Allow re-clicking a selected Yes/No radio to unselect it (toggle off)
+        function setupToggleableRadios() {
+            const radios = document.querySelectorAll(
+                '.physical-factors input[type="radio"], '
+                + '.topography input[type="radio"], '
+                + '.geotechnical-soils input[type="radio"], '
+                + '.utilities input[type="radio"], '
+                + '.immediate-surroundings input[type="radio"], '
+                + '.additional-services input[type="radio"]'
+            );
+            radios.forEach((radio) => {
+                radio.addEventListener('mousedown', function () {
+                    this.dataset.waschecked = this.checked ? 'true' : 'false';
+                });
+                radio.addEventListener('click', function () {
+                    if (this.dataset.waschecked === 'true') {
+                        this.checked = false;
+                        // Trigger change in case any listeners depend on it
+                        this.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            });
+        }
+
+        // Link Existing User selector: auto-fill client fields and toggle required
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize map when DOM is ready
+            try { initMap(); } catch (e) { console.error('Map init error:', e); }
+
+            // Wire current location button
+            const locBtn = document.getElementById('currentLocationBtn');
+            if (locBtn) {
+                locBtn.addEventListener('click', function () {
+                    if (!navigator.geolocation) {
+                        showLocationMessage('Geolocation is not supported by your browser.', 'error');
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+                            addMarker(lat, lng);
+                            if (typeof map !== 'undefined') { map.setView([lat, lng], 15); }
+                            reverseGeocode(lat, lng);
+                            showLocationMessage('Current location captured.', 'success');
+                        },
+                        (err) => {
+                            console.warn('Geolocation failed:', err);
+                            showLocationMessage('Unable to get current location. Please click on the map instead.', 'error');
+                        },
+                        { enableHighAccuracy: true, timeout: 8000 }
+                    );
+                });
+            }
+            const userSelect = document.getElementById('user_id');
+            const nameInput = document.getElementById('client');
+            const contactInput = document.getElementById('contact_number');
+            const emailInput = document.getElementById('email');
+
+            function toggleClientRequired() {
+                const hasUser = !!userSelect && userSelect.value !== '';
+                nameInput.required = !hasUser;
+                contactInput.required = !hasUser;
+                emailInput.required = !hasUser;
+            }
+
+            function fillFromSelectedUser() {
+                const opt = userSelect.options[userSelect.selectedIndex];
+                if (!opt || !opt.value) { toggleClientRequired(); return; }
+                const n = opt.getAttribute('data-name') || '';
+                const c = opt.getAttribute('data-contact') || '';
+                const e = opt.getAttribute('data-email') || '';
+                if (!nameInput.value) nameInput.value = n;
+                if (!contactInput.value) contactInput.value = c;
+                if (!emailInput.value) emailInput.value = e;
+                toggleClientRequired();
+            }
+
+            if (userSelect) {
+                userSelect.addEventListener('change', fillFromSelectedUser);
+                // Initialize on load
+                toggleClientRequired();
+                if (userSelect.value) fillFromSelectedUser();
+            }
+
+            // Ensure radios are toggleable on click
+            try { setupToggleableRadios(); } catch (e) { console.warn('Toggle radios init error:', e); }
+        });
+    </script>
+</body>
+</html>

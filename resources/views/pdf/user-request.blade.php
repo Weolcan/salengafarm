@@ -2,208 +2,250 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Plant Request #{{ $request->id }}</title>
+    <title>Plant Availability Request #{{ $request->id }}</title>
     <style>
+        @page {
+            margin: 0.4cm;
+            size: A4 portrait;
+        }
         body {
             font-family: DejaVu Sans, sans-serif;
             margin: 0;
             padding: 0;
-            font-size: 12px;
-            color: #333;
+            font-size: 9px;
+            line-height: 1.2;
+            color: #000;
         }
-        .container {
+        .document {
+            border: 1px solid #000;
+            padding: 5px;
+            background: white;
             width: 100%;
-            margin: 0 auto;
+            box-sizing: border-box;
         }
         .header {
             text-align: center;
-            padding: 20px 0;
-            border-bottom: 2px solid #198754;
+            margin-bottom: 8px;
         }
         .header h1 {
             margin: 0;
-            color: #198754;
-            font-size: 24px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
         }
         .header h2 {
-            margin: 5px 0 0;
-            font-size: 16px;
+            margin: 3px 0;
+            font-size: 12px;
+            font-weight: normal;
         }
-        .info-section {
-            margin: 20px 0;
+        .section {
+            margin-bottom: 8px;
         }
-        .info-section h3 {
-            margin: 0 0 10px;
-            font-size: 14px;
-            color: #198754;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
+        .section h3 {
+            margin: 0 0 4px 0;
+            font-size: 11px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
+            margin-bottom: 5px;
         }
-        table th {
-            background-color: #f5f5f5;
+        table.info td {
+            padding: 1px;
+            vertical-align: top;
+        }
+        table.info td:first-child {
+            font-weight: bold;
+            width: 100px;
+        }
+        table.items {
+            border: 1px solid #000;
+            table-layout: fixed;
+        }
+        table.items th, 
+        table.items td {
+            border: 1px solid #000;
+            padding: 2px;
             text-align: left;
-            padding: 8px;
+            font-size: 8px;
+            vertical-align: middle;
+            word-break: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        table.items th {
             font-weight: bold;
-            border: 1px solid #ddd;
-        }
-        table td {
-            padding: 8px;
-            border: 1px solid #ddd;
-        }
-        .footer {
             text-align: center;
-            margin-top: 30px;
-            font-size: 11px;
-            color: #777;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
+            background-color: #f5f5f5;
         }
-        .label {
-            font-weight: bold;
-            width: 150px;
+        table.items th:nth-child(1) { width: 5%; }  /* Item No. */
+        table.items th:nth-child(2) { width: 5%; }  /* Qty */
+        table.items th:nth-child(3) { width: 22%; } /* Plant Name */
+        table.items th:nth-child(4) { width: 10%; }  /* Plant Code */
+        table.items th:nth-child(5) { width: 8%; }  /* Height */
+        table.items th:nth-child(6) { width: 8%; }  /* Spread */
+        table.items th:nth-child(7) { width: 8%; }  /* Spacing */
+        table.items th:nth-child(8) { width: 24%; } /* Remarks */
+        table.items th:nth-child(9) { width: 10%; } /* Availability */
+        
+        .footer {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 7px;
+            color: #666;
         }
-        .info-table td {
-            padding: 5px;
-            border: none;
-        }
-        .vendor-info {
-            margin-bottom: 20px;
+        .vendor-note {
+            margin-top: 8px;
+            font-size: 8px;
+            margin-bottom: 8px;
             background-color: #f9f9f9;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .vendor-note p {
+            margin: 2px 0;
+        }
+        table.items td:nth-child(8) {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+        .client-invitation {
+            margin-top: 10px;
             padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #eee;
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 3px;
+            font-size: 9px;
+        }
+        .client-invitation h4 {
+            margin: 0 0 5px 0;
+            font-size: 10px;
+            color: #856404;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="document">
         <div class="header">
             <h1>SALENGA FARM</h1>
-            <h2>PLANT REQUEST</h2>
+            <h2>PLANT AVAILABILITY REQUEST</h2>
         </div>
-        
-        <div class="vendor-info">
-            <h3>Vendor Information</h3>
-            <table class="info-table">
+
+        <div class="section">
+            <h3>VENDOR INFORMATION</h3>
+            <table class="info">
                 <tr>
-                    <td class="label">Company:</td>
-                    <td>ESTHER LIBRES SALENGA ESTHER'S FLOWER GARDEN AND LANDSCAPING</td>
+                    <td>Company:</td>
+                    <td>
+                        ESTHER LIBRES SALENGA ESTHER'S<br>
+                        FLOWER GARDEN AND LANDSCAPING
+                    </td>
                 </tr>
                 <tr>
-                    <td class="label">Address:</td>
-                    <td>INFRONT OF FATIMA VILLAGE SITIO MCL.DAVAO CITY.PH</td>
+                    <td>Address:</td>
+                    <td>
+                        INFRONT OF FATIMA VILLAGE SITIO<br>
+                        MCL.DAVAO CITY.PH
+                    </td>
                 </tr>
                 <tr>
-                    <td class="label">TIN:</td>
+                    <td>TIN:</td>
                     <td>47496058600000</td>
                 </tr>
-            </table>
-        </div>
-        
-        <div class="info-section">
-            <h3>Request Details</h3>
-            <table class="info-table">
                 <tr>
-                    <td class="label">Request #:</td>
-                    <td>{{ $request->id }}</td>
-                    <td class="label">Date:</td>
-                    <td>{{ date('F d, Y', strtotime($request->request_date)) }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Status:</td>
-                    <td>{{ ucfirst($request->status) }}</td>
-                    <td class="label">Due Date:</td>
-                    <td>{{ date('F d, Y', strtotime($request->due_date)) }}</td>
+                    <td>E-mail:</td>
+                    <td>salengafarm@example.com</td>
                 </tr>
             </table>
         </div>
-        
-        <div class="info-section">
-            <h3>Customer Information</h3>
-            <table class="info-table">
-                <tr>
-                    <td class="label">Name:</td>
-                    <td>{{ $request->name }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Email:</td>
-                    <td>{{ $request->email }}</td>
-                </tr>
-                @if($request->phone)
-                <tr>
-                    <td class="label">Phone:</td>
-                    <td>{{ $request->phone }}</td>
-                </tr>
-                @endif
-                @if($request->address)
-                <tr>
-                    <td class="label">Address:</td>
-                    <td>{{ $request->address }}</td>
-                </tr>
-                @endif
-            </table>
-        </div>
-        
-        <div class="info-section">
-            <h3>Requested Plants</h3>
-            <table>
+
+        <table>
+            <tr>
+                <td><strong>Request Date:</strong> {{ $request->request_date->format('F d, Y') }}</td>
+                <td><strong>Due Date:</strong> {{ $request->due_date->format('F d, Y') }}</td>
+            </tr>
+        </table>
+
+        <table>
+            <tr>
+                <td><strong>User Name:</strong> {{ $request->name }}</td>
+                <td><strong>User Email:</strong> {{ $request->email }}</td>
+            </tr>
+        </table>
+
+        <div class="section">
+            <table class="items">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        <th>Item No.</th>
+                        <th>Qty</th>
                         <th>Plant Name</th>
-                        <th>Quantity</th>
-                        @if(isset($request->items_json[0]['code']))
                         <th>Code</th>
-                        @endif
-                        @if(isset($request->items_json[0]['height']))
-                        <th>Height</th>
-                        @endif
-                        @if(isset($request->items_json[0]['spread']))
-                        <th>Spread</th>
-                        @endif
-                        @if(isset($request->items_json[0]['spacing']))
-                        <th>Spacing</th>
-                        @endif
+                        <th>Height<br><small>(mm)</small></th>
+                        <th>Spread<br><small>(mm)</small></th>
+                        <th>Spacing<br><small>(mm)</small></th>
+                        <th>Remarks</th>
+                        <th>Availability</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($request->items_json as $index => $item)
                     <tr>
-                        <td>{{ $index + 1 }}</td>
+                        <td style="text-align: center; white-space: nowrap;">{{ $index + 1 }}</td>
+                        <td style="text-align: center;">{{ isset($item['quantity']) ? $item['quantity'] : '' }}</td>
                         <td>{{ $item['name'] ?? '' }}</td>
-                        <td>{{ $item['quantity'] ?? 1 }}</td>
-                        @if(isset($request->items_json[0]['code']))
-                        <td>{{ $item['code'] ?? '' }}</td>
-                        @endif
-                        @if(isset($request->items_json[0]['height']))
-                        <td>{{ $item['height'] ?? '' }}</td>
-                        @endif
-                        @if(isset($request->items_json[0]['spread']))
-                        <td>{{ $item['spread'] ?? '' }}</td>
-                        @endif
-                        @if(isset($request->items_json[0]['spacing']))
-                        <td>{{ $item['spacing'] ?? '' }}</td>
-                        @endif
+                        <td style="text-align: center;">{{ isset($item['code']) && $item['code'] != 'N/A' ? $item['code'] : '' }}</td>
+                        <td style="text-align: center;">{{ isset($item['height']) && $item['height'] != '' ? $item['height'] : '' }}</td>
+                        <td style="text-align: center;">{{ isset($item['spread']) && $item['spread'] != '' ? $item['spread'] : '' }}</td>
+                        <td style="text-align: center;">{{ isset($item['spacing']) && $item['spacing'] != '' ? $item['spacing'] : '' }}</td>
+                        <td>{!! nl2br(e($item['remarks'] ?? '')) !!}</td>
+                        <td style="text-align: center;">{{ $item['availability'] ?? '' }}</td>
                     </tr>
                     @endforeach
+                    
+                    {{-- Add empty rows to support up to 20 items --}}
+                    @for ($i = count($request->items_json); $i < 20; $i++)
+                        <tr style="height: 12px;">
+                            <td style="text-align: center;">{{ $i + 1 }}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    @endfor
                 </tbody>
             </table>
         </div>
-        
-        @if($request->message)
-        <div class="info-section">
-            <h3>Additional Information</h3>
-            <p>{{ $request->message }}</p>
+
+        <div class="vendor-note">
+            <p><strong>PLANT AVAILABILITY NOTICE:</strong><br>
+            The plants listed above are currently available at Salenga Farm. This document confirms the availability of the requested plants based on your inquiry.</p>
         </div>
-        @endif
-        
+
+        <div class="client-invitation">
+            <h4>🌿 INTERESTED IN ORDERING?</h4>
+            <p><strong>Become a Client:</strong> If you would like to place an order for these plants, we invite you to register as a client with Salenga Farm. As a registered client, you will receive:</p>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li>Detailed pricing and quotations</li>
+                <li>Priority order processing</li>
+                <li>Delivery arrangements</li>
+                <li>Ongoing support for your plant needs</li>
+            </ul>
+            <p><strong>To become a client:</strong> Please contact us at salengafarm@example.com or reply to this email expressing your interest. We will guide you through a simple verification process to set up your client account.</p>
+        </div>
+
         <div class="footer">
-            <p>This document was generated on {{ date('F d, Y') }}. For any inquiries, please contact us at salengafarm@example.com</p>
+            <p>This is an automatically generated availability document. For any questions or to place an order, please contact us at info@salengafarm.com</p>
+            <p>Request ID: {{ $request->id }} | Generated on: {{ now()->format('F d, Y H:i:s') }}</p>
         </div>
     </div>
 </body>

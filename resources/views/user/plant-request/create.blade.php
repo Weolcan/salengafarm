@@ -176,6 +176,7 @@
 @section('scripts')
 <script>
     $(document).ready(function() {
+
         // Check for selected plants in session storage
         const checkSelectedPlants = function() {
             const selectedPlants = JSON.parse(sessionStorage.getItem('selectedPlants') || '[]');

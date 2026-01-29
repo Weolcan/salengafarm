@@ -69,8 +69,8 @@ class RegisteredUserController extends Controller
         $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'contact_number' => ['required', 'string', 'max:255'],
-            'company_name' => ['required', 'string', 'max:255'],
+            'contact_number' => ['nullable', 'string', 'max:255'],
+            'company_name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => [
                 'required', 
@@ -90,8 +90,8 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
-            'contact_number' => $request->contact_number,
-            'company_name' => $request->company_name,
+            'contact_number' => $request->contact_number ?? '',
+            'company_name' => $request->company_name ?? '',
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'user', // Set default role to user

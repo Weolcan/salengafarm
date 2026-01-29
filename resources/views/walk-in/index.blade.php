@@ -37,13 +37,30 @@
     }
     
     .table th {
-        background-color: #f0f0f0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border-color: #dee2e6;
         font-weight: 600;
+        color: #495057;
     }
     
     .table-bordered td {
         border-color: #dee2e6;
+    }
+    
+    .table-bordered {
+        border-color: #dee2e6;
+    }
+    
+    /* Force table scrollable - Plant Selection specific */
+    .col-lg-8 .card-body .table-responsive {
+        max-height: 600px !important;
+        overflow-y: auto !important;
+        display: block !important;
+        border: 1px solid #dee2e6;
+    }
+    
+    .col-lg-8 .card-body .table-responsive table {
+        margin-bottom: 0 !important;
     }
     
     /* Cart item quantity styling */
@@ -84,7 +101,7 @@
     }
 
     .cart-card {
-        height: calc(100vh - 200px);
+        height: calc(100vh - 120px);
         display: flex;
         flex-direction: column;
     }
@@ -125,21 +142,508 @@
         font-size: 0.85rem;
         padding: 0.5rem;
     }
+
+    /* POS Compact Styles */
+    .py-4 {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+    .mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+    h1.mb-0 {
+        font-size: 1.75rem;
+        font-weight: 600;
+    }
+    .btn {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.8rem;
+    }
+    .card-header {
+        padding: 0.75rem 1.25rem;
+    }
+    .card-header h5 {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    .table th,
+    .table td {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+    .form-control,
+    .input-group-text {
+        font-size: 0.85rem;
+    }
+    .editable-field,
+    .form-control-sm {
+        padding: 0.2rem 0.3rem;
+        font-size: 0.7rem;
+    }
+    .add-to-cart-btn {
+        padding: 0.3rem 0.7rem;
+    }
+    .cart-card {
+        height: calc(100vh - 100px);
+    }
+    .customer-info .form-label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+    .customer-info .form-control {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.5rem;
+    }
+    #cart-table-body td {
+        padding: 0.4rem;
+        font-size: 0.85rem;
+    }
+    .item-quantity {
+        width: 60px !important;
+        height: auto;
+    }
+    
+    /* Price input width fix */
+    .price-input {
+        min-width: 100px !important;
+        width: 100px !important;
+    }
+    
+    /* Improved input sizing for numeric fields - reduced for 5 digits */
+    .editable-field {
+        min-width: 70px !important;
+        width: 70px !important;
+        max-width: 70px !important;
+        font-size: 0.7rem !important;
+        padding: 0.2rem 0.3rem !important;
+        text-align: center;
+    }
+    
+    .price-field {
+        min-width: 80px !important;
+        width: 80px !important;
+        max-width: 80px !important;
+        font-size: 0.7rem !important;
+        padding: 0.2rem 0.3rem !important;
+        text-align: center;
+    }
+    
+    /* Current Sale improvements */
+    .current-sale-compact {
+        font-size: 0.85rem;
+    }
+    
+    /* Cart table improvements */
+    #cart-table-body .plant-name {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.8rem;
+    }
+    
+    #cart-table-body .qty-input {
+        width: 50px !important;
+        min-width: 50px !important;
+        text-align: center;
+        padding: 0.2rem 0.3rem;
+    }
+    
+    #cart-table-body .price-display {
+        min-width: 70px;
+        text-align: right;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    #cart-table-body .total-display {
+        min-width: 80px;
+        text-align: right;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    /* Table column sizing for better layout */
+    .plant-selection-table {
+        table-layout: fixed;
+        width: 100%;
+    }
+    
+    .plant-selection-table th:nth-child(1) { width: 18%; } /* Name */
+    .plant-selection-table th:nth-child(2) { width: 10%; } /* Code */
+    .plant-selection-table th:nth-child(3) { width: 14%; } /* Height */
+    .plant-selection-table th:nth-child(4) { width: 14%; } /* Spread */
+    .plant-selection-table th:nth-child(5) { width: 14%; } /* Spacing */
+    .plant-selection-table th:nth-child(6) { width: 16%; } /* Price */
+    .plant-selection-table th:nth-child(7) { width: 14%; } /* Actions */
+    
+    /* Fix for Plant Selection table cells */
+    .plant-selection-table td {
+        vertical-align: middle;
+        padding: 0.5rem 0.3rem;
+    }
+    
+    .plant-selection-table th {
+        vertical-align: middle;
+        padding: 0.5rem 0.3rem;
+        font-size: 0.75rem;
+        text-align: center;
+        white-space: normal;
+        line-height: 1.2;
+        font-weight: 600;
+    }
+    
+    /* Plant name column - left aligned */
+    .plant-selection-table td:nth-child(1),
+    .plant-selection-table th:nth-child(1) {
+        text-align: left;
+        padding-left: 0.75rem;
+    }
+    
+    /* Code column - center aligned */
+    .plant-selection-table td:nth-child(2),
+    .plant-selection-table th:nth-child(2) {
+        text-align: center;
+    }
+    
+    /* Input fields - center aligned */
+    .plant-selection-table td:nth-child(3),
+    .plant-selection-table td:nth-child(4),
+    .plant-selection-table td:nth-child(5),
+    .plant-selection-table td:nth-child(6) {
+        text-align: center;
+    }
+    
+    /* Actions column - center aligned */
+    .plant-selection-table td:nth-child(7),
+    .plant-selection-table th:nth-child(7) {
+        text-align: center;
+    }
+    
+    /* Add button styling in plant selection */
+    .plant-selection-table .add-to-cart-btn {
+        white-space: nowrap;
+        font-size: 0.75rem;
+        padding: 0.35rem 0.6rem;
+        width: 100%;
+        max-width: 90px;
+        background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+        border: none;
+        box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .plant-selection-table .add-to-cart-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+        background: linear-gradient(135deg, #4caf50 0%, #43a047 100%);
+    }
+    
+    /* Input fields in table - make them fit better */
+    .plant-selection-table .editable-field {
+        width: 100% !important;
+        max-width: 100px;
+        min-width: 70px;
+        margin: 0 auto;
+        display: block;
+    }
+    
+    .plant-selection-table .price-field {
+        width: 100% !important;
+        max-width: 110px;
+        min-width: 80px;
+        margin: 0 auto;
+        display: block;
+    }
+    
+    /* Cart table - Compact auto-width layout */
+    .cart-table {
+        table-layout: auto;
+        width: auto;
+        margin: 0 auto;
+    }
+    
+    .cart-items-container {
+        overflow-y: auto;
+        overflow-x: hidden; /* Hide horizontal scrollbar */
+    }
+    
+    /* Set specific widths for columns to keep them compact */
+    .cart-table th:nth-child(1), .cart-table td:nth-child(1) { width: 120px; } /* Plant */
+    .cart-table th:nth-child(2), .cart-table td:nth-child(2) { width: 50px; }  /* Qty */
+    .cart-table th:nth-child(3), .cart-table td:nth-child(3) { width: 70px; }  /* Price */
+    .cart-table th:nth-child(4), .cart-table td:nth-child(4) { width: 70px; }  /* Total */
+    .cart-table th:nth-child(5), .cart-table td:nth-child(5) { width: 40px; }  /* Delete */
+    
+    /* Make everything much smaller for better fit */
+    .cart-table th {
+        font-size: 0.65rem !important;
+        padding: 0.2rem 0.1rem !important;
+        font-weight: 600;
+    }
+    
+    .cart-table td {
+        font-size: 0.65rem !important;
+        padding: 0.2rem 0.1rem !important;
+    }
+    
+    /* Smaller quantity input */
+    .cart-table .qty-input {
+        width: 35px !important;
+        height: 24px !important;
+        font-size: 0.6rem !important;
+        padding: 0.1rem 0.2rem !important;
+    }
+    
+    /* Smaller delete button */
+    .cart-table .remove-item-btn {
+        padding: 0.1rem 0.2rem !important;
+        font-size: 0.6rem !important;
+    }
+    
+    .current-sale-compact .card-header {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .current-sale-compact .form-label {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+    
+    .current-sale-compact .form-control,
+    .current-sale-compact .form-select {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.5rem;
+        height: auto;
+    }
+    
+    .current-sale-compact .btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .current-sale-compact .customer-info {
+        padding: 0.75rem;
+    }
+    
+    .current-sale-compact .cart-items-container {
+        max-height: 200px;
+    }
+    
+    .current-sale-compact .subtotal-section {
+        padding: 0.75rem;
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .current-sale-compact .subtotal-section h6 {
+        font-size: 1rem;
+        margin: 0;
+    }
+    
+    .current-sale-compact .empty-cart {
+        padding: 2rem 1rem;
+    }
+    
+    .current-sale-compact .empty-cart i {
+        font-size: 2rem;
+    }
+    
+    
+    /* Quantity input specific styling */
+    .cart-table .item-quantity {
+        width: 45px !important;
+        height: 28px;
+        padding: 0.2rem 0.3rem;
+        text-align: center;
+        font-size: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+    }
+    
+    /* Remove button styling */
+    .cart-table .remove-item-btn {
+        padding: 0.15rem 0.3rem;
+        font-size: 0.7rem;
+        border-radius: 3px;
+    }
+    
+    /* Subtotal section improvements */
+    .subtotal-section {
+        background-color: #f8f9fa;
+        border-top: 2px solid #dee2e6;
+        border-bottom: 2px solid #dee2e6;
+        padding: 0.75rem 1rem;
+    }
+    
+    .subtotal-section h5 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    /* Customer info section improvements */
+    .customer-info {
+        padding: 0.75rem 1rem;
+        background-color: #fff;
+    }
+    
+    .customer-info .form-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        color: #495057;
+    }
+    
+    .customer-info .form-control,
+    .customer-info .form-select {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.5rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+    
+    .customer-info textarea.form-control {
+        resize: none;
+        min-height: 60px;
+    }
+    
+    /* Action buttons improvements */
+    .action-buttons {
+        padding: 0.75rem 1rem;
+        background-color: #fff;
+        border-top: 2px solid #dee2e6;
+    }
+    
+    .action-buttons .btn {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.5rem 0.8rem;
+        border-radius: 4px;
+    }
+    
+    /* Cart items container improvements */
+    .cart-items-container {
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 0.5rem;
+        background-color: #fff;
+    }
+    
+    /* Scrollbar styling for cart items */
+    .cart-items-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .cart-items-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .cart-items-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .cart-items-container::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    /* Ensure FontAwesome spin animation works */
+    .fa-spin {
+        animation: fa-spin 1s infinite linear;
+    }
+    
+    @keyframes fa-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Alternative: Simple pulsing effect for loading states */
+    .loading-pulse {
+        animation: loading-pulse 1.5s infinite;
+    }
+    
+    @keyframes loading-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    /* Sales Records Modal - Ensure checkboxes are visible and table is scrollable */
+    #salesRecordsModal .table-responsive {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+    }
+    
+    #salesRecordsModal .table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: #f8f9fa;
+    }
+    
+    /* Ensure Delete Selected button is clickable above table */
+    #salesRecordsModal .modal-body > .row {
+        position: relative;
+        z-index: 20;
+    }
+    
+    #bulk-delete-btn {
+        position: relative;
+        z-index: 25;
+    }
+    
+    #salesRecordsModal .form-check-input {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        margin: 0;
+        border: 1px solid #000 !important;
+        background-color: #fff;
+    }
+    
+    #salesRecordsModal .form-check-input:checked {
+        background-color: #4caf50;
+        border-color: #000 !important;
+    }
+    
+    #salesRecordsModal .record-checkbox {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    #salesRecordsModal tbody td:first-child {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    #salesRecordsModal .pagination {
+        margin: 0;
+    }
+    
+    #sales-records-pagination {
+        padding: 10px 0;
+        background-color: #fff;
+    }
 </style>
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" style="height: calc(100vh - 0px); display: flex; flex-direction: column; background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);">
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="mb-0">Walk-in Sales</h1>
+                <h1 class="mb-0" style="color: #2e7d32; font-weight: 600; font-family: 'Poppins', sans-serif;">
+                    <i class="fas fa-cash-register me-2" style="color: #4caf50;"></i>Point of Sale
+                </h1>
                 <div>
-                    <button id="new-sale-btn" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i> New Sale
-                    </button>
-                    <button id="records-btn" class="btn btn-info ms-2">
+                    <button id="records-btn" class="btn btn-success ms-2" style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%); border: none; box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);">
                         <i class="fas fa-list me-1"></i> Records
                     </button>
-                    <a href="{{ route('walk-in.inventory') }}" class="btn btn-success ms-2">
+                    <a href="{{ route('walk-in.inventory') }}" class="btn btn-primary ms-2" style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%); border: none; box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);">
                         <i class="fas fa-boxes me-1"></i> Inventory
                     </a>
                 </div>
@@ -147,15 +651,17 @@
         </div>
     </div>
     
-    <div class="row">
-        <div class="col-lg-8">
+    <div class="row" style="flex: 1; min-height: 0;">
+        <div class="col-lg-8" style="display: flex; flex-direction: column;">
             <!-- Plant selection and cart area -->
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Plant Selection</h5>
+            <div class="card mb-4" style="flex: 1; display: flex; flex-direction: column; min-height: 0; border: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 12px;">
+                <div class="card-header" style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%); color: white; border-radius: 12px 12px 0 0; border: none;">
+                    <h5 class="mb-0" style="font-weight: 600; font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-leaf me-2"></i>Plant Selection
+                    </h5>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-3">
+                <div class="card-body" style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;">
+                    <div class="row mb-3" style="flex-shrink: 0;">
                         <div class="col">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -164,15 +670,15 @@
                         </div>
                     </div>
                     
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead class="table-light">
+                    <div class="table-responsive" style="flex: 1; overflow-y: auto !important; display: block !important; border: 1px solid #dee2e6 !important; min-height: 0;">
+                        <table class="table table-bordered plant-selection-table" style="margin-bottom: 0 !important;">
+                            <thead class="table-light sticky-top" style="background-color: #fff !important; position: sticky !important; top: 0 !important; z-index: 10 !important; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1) !important;">
                                 <tr>
                                     <th>Name</th>
                                     <th>Code</th>
-                                    <th>Height (mm)</th>
-                                    <th>Spread (mm)</th>
-                                    <th>Spacing (mm)</th>
+                                    <th>Height<br>(mm)</th>
+                                    <th>Spread<br>(mm)</th>
+                                    <th>Spacing<br>(mm)</th>
                                     <th>Price</th>
                                     <th>Actions</th>
                                 </tr>
@@ -195,11 +701,8 @@
                                                value="{{ $plant->spacing }}" min="0" style="border: 1px solid #ced4da;">
                                     </td>
                                     <td>
-                                        <div class="input-group input-group-sm">
-                                            <span class="input-group-text">₱</span>
-                                            <input type="number" class="form-control editable-field" 
-                                                   value="{{ $plant->price }}" min="0" step="0.01" style="border: 1px solid #ced4da;">
-                                        </div>
+                                        <input type="number" class="form-control form-control-sm editable-field price-field" 
+                                               value="{{ $plant->price }}" min="0" step="0.01" style="border: 1px solid #ced4da;">
                                     </td>
                                     <td>
                                         <button class="btn btn-sm btn-primary add-to-cart-btn" data-plant-id="{{ $plant->id }}" data-plant-name="{{ $plant->name }}" data-plant-price="{{ $plant->price }}">
@@ -221,9 +724,11 @@
         
         <div class="col-lg-4">
             <!-- Current sale cart - Redesigned with fixed layout -->
-            <div class="card mb-4 cart-card">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Current Sale</h5>
+            <div class="card mb-4 cart-card" style="border: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 12px;">
+                <div class="card-header" style="background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%); color: white; border-radius: 12px 12px 0 0; border: none;">
+                    <h5 class="mb-0" style="font-weight: 600; font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-shopping-cart me-2"></i>Current Sale
+                    </h5>
                 </div>
                 <div class="card-body p-0 cart-body">
                     <!-- Empty cart message -->
@@ -232,25 +737,23 @@
                         <p>No items in cart</p>
                     </div>
                     
-                    <!-- Cart items with scrollable area -->
+                    <!-- Cart items - No scrolling, compact table -->
                     <div id="cart-items-list" class="d-none">
                         <div class="cart-items-container p-3">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered">
-                                    <thead class="table-light sticky-top" style="top: 0; z-index: 999; background-color: #fff;">
-                                        <tr>
-                                            <th>Plant</th>
-                                            <th>Qty</th>
-                                            <th>Price</th>
-                                            <th>Total</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="cart-table-body">
-                                        <!-- Cart items will be added here -->
-                                    </tbody>
-                                </table>
-                            </div>
+                            <table class="table table-sm table-bordered cart-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Plant</th>
+                                        <th>Qty</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-table-body">
+                                    <!-- Cart items will be added here -->
+                                </tbody>
+                            </table>
                         </div>
                         
                         <!-- Subtotal -->
@@ -263,6 +766,15 @@
                         
                         <!-- Customer information -->
                         <div class="p-3 customer-info">
+                            <div class="mb-3">
+                                <label for="receipt-number" class="form-label">Receipt Number <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="receipt-number" placeholder="Enter or auto-generate">
+                                    <button class="btn btn-outline-secondary" type="button" id="auto-generate-receipt-btn" title="Auto Generate Receipt Number">
+                                        <i class="fas fa-magic"></i> Auto
+                                    </button>
+                                </div>
+                            </div>
                             <div class="mb-3">
                                 <label for="customer-name" class="form-label">Customer Name <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="customer-name">
@@ -291,7 +803,7 @@
                 <div class="card-footer action-buttons" id="cart-actions">
                     <div id="empty-cart-actions">
                         <div class="d-grid">
-                            <button id="new-sale-btn-empty" class="btn btn-primary">
+                            <button id="new-sale-btn-empty" class="btn btn-info" style="background: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%); border: none; box-shadow: 0 2px 4px rgba(38, 166, 154, 0.3); color: white;">
                                 <i class="fas fa-plus me-1"></i> Start New Sale
                             </button>
                         </div>
@@ -300,17 +812,17 @@
                     <div id="filled-cart-actions" class="d-none">
                         <div class="row g-2">
                             <div class="col-12">
-                                <button id="process-sale-btn" class="btn btn-success w-100">
+                                <button id="process-sale-btn" class="btn btn-success w-100" style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%); border: none; box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);">
                                     <i class="fas fa-check-circle me-1"></i> Complete Sale & Print Receipt
                                 </button>
                             </div>
                             <div class="col-6">
-                                <button id="new-sale-btn-in-cart" class="btn btn-primary w-100">
+                                <button id="new-sale-btn-in-cart" class="btn btn-info w-100" style="background: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%); border: none; box-shadow: 0 2px 4px rgba(38, 166, 154, 0.3); color: white;">
                                     <i class="fas fa-plus me-1"></i> New Sale
                                 </button>
                             </div>
                             <div class="col-6">
-                                <button id="cancel-sale-btn" class="btn btn-danger w-100">
+                                <button id="cancel-sale-btn" class="btn btn-danger w-100" style="background: linear-gradient(135deg, #ef5350 0%, #e53935 100%); border: none; box-shadow: 0 2px 4px rgba(229, 57, 53, 0.3);">
                                     <i class="fas fa-times-circle me-1"></i> Cancel
                                 </button>
                             </div>
@@ -340,12 +852,22 @@
                                 <button class="btn btn-primary" id="filter-records-btn">Filter</button>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-secondary" id="bulk-delete-btn" disabled>
+                                    <i class="fas fa-trash me-1"></i>Delete Selected
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead class="table-light">
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6;">
+                        <table class="table table-striped table-bordered mb-0">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 10; background-color: #f8f9fa;">
                                 <tr>
+                                    <th style="width: 40px; text-align: center;">
+                                        <input type="checkbox" id="select-all-records" class="form-check-input" style="width: 18px; height: 18px; cursor: pointer;">
+                                    </th>
                                     <th>Date</th>
                                     <th>Plant</th>
                                     <th>Height</th>
@@ -364,7 +886,7 @@
                         </table>
                     </div>
                     
-                    <div id="sales-records-pagination" class="d-flex justify-content-center mt-3">
+                    <div id="sales-records-pagination" class="d-flex justify-content-center mt-3" style="padding: 10px 0;">
                         <!-- Pagination will be added here dynamically -->
                     </div>
                     
@@ -389,66 +911,78 @@
 
     <!-- Receipt Preview Modal -->
     <div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-content" style="max-height: 90vh; display: flex; flex-direction: column;">
                 <div class="modal-header">
                     <h5 class="modal-title" id="receiptModalLabel">Sale Receipt</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div id="receipt-content" class="p-3 bg-white">
-                        <div class="text-center mb-4">
-                            <h4>Salenga Farm</h4>
-                            <p class="mb-0">Official Receipt</p>
-                            <p id="receipt-date" class="text-muted small">Date: </p>
+                <div class="modal-body p-0" style="overflow-y: auto; flex: 1;">
+                    <div id="receipt-content" class="bg-white" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.4; padding: 0; margin: 0;">
+                        <!-- Header -->
+                        <center>
+                            <div style="border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 8px 0; margin: 8px 0;">
+                                <div style="font-size: 18px; font-weight: bold; margin: 0;">SALENGA FARM</div>
+                                <div style="font-size: 13px; margin: 0;">Official Sales</div>
+                                <div style="font-size: 13px; margin: 0;">Receipt</div>
+                            </div>
+                        </center>
+                        
+                        <!-- Date and Receipt Info -->
+                        <div style="margin: 0 0 8px 0; padding: 0 5px; font-size: 11px;">
+                            <div id="receipt-date">Date: </div>
+                            <div id="receipt-number-display">Receipt #: </div>
                         </div>
                         
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <p><strong>Customer:</strong> <span id="receipt-customer-name"></span></p>
-                                <p><strong>Email:</strong> <span id="receipt-customer-email">-</span></p>
-                            </div>
-                            <div class="col-md-6 text-md-end">
-                                <p><strong>Receipt #:</strong> <span id="receipt-number"></span></p>
-                                <p><strong>Payment Method:</strong> <span id="receipt-payment-method"></span></p>
-                            </div>
+                        <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
+                        
+                        <!-- Customer Info -->
+                        <div style="margin: 0 0 8px 0; padding: 0 5px; font-size: 11px;">
+                            <div>Customer: <span id="receipt-customer-name"></span></div>
+                            <div>Email: <span id="receipt-customer-email">-</span></div>
+                            <div>Payment: <span id="receipt-payment-method"></span></div>
                         </div>
                         
-                        <div class="table-responsive mb-3">
-                            <table class="table table-sm table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Item</th>
-                                        <th class="text-center">Qty</th>
-                                        <th class="text-end">Price</th>
-                                        <th class="text-end">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="receipt-items">
-                                    <!-- Receipt items will be added here -->
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th colspan="3" class="text-end">Subtotal:</th>
-                                        <th class="text-end" id="receipt-subtotal">₱0.00</th>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                        <center>
+                            <div style="border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 4px 0; margin: 8px 0;">
+                                <div style="font-weight: bold; font-size: 13px; margin: 0;">ITEMS</div>
+                            </div>
+                        </center>
+                        
+                        <!-- Items -->
+                        <div id="receipt-items" style="margin: 0 0 8px 0; padding: 0 5px;">
+                            <!-- Items will be added here -->
                         </div>
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Notes:</strong></p>
-                                <p id="receipt-notes" class="text-muted">-</p>
-                            </div>
-                            <div class="col-md-6 text-end">
-                                <p class="mb-0">Thank you for your purchase!</p>
-                                <p class="small text-muted">Visit us again soon.</p>
-                            </div>
+                        <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
+                        
+                        <!-- Subtotal -->
+                        <div style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; padding: 0 5px;">
+                            <span style="float: left;">SUBTOTAL:</span>
+                            <span style="float: right;" id="receipt-subtotal">₱0.00</span>
+                            <div style="clear: both;"></div>
                         </div>
+                        
+                        <div style="border-top: 2px dashed #000; margin: 8px 0;"></div>
+                        
+                        <!-- Notes -->
+                        <div style="margin: 0 0 8px 0; padding: 0 5px; font-size: 11px;">
+                            <div>Notes: <span id="receipt-notes">-</span></div>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <center>
+                            <div style="margin: 10px 0 0 0; padding: 0; font-size: 12px;">
+                                <div style="font-weight: bold; margin: 0;">Thank you for</div>
+                                <div style="font-weight: bold; margin: 0;">your purchase!</div>
+                                <div style="margin: 4px 0 0 0;">Visit us again</div>
+                            </div>
+                        </center>
+                        
+                        <div style="border-top: 2px dashed #000; margin: 10px 0 0 0;"></div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="flex-shrink: 0;">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="print-receipt-btn">
                         <i class="fas fa-print me-1"></i> Print Receipt
@@ -552,6 +1086,9 @@
                             
                             $('#sales-records-body').append(`
                                 <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input record-checkbox" value="${record.id}">
+                                    </td>
                                     <td>${formattedDate}</td>
                                     <td><span class="truncate-text" title="${record.plant ? record.plant.name : 'Unknown'}">${record.plant ? record.plant.name : 'Unknown'}</span></td>
                                     <td>${record.height || 'N/A'}</td>
@@ -565,6 +1102,9 @@
                                 </tr>
                             `);
                         });
+                        
+                        // Attach checkbox event handlers
+                        attachCheckboxHandlers();
                         
                         // Create pagination
                         createPagination(response.data);
@@ -697,13 +1237,13 @@
                     
                     cartBody.append(`
                         <tr data-item-id="${item.id}">
-                            <td>${item.name}</td>
+                            <td class="plant-name">${item.name}</td>
                             <td>
-                                <input type="number" class="form-control form-control-sm item-quantity" 
-                                       value="${item.quantity}" min="1" style="width: 70px; border: 1px solid #ced4da; padding-right: 5px; text-align: center;">
+                                <input type="number" class="form-control form-control-sm qty-input" 
+                                       value="${item.quantity}" min="1">
                             </td>
-                            <td>₱${item.price.toFixed(2)}</td>
-                            <td>₱${item.total.toFixed(2)}</td>
+                            <td class="price-display">₱${item.price.toFixed(2)}</td>
+                            <td class="total-display">₱${item.total.toFixed(2)}</td>
                             <td>
                                 <button class="btn btn-sm btn-danger remove-item-btn">
                                     <i class="fas fa-trash"></i>
@@ -728,7 +1268,7 @@
         // Attach event handlers to cart items
         function attachCartEventHandlers() {
             // Update quantity
-            $('.item-quantity').change(function() {
+            $('.qty-input').change(function() {
                 const row = $(this).closest('tr');
                 const itemId = row.data('item-id');
                 const newQuantity = parseInt($(this).val());
@@ -774,6 +1314,11 @@
         
         // Function to generate receipt
         function generateReceipt(saleData) {
+            console.log('=== RECEIPT DEBUG ===');
+            console.log('Full saleData:', saleData);
+            console.log('Receipt Number:', saleData.receipt_number);
+            console.log('====================');
+            
             // Set basic receipt info
             const receiptDate = new Date();
             $('#receipt-date').text('Date: ' + receiptDate.toLocaleDateString() + ' ' + receiptDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -782,9 +1327,10 @@
             $('#receipt-payment-method').text(saleData.payment_method.charAt(0).toUpperCase() + saleData.payment_method.slice(1));
             $('#receipt-notes').text(saleData.notes || '-');
             
-            // Generate random receipt number (in reality this should come from the server)
-            const receiptNumber = 'INV-' + new Date().getTime().toString().substr(-6);
-            $('#receipt-number').text(receiptNumber);
+            // Use the receipt number from sale data - with fallback
+            const receiptNum = saleData.receipt_number || 'NOT-PROVIDED';
+            console.log('Setting receipt number to:', receiptNum);
+            $('#receipt-number-display').text('Receipt #: ' + receiptNum);
             
             // Clear and populate items
             const receiptItems = $('#receipt-items');
@@ -795,13 +1341,16 @@
             saleData.items.forEach(item => {
                 subtotal += item.total;
                 
+                // Thermal receipt format: Item name on one line, qty x price = total on next line
                 receiptItems.append(`
-                    <tr>
-                        <td>${item.name}</td>
-                        <td class="text-center">${item.quantity}</td>
-                        <td class="text-end">₱${parseFloat(item.price).toFixed(2)}</td>
-                        <td class="text-end">₱${parseFloat(item.total).toFixed(2)}</td>
-                    </tr>
+                    <div style="margin-bottom: 4px; border-bottom: 1px dashed #ccc; padding-bottom: 4px;">
+                        <div style="font-weight: bold; font-size: 12px;">${item.name}</div>
+                        <div style="font-size: 11px;">
+                            <span style="float: left;">${item.quantity} x ₱${parseFloat(item.price).toFixed(2)}</span>
+                            <span style="float: right; font-weight: bold;">₱${parseFloat(item.total).toFixed(2)}</span>
+                            <div style="clear: both;"></div>
+                        </div>
+                    </div>
                 `);
             });
             
@@ -811,50 +1360,96 @@
             receiptModal.show();
         }
         
-        // Handle print receipt button
+        // Handle print receipt button - Option A: Direct print with iframe
         $('#print-receipt-btn').click(function() {
-            const receiptContent = document.getElementById('receipt-content').innerHTML;
-            const printWindow = window.open('', '_blank');
+            // Create a hidden iframe for printing
+            const printFrame = document.createElement('iframe');
+            printFrame.style.position = 'absolute';
+            printFrame.style.width = '0';
+            printFrame.style.height = '0';
+            printFrame.style.border = 'none';
             
-            printWindow.document.write(`
+            document.body.appendChild(printFrame);
+            
+            const receiptContent = document.getElementById('receipt-content').innerHTML;
+            
+            const printDocument = printFrame.contentWindow.document;
+            printDocument.open();
+            printDocument.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Sale Receipt</title>
-                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
                     <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; }
-                        @media print {
-                            body { padding: 0; }
-                            .no-print { display: none; }
+                        /* Thermal printer optimized styles for 58mm paper on 72mm driver */
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        
+                        body { 
+                            font-family: Arial, sans-serif;
+                            padding: 0;
+                            margin: 0 auto;
+                            width: 58mm;
+                            max-width: 58mm;
+                        }
+                        
+                        @page {
+                            size: 58mm auto;
+                            margin: 0;
                         }
                     </style>
                 </head>
                 <body>
-                    <div class="container mb-4">
-                        <div class="no-print text-end mb-3">
-                            <button class="btn btn-primary" onclick="window.print()">Print</button>
-                            <button class="btn btn-secondary ms-2" onclick="window.close()">Close</button>
-                        </div>
-                        ${receiptContent}
-                    </div>
+                    ${receiptContent}
                 </body>
                 </html>
             `);
+            printDocument.close();
             
-            printWindow.document.close();
+            // Wait for content to load, then print (increased delay for thermal printer)
+            printFrame.contentWindow.focus();
+            setTimeout(() => {
+                printFrame.contentWindow.print();
+                
+                // Remove iframe after printing
+                setTimeout(() => {
+                    document.body.removeChild(printFrame);
+                }, 1000);
+            }, 1000); // Increased from 250ms to 1000ms (1 second)
         });
         
         // Process sale
         $('#process-sale-btn').click(function() {
             if (cart.length === 0) {
-                alert('Please add items to cart first.');
+                AlertSystem.alert({
+                    title: 'Cart Empty',
+                    message: 'Please add items to cart first.',
+                    type: 'warning'
+                });
+                return;
+            }
+            
+            const receiptNumber = $('#receipt-number').val().trim();
+            if (!receiptNumber) {
+                AlertSystem.alert({
+                    title: 'Receipt Number Required',
+                    message: 'Please enter receipt number or click Auto to generate one.',
+                    type: 'warning'
+                });
+                $('#receipt-number').focus();
                 return;
             }
             
             const customerName = $('#customer-name').val();
             if (!customerName) {
-                alert('Please enter customer name.');
+                AlertSystem.alert({
+                    title: 'Customer Name Required',
+                    message: 'Please enter customer name.',
+                    type: 'warning'
+                });
                 return;
             }
             
@@ -866,6 +1461,7 @@
             
             // Prepare sale data
             const saleData = {
+                receipt_number: receiptNumber,
                 customer_name: customerName,
                 customer_email: $('#customer-email').val(),
                 payment_method: $('#payment-method').val(),
@@ -905,17 +1501,26 @@
                         cart = [];
                         updateCartDisplay();
                         
-                        // Reset form
+                        // Reset form (including receipt number)
+                        $('#receipt-number').val('');
                         $('#customer-name').val('');
                         $('#customer-email').val('');
                         $('#notes').val('');
                     } else {
-                        alert('Error: ' + response.message);
+                        AlertSystem.alert({
+                            title: 'Error',
+                            message: 'Error: ' + response.message,
+                            type: 'error'
+                        });
                     }
                 },
                 error: function(xhr) {
                     console.error(xhr);
-                    alert('Error processing sale. Please try again.');
+                    AlertSystem.alert({
+                        title: 'Error',
+                        message: 'Error processing sale. Please try again.',
+                        type: 'error'
+                    });
                     
                     // Reset button
                     btn.html(originalText);
@@ -924,10 +1529,32 @@
             });
         });
         
+        // Auto-generate receipt number button
+        $('#auto-generate-receipt-btn').click(function() {
+            const btn = $(this);
+            const originalHtml = btn.html();
+            
+            // Show loading state
+            btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+            
+            // Generate receipt number based on timestamp
+            const timestamp = new Date().getTime();
+            const receiptNumber = 'INV-' + timestamp.toString().substr(-8);
+            
+            // Set the receipt number
+            $('#receipt-number').val(receiptNumber);
+            
+            // Restore button
+            setTimeout(() => {
+                btn.html(originalHtml).prop('disabled', false);
+            }, 300);
+        });
+        
         // New sale button (all variants)
         $('#new-sale-btn, #new-sale-btn-empty, #new-sale-btn-in-cart').click(function() {
             // Reset the form
             cart = [];
+            $('#receipt-number').val('');
             $('#customer-name').val('');
             $('#customer-email').val('');
             $('#notes').val('');
@@ -938,16 +1565,138 @@
         
         // Cancel sale button
         $('#cancel-sale-btn').click(function() {
-            if (confirm('Are you sure you want to cancel this sale?')) {
-                // Reset the form
-                cart = [];
-                $('#customer-name').val('');
-                $('#customer-email').val('');
-                $('#notes').val('');
-                $('#payment-method').val('cash');
+            AlertSystem.confirm({
+                title: 'Cancel Sale?',
+                message: 'Are you sure you want to cancel this sale? All items in the cart will be removed.',
+                confirmText: 'Yes, Cancel',
+                cancelText: 'No, Keep Sale',
+                onConfirm: function() {
+                    // Reset the form
+                    cart = [];
+                    $('#receipt-number').val('');
+                    $('#customer-name').val('');
+                    $('#customer-email').val('');
+                    $('#notes').val('');
+                    $('#payment-method').val('cash');
+                    
+                    updateCartDisplay();
+                    updateCartActions();
+                }
+            });
+        });
+        
+        // Function to attach checkbox event handlers
+        function attachCheckboxHandlers() {
+            // Handle select all checkbox
+            $('#select-all-records').off('change').on('change', function() {
+                const isChecked = $(this).is(':checked');
+                $('.record-checkbox').prop('checked', isChecked);
+                toggleBulkDeleteButton();
+            });
+            
+            // Handle individual record checkboxes
+            $('.record-checkbox').off('change').on('change', function() {
+                const totalCheckboxes = $('.record-checkbox').length;
+                const checkedCheckboxes = $('.record-checkbox:checked').length;
                 
-                updateCartDisplay();
+                // Update select all checkbox state
+                $('#select-all-records').prop('checked', totalCheckboxes === checkedCheckboxes);
+                $('#select-all-records').prop('indeterminate', checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes);
+                
+                toggleBulkDeleteButton();
+            });
+        }
+        
+        // Function to enable/disable bulk delete button based on selections
+        function toggleBulkDeleteButton() {
+            const checkedCount = $('.record-checkbox:checked').length;
+            if (checkedCount > 0) {
+                $('#bulk-delete-btn').prop('disabled', false).removeClass('btn-secondary').addClass('btn-danger');
+            } else {
+                $('#bulk-delete-btn').prop('disabled', true).removeClass('btn-danger').addClass('btn-secondary');
             }
+        }
+        
+        // Bulk delete functionality
+        $('#bulk-delete-btn').click(function() {
+            const selectedIds = [];
+            $('.record-checkbox:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+            
+            if (selectedIds.length === 0) {
+                AlertSystem.alert({
+                    title: 'No Records Selected',
+                    message: 'Please select at least one record to delete.',
+                    type: 'warning'
+                });
+                return;
+            }
+            
+            AlertSystem.confirm({
+                title: 'Delete Records?',
+                message: `Are you sure you want to delete ${selectedIds.length} selected record(s)? This action cannot be undone.`,
+                confirmText: 'Yes, Delete',
+                cancelText: 'Cancel',
+                onConfirm: function() {
+                    // Disable button and show loading state
+                    const btn = $('#bulk-delete-btn');
+                    const originalText = btn.html();
+                    btn.html('<i class="fas fa-spinner fa-spin me-1"></i>Deleting...');
+                    btn.prop('disabled', true);
+                    
+                    // Send delete request to server
+                    $.ajax({
+                        url: '/walk-in/bulk-delete',
+                        type: 'DELETE',
+                        data: JSON.stringify({
+                            ids: selectedIds
+                        }),
+                        contentType: 'application/json',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            // Reset button
+                            btn.html(originalText);
+                            btn.prop('disabled', false);
+                            
+                            if (response.success) {
+                                // Show success message
+                                AlertSystem.toast({
+                                    message: `Successfully deleted ${selectedIds.length} record(s).`,
+                                    type: 'success'
+                                });
+                                
+                                // Reload records
+                                loadSalesRecords(currentPage);
+                                
+                                // Reset checkboxes
+                                $('#select-all-records').prop('checked', false);
+                                toggleBulkDeleteButton();
+                            } else {
+                                AlertSystem.alert({
+                                    title: 'Error',
+                                    message: 'Error deleting records: ' + response.message,
+                                    type: 'error'
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error(xhr);
+                            AlertSystem.alert({
+                                title: 'Error',
+                                message: 'Error deleting records. Please try again.',
+                                type: 'error'
+                            });
+                            
+                            // Reset button
+                            btn.html(originalText);
+                            btn.prop('disabled', false);
+                        }
+                    });
+                }
+            });
         });
     });
 </script>

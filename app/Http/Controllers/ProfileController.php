@@ -27,13 +27,19 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill([
+        $updateData = [
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'contact_number' => $request->contact_number,
-            'company_name' => $request->company_name,
             'email' => $request->email,
-        ]);
+        ];
+
+        // Only update company_name if user is a client
+        if ($request->user()->is_client) {
+            $updateData['company_name'] = $request->company_name;
+        }
+
+        $request->user()->fill($updateData);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;

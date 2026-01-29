@@ -8,114 +8,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Edit Profile - Plant Inventory</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('tree-leaf.ico') }}?v=2">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
     <link href="{{ asset('css/inventory.css') }}" rel="stylesheet">
     <link href="{{ asset('css/profile.css') }}?v=1" rel="stylesheet">
+    <link href="{{ asset('css/push-notifications.css') }}?v={{ time() }}" rel="stylesheet">
 </head>
-<body class="bg-light">
-    <!-- Main Navigation -->
-    <nav class="navbar navbar-expand-lg main-nav">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <img src="{{ asset('images/salengap-modified.png') }}" alt="Logo" class="nav-logo">
-                <span class="brand-text">Salenga Farm</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav center-nav">
-                    @if(auth()->user()->hasAdminAccess())
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('public.plants') ? 'active' : '' }}" href="{{ route('public.plants') }}">
-                            <i class="fas fa-home me-1"></i>Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('requests.index') ? 'active' : '' }}" href="{{ route('requests.index') }}">
-                            <i class="fas fa-file-invoice me-1"></i>Request
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                            <i class="fas fa-chart-line me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('walk-in.*') ? 'active' : '' }}" href="{{ route('walk-in.index') }}">
-                            <i class="fas fa-cash-register me-1"></i>Walk-in
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('plants.index') ? 'active' : '' }}" href="{{ route('plants.index') }}">
-                            <i class="fas fa-leaf me-1"></i>Inventory
-                        </a>
-                    </li>
-                    @endif
-                    @if(auth()->user()->isAdmin())
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}" href="{{ route('users.index') }}">
-                            <i class="fas fa-users me-1"></i>Users
-                        </a>
-                    </li>
-                    @endif
-                </ul>
-                <div class="user-section">
-                    <div class="dropdown">
-                        <button class="btn btn-link dropdown-toggle profile-btn" type="button" id="profileDropdown" data-bs-toggle="dropdown">
-                            @if(auth()->user()->avatar)
-                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Profile" class="profile-pic">
-                            @else
-                                <div class="profile-pic-placeholder">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                            @endif
-                            {{ auth()->user()->name }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item active" href="{{ route('profile.edit') }}">
-                                    <i class="fas fa-user me-2"></i>Profile
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form action="{{ route('logout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
+<body class="bg-light dashboard-page">
+    <div id="sidebarOverlay"></div>
+    <div class="dashboard-flex">
+        @include('layouts.sidebar')
+        <!-- Sidebar Toggle Button for Mobile -->
+        <button id="sidebarToggle" class="btn btn-success d-lg-none" type="button" aria-label="Open sidebar">
+            <i class="fa fa-bars" style="font-size: 1.3rem;"></i>
+        </button>
+        <div class="main-content">
+            <div style="padding-top: 0;">
+                <div class="p-0">
+                    <h2 class="mb-3 fs-5" style="font-size: 1.1rem; padding-top: 10px;">Profile Settings</h2>
+                    
+                    <!-- Notification Container with Push Animation -->
+                    <div class="notification-container">
+                        @if(session('status'))
+                        <div class="alert alert-success alert-dismissible push-notification" role="alert">
+                            {{ session('status') }}
+                            <button type="button" class="btn-close notification-close" aria-label="Close"></button>
+                        </div>
+                        @endif
+
+                        @if($errors->any())
+                        <div class="alert alert-danger alert-dismissible push-notification" role="alert">
+                            <ul class="mb-0">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <button type="button" class="btn-close notification-close" aria-label="Close"></button>
+                        </div>
+                        @endif
                     </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="profile-container">
-        <!-- Show validation messages -->
-        @if(session('status'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('status') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
+                    
+                    <div class="profile-container">
 
         <div class="row">
             <!-- Profile Picture Section -->
@@ -137,7 +76,7 @@
                         
                         <form action="{{ route('profile.avatar.update') }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                            @method('patch')
+                            @method('put')
                             
                             <div class="file-upload-container">
                                 <div class="upload-btn-wrapper">
@@ -165,7 +104,32 @@
                     <div class="card-body">
                         <form method="post" action="{{ route('profile.update') }}" class="space-y-6">
                             @csrf
-                            @method('patch')
+                            @method('put')
+
+                            <!-- Role Display -->
+                            <div class="form-group">
+                                <label class="form-label">Role</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    @php
+                                        $roleDisplay = match(auth()->user()->role) {
+                                            'super_admin' => 'Super Admin',
+                                            'admin' => 'Admin',
+                                            'user' => 'User',
+                                            default => ucfirst(auth()->user()->role)
+                                        };
+                                        $badgeColor = match(auth()->user()->role) {
+                                            'super_admin' => 'bg-warning text-dark',
+                                            'admin' => 'bg-danger',
+                                            'user' => 'bg-success',
+                                            default => 'bg-secondary'
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badgeColor }} fs-6">{{ $roleDisplay }}</span>
+                                    @if(auth()->user()->is_client)
+                                        <span class="badge bg-info fs-6">Client</span>
+                                    @endif
+                                </div>
+                            </div>
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -193,12 +157,14 @@
                                        placeholder="Your contact number">
                             </div>
 
+                            @if(auth()->user()->is_client)
                             <div class="form-group">
                                 <label for="company_name" class="form-label">Company Name</label>
                                 <input type="text" class="form-control" id="company_name" name="company_name" 
-                                       value="{{ old('company_name', auth()->user()->company_name) }}" required 
+                                       value="{{ old('company_name', auth()->user()->company_name) }}" 
                                        placeholder="Your company name">
                             </div>
+                            @endif
 
                             <div class="form-group">
                                 <label for="email" class="form-label">Email</label>
@@ -294,12 +260,16 @@
                         </form>
                     </div>
                 </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('js/push-notifications.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/alerts.js') }}?v={{ time() }}"></script>
     <script>
         // Image preview functionality with enhanced UX
         const avatarInput = document.getElementById('avatarInput');
@@ -354,7 +324,11 @@
             const file = this.files[0];
             
             if (file && file.size > maxSize) {
-                alert('File size exceeds 5MB. Please choose a smaller image.');
+                AlertSystem.alert({
+                    title: 'File Too Large',
+                    message: 'File size exceeds 5MB. Please choose a smaller image.',
+                    type: 'warning'
+                });
                 this.value = '';
                 fileChosen.textContent = 'No file selected';
             }

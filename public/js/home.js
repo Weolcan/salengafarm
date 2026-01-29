@@ -19,6 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initAddPlantButtons();
     initEditableMeasurements();
     initModalSubmitButton();
+    initAdminEditFeatures();
+    // Load persisted categories first, then bind add/delete
+    loadPersistedCategories().then(() => {
+        initAddCategory();
+        initDeleteCategory();
+    });
     
     // Update plant action buttons based on selection
     selectedPlants.forEach(plant => {
@@ -55,6 +61,115 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Home page functionality initialized');
 });
 
+// Apply current category and search filters to the grid (used after inline edits)
+function applyCurrentFilters() {
+    const activeCat = document.querySelector('.category-icon-item.active');
+    const selectedCategory = activeCat ? activeCat.getAttribute('data-category') : 'all';
+    const searchInput = document.getElementById('searchInput');
+    const searchTerm = (searchInput ? searchInput.value : '').toLowerCase().trim();
+
+    document.querySelectorAll('.plant-item').forEach(plant => {
+        const plantName = (plant.getAttribute('data-name') || '').toLowerCase();
+        const plantCategory = plant.getAttribute('data-category') || '';
+
+        const matchesCategory = selectedCategory === 'all' || plantCategory === selectedCategory;
+        const matchesSearch = searchTerm === '' || plantName.includes(searchTerm);
+
+        plant.style.display = (matchesCategory && matchesSearch) ? '' : 'none';
+    });
+}
+
+// Reusable confirm/info modal for Home page (matches system style)
+function openHomeConfirmDialog(opts) {
+    const defaults = { title: 'Confirm', body: 'Are you sure?', yesText: 'Yes', noText: 'No', yesClass: 'btn-danger' };
+    const o = Object.assign({}, defaults, opts || {});
+    const modalEl = document.getElementById('homeConfirmModal');
+    if (!modalEl) { return Promise.resolve(confirm(o.body)); }
+    modalEl.querySelector('#homeConfirmTitle').textContent = o.title;
+    modalEl.querySelector('#homeConfirmBody').textContent = o.body;
+    const yesBtn = modalEl.querySelector('#homeConfirmYesBtn');
+    const noBtn = modalEl.querySelector('#homeConfirmCancelBtn');
+    const okBtn = modalEl.querySelector('#homeConfirmOkBtn');
+    okBtn.classList.add('d-none');
+    yesBtn.classList.remove('d-none');
+    noBtn.classList.remove('d-none');
+    yesBtn.classList.remove('btn-success','btn-primary','btn-danger');
+    if (o.yesClass) yesBtn.classList.add(o.yesClass);
+    yesBtn.textContent = o.yesText;
+    noBtn.textContent = o.noText;
+    return new Promise(resolve => {
+        const onHide = () => { modalEl.removeEventListener('hidden.bs.modal', onHide); resolve(false); };
+        modalEl.addEventListener('hidden.bs.modal', onHide);
+        yesBtn.onclick = () => {
+            modalEl.removeEventListener('hidden.bs.modal', onHide);
+            resolve(true);
+            bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+        };
+        noBtn.onclick = () => resolve(false);
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    });
+}
+
+function openHomeInfoDialog(opts) {
+    const defaults = { title: 'Notice', body: 'OK', okText: 'OK', okClass: 'btn-success' };
+    const o = Object.assign({}, defaults, opts || {});
+    const modalEl = document.getElementById('homeConfirmModal');
+    if (!modalEl) { alert(o.body); return; }
+    modalEl.querySelector('#homeConfirmTitle').textContent = o.title;
+    modalEl.querySelector('#homeConfirmBody').textContent = o.body;
+    const yesBtn = modalEl.querySelector('#homeConfirmYesBtn');
+    const noBtn = modalEl.querySelector('#homeConfirmCancelBtn');
+    const okBtn = modalEl.querySelector('#homeConfirmOkBtn');
+    yesBtn.classList.add('d-none');
+    noBtn.classList.add('d-none');
+    okBtn.classList.remove('d-none');
+    okBtn.classList.remove('btn-success','btn-primary','btn-danger');
+    if (o.okClass) okBtn.classList.add(o.okClass);
+    okBtn.textContent = o.okText;
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+// Load categories from backend and render extra categories + update selects
+function loadPersistedCategories() {
+    const baseSlugs = new Set(['shrub','herbs','palm','tree','grass','bamboo','fertilizer']);
+    return fetch('/categories', { headers: { 'Accept': 'application/json' }})
+        .then(r => r.json())
+        .then(categories => {
+            if (!Array.isArray(categories)) return;
+            const grid = document.querySelector('.category-grid');
+
+            categories.forEach(cat => {
+                if (!cat || !cat.slug || !cat.name) return;
+                // Update Add/Edit selects
+                const addSel = document.getElementById('category');
+                const editSel = document.getElementById('edit_category');
+                if (addSel && !addSel.querySelector(`option[value="${cat.slug}"]`)) {
+                    const opt = document.createElement('option');
+                    opt.value = cat.slug; opt.textContent = cat.name;
+                    addSel.appendChild(opt);
+                }
+                if (editSel && !editSel.querySelector(`option[value="${cat.slug}"]`)) {
+                    const opt2 = document.createElement('option');
+                    opt2.value = cat.slug; opt2.textContent = cat.name;
+                    editSel.appendChild(opt2);
+                }
+
+                // Render only extras in the grid (base already present)
+                if (!grid || baseSlugs.has(cat.slug)) return;
+                if (grid.querySelector(`.category-icon-item[data-category="${cat.slug}"]`)) return; // avoid dup
+                const item = document.createElement('div');
+                item.className = 'category-icon-item';
+                item.setAttribute('data-category', cat.slug);
+                item.setAttribute('data-category-id', cat.id);
+                const iconHtml = cat.icon_path ? `<img src="/storage/${cat.icon_path}" alt="${cat.name}" class="category-img">` : '<i class="fas fa-leaf"></i>';
+                item.innerHTML = `<div class="icon-circle">${iconHtml}</div><span>${escapeHtml(cat.name)}</span>`;
+                grid.appendChild(item);
+                attachCategoryHandler(item);
+            });
+        })
+        .catch(() => {});
+}
+
 /**
  * Initialize the category filter
  */
@@ -63,31 +178,150 @@ function initCategoryFilter() {
     const plantItems = document.querySelectorAll('.plant-item');
     
     categoryItems.forEach(item => {
-        item.addEventListener('click', function() {
-            // Remove active class from all category items
-            categoryItems.forEach(cat => cat.classList.remove('active'));
-            
-            // Add active class to clicked category
-            this.classList.add('active');
-            
-            // Get selected category
-            const category = this.getAttribute('data-category');
-            console.log('Category selected:', category);
-            
-            // Filter plants
-            plantItems.forEach(plant => {
-                const plantCategory = plant.getAttribute('data-category');
-                
-                if (category === 'all' || plantCategory === category) {
-                    plant.style.display = '';
-                } else {
-                    plant.style.display = 'none';
-                }
-            });
-        });
+        attachCategoryHandler(item);
     });
     
     console.log('Category filter initialized with', categoryItems.length, 'categories');
+}
+
+// Attach click handler to a single category item (used for dynamic categories as well)
+function attachCategoryHandler(item) {
+    item.addEventListener('click', function() {
+        // Remove active class from all category items
+        document.querySelectorAll('.category-icon-item').forEach(cat => cat.classList.remove('active'));
+
+        // Add active class to clicked category
+        this.classList.add('active');
+
+        // Get selected category
+        const category = this.getAttribute('data-category');
+        console.log('Category selected:', category);
+
+        // Filter plants
+        document.querySelectorAll('.plant-item').forEach(plant => {
+            const plantCategory = plant.getAttribute('data-category');
+            plant.style.display = (category === 'all' || plantCategory === category) ? '' : 'none';
+        });
+    });
+}
+
+// Initialize Add Category modal Save action (admin-only; button exists only for admins)
+function initAddCategory() {
+    const saveBtn = document.getElementById('saveNewCategory');
+    if (!saveBtn) return; // Not visible for non-admins
+
+    saveBtn.addEventListener('click', function() {
+        const nameInput = document.getElementById('newCategoryName');
+        const iconInput = document.getElementById('newCategoryIcon');
+        const name = (nameInput?.value || '').trim();
+        if (!name) { openHomeInfoDialog({ title: 'Notice', body: 'Please enter a category name.' }); return; }
+
+        const fd = new FormData();
+        fd.append('name', name);
+        if (iconInput && iconInput.files && iconInput.files[0]) {
+            fd.append('icon', iconInput.files[0]);
+        }
+
+        fetch('/categories', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+            body: fd
+        })
+        .then(r => r.json())
+        .then(resp => {
+            const cat = resp && resp.category ? resp.category : null;
+            if (!cat) { alert('Category saved but response missing data.'); return; }
+
+            // Update selects
+            const addSel = document.getElementById('category');
+            const editSel = document.getElementById('edit_category');
+            if (addSel && !addSel.querySelector(`option[value="${cat.slug}"]`)) {
+                const opt = document.createElement('option');
+                opt.value = cat.slug; opt.textContent = cat.name; addSel.appendChild(opt);
+            }
+            if (editSel && !editSel.querySelector(`option[value="${cat.slug}"]`)) {
+                const opt2 = document.createElement('option');
+                opt2.value = cat.slug; opt2.textContent = cat.name; editSel.appendChild(opt2);
+            }
+
+            // Render new extra in grid (skip if base)
+            const baseSlugs = new Set(['shrub','herbs','palm','tree','grass','bamboo','fertilizer']);
+            if (!baseSlugs.has(cat.slug)) {
+                const grid = document.querySelector('.category-grid');
+                if (grid && !grid.querySelector(`.category-icon-item[data-category="${cat.slug}"]`)) {
+                    const item = document.createElement('div');
+                    item.className = 'category-icon-item';
+                    item.setAttribute('data-category', cat.slug);
+                    item.setAttribute('data-category-id', cat.id);
+                    const iconHtml = cat.icon_path ? `<img src="/storage/${cat.icon_path}" alt="${cat.name}" class="category-img">` : '<i class="fas fa-leaf"></i>';
+                    item.innerHTML = `<div class="icon-circle">${iconHtml}</div><span>${escapeHtml(cat.name)}</span>`;
+                    grid.appendChild(item);
+                    attachCategoryHandler(item);
+                }
+            }
+
+            // Close modal and reset
+            const modalEl = document.getElementById('addCategoryModal');
+            if (modalEl && window.bootstrap) {
+                const instance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                instance.hide();
+            }
+            if (nameInput) nameInput.value = '';
+            if (iconInput) iconInput.value = '';
+        })
+        .catch(() => openHomeInfoDialog({ title: 'Error', body: 'Failed to save category.' }));
+    });
+}
+
+// Basic HTML escape to avoid injecting raw text
+function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, function(c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+// Initialize Delete Category action (admin-only; button exists only for admins)
+function initDeleteCategory() {
+    const deleteBtn = document.getElementById('deleteCategoryBtn');
+    if (!deleteBtn) return; // Not visible for non-admins
+
+    deleteBtn.addEventListener('click', function() {
+        const active = document.querySelector('.category-icon-item.active');
+        if (!active) { openHomeInfoDialog({ title: 'Notice', body: 'Please select a category to delete.' }); return; }
+        const cat = active.getAttribute('data-category');
+        if (!cat || cat === 'all') { openHomeInfoDialog({ title: 'Notice', body: 'Cannot delete the "All" category.' }); return; }
+        const name = (active.querySelector('span')?.textContent || '').trim() || cat;
+        const id = active.getAttribute('data-category-id');
+
+        if (!id) { openHomeInfoDialog({ title: 'Notice', body: 'Only extra categories can be deleted.' }); return; }
+        openHomeConfirmDialog({ title: 'Delete Category', body: `Delete category "${name}"?`, yesText: 'Yes', noText: 'No', yesClass: 'btn-danger' })
+        .then(confirmed => {
+            if (!confirmed) return;
+
+        fetch(`/categories/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            }
+        })
+        .then(r => r.json())
+        .then(() => {
+            // Remove the tile
+            active.remove();
+            // Remove from selects
+            const addSel = document.getElementById('category');
+            const editSel = document.getElementById('edit_category');
+            if (addSel) addSel.querySelector(`option[value="${cat}"]`)?.remove();
+            if (editSel) editSel.querySelector(`option[value="${cat}"]`)?.remove();
+            // Activate All and reapply filters
+            const allItem = document.querySelector('.category-icon-item[data-category="all"]');
+            if (allItem) allItem.classList.add('active');
+            applyCurrentFilters();
+        })
+        .catch(() => openHomeInfoDialog({ title: 'Error', body: 'Failed to delete category.' }));
+        });
+    });
 }
 
 /**
@@ -179,11 +413,11 @@ function initPlantDetailsActions() {
     document.querySelectorAll('.delete-plant-btn').forEach(button => {
         button.addEventListener('click', function(e) {
             e.stopPropagation();
-            
             const plantId = this.getAttribute('data-plant-id');
             const plantName = this.getAttribute('data-plant-name');
-            
-            if (confirm(`Are you sure you want to remove ${plantName} from display?`)) {
+            openHomeConfirmDialog({ title: 'Remove From Display', body: `Remove "${plantName}" from display?`, yesText: 'Yes', noText: 'No', yesClass: 'btn-danger' })
+            .then(confirmed => {
+                if (!confirmed) return;
                 fetch(`/display-plants/${plantId}`, {
                     method: 'DELETE',
                     headers: {
@@ -193,16 +427,9 @@ function initPlantDetailsActions() {
                     }
                 })
                 .then(response => response.json())
-                .then(data => {
-                    console.log('Plant deleted:', data);
-                    // Reload the page to reflect changes
-                    window.location.reload();
-                })
-                .catch(error => {
-                    console.error('Error deleting plant:', error);
-                    alert('Failed to delete plant. Please try again.');
-                });
-            }
+                .then(data => { window.location.reload(); })
+                .catch(error => { openHomeInfoDialog({ title: 'Error', body: 'Failed to delete plant. Please try again.' }); });
+            });
         });
     });
     
@@ -672,8 +899,355 @@ function initAddPlantButtons() {
     });
 }
 
+/**
+ * Admin Edit modal + photo management
+ */
+function initAdminEditFeatures() {
+    // Open Edit modal from icon button
+    document.querySelectorAll('.edit-plant-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            prefillEditFormFromButton(this);
+            const modal = new bootstrap.Modal(document.getElementById('editPlantModal'));
+            modal.show();
+        });
+    });
+
+    // Save edits
+    const saveBtn = document.getElementById('saveEditPlant');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const id = document.getElementById('edit_plant_id').value;
+            if (!id) return;
+
+            const payload = {
+                name: document.getElementById('edit_name').value,
+                code: document.getElementById('edit_code').value || null,
+                scientific_name: document.getElementById('edit_scientific_name').value || null,
+                description: document.getElementById('edit_description').value || null,
+                category: document.getElementById('edit_category').value || 'shrub',
+                height_mm: document.getElementById('edit_height_mm').value || null,
+                spread_mm: document.getElementById('edit_spread_mm').value || null,
+                spacing_mm: document.getElementById('edit_spacing_mm').value || null,
+                oc: document.getElementById('edit_oc').value || null,
+                price: document.getElementById('edit_price').value || null,
+                cost_per_sqm: document.getElementById('edit_cost_per_sqm').value || null,
+                pieces_per_sqm: document.getElementById('edit_pieces_per_sqm').value || null,
+                cost_per_mm: document.getElementById('edit_cost_per_mm').value || null,
+                quantity: document.getElementById('edit_quantity').value || null
+            };
+
+            saveBtn.disabled = true;
+            const originalHtml = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+            fetch(`/display-plants/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': csrf,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.plant) {
+                    // Update card UI inline
+                    const card = document.querySelector(`.edit-plant-btn[data-plant-id="${id}"]`)?.closest('.admin-plant-card');
+                    if (card) {
+                        // Also update wrapper data attributes so search/filter reflect immediately
+                        const wrapper = card.closest('.plant-item');
+                        if (wrapper) {
+                            if (data.plant.category) wrapper.setAttribute('data-category', data.plant.category);
+                            if (data.plant.name) wrapper.setAttribute('data-name', data.plant.name);
+                        }
+                        const title = card.querySelector('.card-title');
+                        if (title) title.textContent = data.plant.name;
+                        // Update details texts if present
+                        const cat = card.querySelector('.section-content .value-text');
+                        // Safer targeted updates
+                        const detailContainer = card.querySelector('.info-section .section-content');
+                        if (detailContainer) {
+                            const ensurePara = (label, text, options = {}) => {
+                                const { italic = false } = options;
+                                const p = Array.from(detailContainer.querySelectorAll('p')).find(el => el.textContent.trim().toLowerCase().startsWith(label.toLowerCase()));
+                                if (!text) {
+                                    if (p) p.remove();
+                                    return;
+                                }
+                                if (p) {
+                                    const span = p.querySelector('.value-text, em.value-text');
+                                    if (span) span.textContent = text;
+                                } else {
+                                    const newP = document.createElement('p');
+                                    newP.innerHTML = `<small class="text-muted">${label}</small> ${italic ? '<em class="value-text"></em>' : '<span class="value-text"></span>'}`;
+                                    const vt = newP.querySelector('.value-text, em.value-text');
+                                    vt.textContent = text;
+                                    const measurements = detailContainer.querySelector('.measurements');
+                                    if (measurements) {
+                                        detailContainer.insertBefore(newP, measurements);
+                                    } else {
+                                        detailContainer.appendChild(newP);
+                                    }
+                                }
+                            };
+
+                            const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+                            ensurePara('Category:', cap(data.plant.category || ''));
+                            ensurePara('Code:', data.plant.code || 'N/A');
+                            ensurePara('Scientific Name:', data.plant.scientific_name || '', { italic: true });
+
+                            // Measurements block
+                            const anyMeas = !!(data.plant.height_mm || data.plant.spread_mm || data.plant.spacing_mm);
+                            let measurements = detailContainer.querySelector('.measurements');
+                            if (!measurements && anyMeas) {
+                                measurements = document.createElement('div');
+                                measurements.className = 'measurements mt-2';
+                                measurements.innerHTML = '<ul class="list-unstyled mb-0"></ul>';
+                                detailContainer.appendChild(measurements);
+                            }
+                            if (measurements && !anyMeas) {
+                                measurements.remove();
+                            }
+                            if (measurements) {
+                                const ul = measurements.querySelector('ul');
+                                const ensureLi = (label, val) => {
+                                    let li = Array.from(ul.querySelectorAll('li')).find(el => el.textContent.trim().startsWith(label));
+                                    if (val) {
+                                        if (!li) {
+                                            li = document.createElement('li');
+                                            li.innerHTML = `<small class="text-muted">${label}</small> <span class="value-text"></span>`;
+                                            ul.appendChild(li);
+                                        }
+                                        const span = li.querySelector('.value-text');
+                                        if (span) span.textContent = `${val} mm`;
+                                    } else if (li) {
+                                        li.remove();
+                                    }
+                                };
+                                ensureLi('Height:', data.plant.height_mm);
+                                ensureLi('Spread:', data.plant.spread_mm);
+                                ensureLi('Spacing:', data.plant.spacing_mm);
+                            }
+                        }
+
+                        // Update data-* on edit button for future edits
+                        const editBtn = card.querySelector(`.edit-plant-btn[data-plant-id="${id}"]`);
+                        if (editBtn) {
+                            editBtn.setAttribute('data-name', data.plant.name || '');
+                            editBtn.setAttribute('data-code', data.plant.code || '');
+                            editBtn.setAttribute('data-scientific-name', data.plant.scientific_name || '');
+                            editBtn.setAttribute('data-category', data.plant.category || 'shrub');
+                            editBtn.setAttribute('data-description', data.plant.description || '');
+                            editBtn.setAttribute('data-height-mm', data.plant.height_mm || '');
+                            editBtn.setAttribute('data-spread-mm', data.plant.spread_mm || '');
+                            editBtn.setAttribute('data-spacing-mm', data.plant.spacing_mm || '');
+                            editBtn.setAttribute('data-oc', data.plant.oc || '');
+                            editBtn.setAttribute('data-price', data.plant.price || '');
+                            editBtn.setAttribute('data-cost-per-sqm', data.plant.cost_per_sqm || '');
+                            editBtn.setAttribute('data-pieces-per-sqm', data.plant.pieces_per_sqm || '');
+                            editBtn.setAttribute('data-cost-per-mm', data.plant.cost_per_mm || '');
+                            editBtn.setAttribute('data-quantity', data.plant.quantity || '');
+                        }
+
+                        // Re-apply current category and search filters so visibility updates without page refresh
+                        if (typeof applyCurrentFilters === 'function') {
+                            applyCurrentFilters();
+                        }
+                    }
+
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('editPlantModal')).hide();
+                } else {
+                    alert((data && data.message) ? data.message : 'Failed to update plant.');
+                }
+            })
+            .catch(err => {
+                console.error('Error updating plant:', err);
+                alert('Error updating plant.');
+            })
+            .finally(() => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalHtml;
+            });
+        });
+    }
+
+    // Upload photo
+    const uploadBtn = document.getElementById('editUploadPhoto');
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', function() {
+            const fileInput = document.getElementById('edit_photo_file');
+            const id = document.getElementById('edit_plant_id').value;
+            const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            if (!fileInput || fileInput.files.length === 0) {
+                alert('Please select a photo to upload.');
+                return;
+            }
+            if (!id) return;
+
+            const formData = new FormData();
+            formData.append('plant_id', id);
+            formData.append('photo', fileInput.files[0]);
+
+            const originalHtml = uploadBtn.innerHTML;
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+
+            fetch('/display-plants/photo/upload', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrf,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.path) {
+                    updateEditPhotoPreview(data.path);
+                    // Update main card photo
+                    const card = document.querySelector(`.edit-plant-btn[data-plant-id="${id}"]`)?.closest('.admin-plant-card');
+                    if (card) {
+                        const container = card.querySelector('.plant-image-container');
+                        if (container) {
+                            let img = container.querySelector('.plant-main-photo');
+                            const placeholder = container.querySelector('.no-photo-placeholder');
+                            if (!img) {
+                                img = document.createElement('img');
+                                img.className = 'plant-main-photo';
+                                img.alt = 'Plant Photo';
+                                container.innerHTML = '';
+                                container.appendChild(img);
+                            }
+                            img.src = `/storage/${data.path}`;
+                            if (placeholder) placeholder.remove();
+                        }
+                        // Update button dataset
+                        const btn = card.querySelector(`.edit-plant-btn[data-plant-id="${id}"]`);
+                        if (btn) btn.setAttribute('data-photo-path', data.path);
+                    }
+                } else {
+                    alert('Upload failed.');
+                }
+            })
+            .catch(err => {
+                console.error('Upload error:', err);
+                alert('Error uploading photo.');
+            })
+            .finally(() => {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = originalHtml;
+                // Clear selected file
+                fileInput.value = '';
+            });
+        });
+    }
+
+    // Remove photo
+    const removeBtn = document.getElementById('editRemovePhoto');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+            const id = document.getElementById('edit_plant_id').value;
+            const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            if (!id) return;
+            if (!confirm('Remove current photo?')) return;
+
+            const originalHtml = removeBtn.innerHTML;
+            removeBtn.disabled = true;
+            removeBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Removing...';
+
+            fetch(`/display-plants/photo/remove/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrf,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                updateEditPhotoPreview(null);
+                // Update card
+                const card = document.querySelector(`.edit-plant-btn[data-plant-id="${id}"]`)?.closest('.admin-plant-card');
+                if (card) {
+                    const container = card.querySelector('.plant-image-container');
+                    if (container) {
+                        const img = container.querySelector('.plant-main-photo');
+                        if (img) img.remove();
+                        let placeholder = container.querySelector('.no-photo-placeholder');
+                        if (!placeholder) {
+                            placeholder = document.createElement('div');
+                            placeholder.className = 'no-photo-placeholder';
+                            placeholder.innerHTML = '<i class="fas fa-image"></i><p class="small">No Photo Available</p>';
+                            container.appendChild(placeholder);
+                        }
+                        placeholder.classList.remove('d-none');
+                    }
+                    const btn = card.querySelector(`.edit-plant-btn[data-plant-id="${id}"]`);
+                    if (btn) btn.setAttribute('data-photo-path', '');
+                }
+            })
+            .catch(err => {
+                console.error('Remove photo error:', err);
+                alert('Error removing photo.');
+            })
+            .finally(() => {
+                removeBtn.disabled = false;
+                removeBtn.innerHTML = originalHtml;
+            });
+        });
+    }
+}
+
+function prefillEditFormFromButton(btn) {
+    const d = (name) => btn.getAttribute(name) || '';
+    document.getElementById('edit_plant_id').value = d('data-plant-id');
+    document.getElementById('edit_name').value = d('data-name');
+    document.getElementById('edit_code').value = d('data-code');
+    document.getElementById('edit_scientific_name').value = d('data-scientific-name');
+    document.getElementById('edit_category').value = d('data-category') || 'shrub';
+    document.getElementById('edit_description').value = d('data-description');
+    document.getElementById('edit_height_mm').value = d('data-height-mm');
+    document.getElementById('edit_spread_mm').value = d('data-spread-mm');
+    document.getElementById('edit_spacing_mm').value = d('data-spacing-mm');
+    document.getElementById('edit_oc').value = d('data-oc');
+    document.getElementById('edit_price').value = d('data-price');
+    document.getElementById('edit_cost_per_sqm').value = d('data-cost-per-sqm');
+    document.getElementById('edit_pieces_per_sqm').value = d('data-pieces-per-sqm');
+    document.getElementById('edit_cost_per_mm').value = d('data-cost-per-mm');
+    document.getElementById('edit_quantity').value = d('data-quantity');
+
+    const photoPath = d('data-photo-path');
+    updateEditPhotoPreview(photoPath);
+}
+
+function updateEditPhotoPreview(photoPath) {
+    const img = document.getElementById('edit_current_photo');
+    const placeholder = document.getElementById('edit_no_photo');
+    if (!img || !placeholder) return;
+    if (photoPath) {
+        img.src = photoPath.startsWith('http') ? photoPath : `/storage/${photoPath}`;
+        img.classList.remove('d-none');
+        placeholder.classList.add('d-none');
+    } else {
+        img.classList.add('d-none');
+        placeholder.classList.remove('d-none');
+    }
+}
+
 // Add plant to selection
 function addPlantToSelection(plantId, plantName, plantCode, height, spread, spacing) {
+    // Convert plantId to integer to ensure consistency
+    plantId = parseInt(plantId);
+    
+    console.log('Adding plant to selection:', {
+        originalId: arguments[0],
+        convertedId: plantId,
+        name: plantName
+    });
+    
     // Check if already at maximum plants
     if (selectedPlants.length >= MAX_PLANTS) {
         alert(`You can only select up to ${MAX_PLANTS} plants for a request.`);
@@ -702,6 +1276,8 @@ function addPlantToSelection(plantId, plantName, plantCode, height, spread, spac
         });
         showToast(`Added ${plantName} to your request`);
     }
+    
+    console.log('Selected plants after add:', selectedPlants);
     
     // Save to session storage
     saveSelectedPlants();
@@ -776,11 +1352,13 @@ function populateRequestFormModal() {
         // Populate table with selected plants
         selectedPlants.forEach((plant, index) => {
             const row = document.createElement('tr');
-            row.dataset.id = plant.id;
+            // Ensure ID is an integer
+            const plantId = parseInt(plant.id);
+            row.dataset.id = plantId;
             
             row.innerHTML = `
                 <td>${plant.name}
-                    <input type="hidden" name="plants[${index}][id]" value="${plant.id}">
+                    <input type="hidden" name="plants[${index}][id]" value="${plantId}">
                     <input type="hidden" name="plants[${index}][name]" value="${plant.name}">
                 </td>
                 <td>${plant.code || 'N/A'}</td>
@@ -811,7 +1389,7 @@ function populateRequestFormModal() {
                            placeholder="mm">
                 </td>
                 <td>
-                    <button type="button" class="btn btn-sm btn-danger modal-remove-plant" data-id="${plant.id}">
+                    <button type="button" class="btn btn-sm btn-danger modal-remove-plant" data-id="${plantId}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -1012,6 +1590,15 @@ function loadSelectedPlants() {
     const saved = sessionStorage.getItem('selectedPlants');
     if (saved) {
         selectedPlants = JSON.parse(saved);
+        
+        // Convert all IDs to integers to fix validation issues
+        selectedPlants = selectedPlants.map(plant => ({
+            ...plant,
+            id: parseInt(plant.id)
+        }));
+        
+        // Save the cleaned data back to sessionStorage
+        saveSelectedPlants();
     }
 }
 
@@ -1031,4 +1618,4 @@ function clearPlantsOnLogout() {
         sessionStorage.removeItem('selectedPlants');
         selectedPlants = [];
     }
-} 
+}

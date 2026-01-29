@@ -12,10 +12,12 @@ class PlantRequest extends Model
     protected $fillable = [
         'email',
         'name',
+        'phone',
         'request_date',
         'due_date',
         'items_json',
         'status',
+        'request_type',
         'pdf_path'
     ];
 

@@ -4,6 +4,9 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Setup sidebar toggle for mobile
+    setupSidebarToggle();
+    
     // Add animation classes to cards when page loads
     animateCards();
     
@@ -22,6 +25,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen for window resize to maintain proper sizing
     window.addEventListener('resize', handleResize);
 });
+
+/**
+ * Setup sidebar toggle functionality for mobile
+ */
+function setupSidebarToggle() {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebarMenu');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    if (!sidebarToggle || !sidebar || !overlay) return;
+    
+    // Toggle sidebar on button click
+    sidebarToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+    
+    // Close sidebar when clicking overlay
+    overlay.addEventListener('click', function() {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+    
+    // Close sidebar when clicking a link (mobile only)
+    if (window.innerWidth <= 991) {
+        const sidebarLinks = sidebar.querySelectorAll('.sidebar-link');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        });
+    }
+}
 
 /**
  * Animates dashboard cards with a staggered fade-in effect
@@ -270,8 +308,10 @@ function initStockChart(chartId, data) {
 function showAlert(message, type = 'success', duration = 3000) {
     // Create alert element
     const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 mt-3 me-3`;
     alert.style.zIndex = '1060';
+    alert.style.minWidth = '300px';
+    alert.style.maxWidth = '400px';
     alert.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

@@ -481,7 +481,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Submit RFQ form with updated data
+    let isSubmitting = false; // Flag to prevent duplicate submissions
+    
     function submitRfqForm() {
+        // Prevent duplicate submissions
+        if (isSubmitting) {
+            console.log('Already submitting, ignoring duplicate click');
+            return;
+        }
+        
+        isSubmitting = true;
+        
         // Show loading overlay
         loadingOverlay.classList.remove('d-none');
         
@@ -570,6 +580,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
+            // Reset submission flag
+            isSubmitting = false;
+            
             // Hide loading overlay
             loadingOverlay.classList.add('d-none');
             
@@ -600,6 +613,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
+                // Reset submission flag
+                isSubmitting = false;
+                
                 // Clear the timeout since we got a response
                 clearTimeout(timeoutId);
                 
@@ -611,6 +627,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
         });
         } catch (error) {
+            // Reset submission flag
+            isSubmitting = false;
+            
             // Handle any errors that might occur during data processing
             loadingOverlay.classList.add('d-none');
             alert('Error preparing request data: ' + error.message);

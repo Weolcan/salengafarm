@@ -20,7 +20,7 @@ class ManagerMiddleware
             return redirect()->route('login');
         }
 
-        if (!Auth::user()->isManager()) {
+        if (!Auth::user()->isAdmin()) {
             return redirect()->route('public.plants');
         }
 

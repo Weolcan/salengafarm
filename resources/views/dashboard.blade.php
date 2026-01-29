@@ -17,6 +17,8 @@
     <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
     <link href="{{ asset('css/inventory.css') }}?v=2" rel="stylesheet">
     <link href="{{ asset('css/dashboard.css') }}?v=4" rel="stylesheet">
+    <link href="{{ asset('css/loading.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/push-notifications.css') }}?v={{ time() }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Loading overlay that will fade out when page is ready */
@@ -48,13 +50,115 @@
             100% { transform: rotate(360deg); }
         }
         /* All sidebar-related styles removed. */
+        
+        /* Update Stock Modal - Compact Table Styling */
+        #updateStockModal .table th,
+        #updateStockModal .table td {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+        #updateStockModal .table th:nth-child(1),
+        #updateStockModal .table td:nth-child(1) {
+            width: 40%;
+        }
+        #updateStockModal .table th:nth-child(2),
+        #updateStockModal .table td:nth-child(2) {
+            width: 30%;
+        }
+        #updateStockModal .table th:nth-child(3),
+        #updateStockModal .table td:nth-child(3) {
+            width: 30%;
+        }
+        #updateStockModal .stock-input {
+            max-width: 100px;
+            font-size: 0.9rem;
+            padding: 0.375rem 0.5rem;
+        }
+        
+        /* Instruction Overlay Styles */
+        #instructionOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9998;
+            display: none;
+        }
+        
+        #instructionOverlay.active {
+            display: block;
+        }
+        
+        .instruction-tooltip {
+            position: absolute;
+            background: white;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            max-width: 300px;
+            display: none;
+        }
+        
+        .instruction-tooltip.active {
+            display: block;
+            animation: fadeInScale 0.3s ease-out;
+        }
+        
+        .instruction-tooltip h6 {
+            color: #4caf50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .instruction-tooltip p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .instruction-tooltip .close-instruction {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        .instruction-tooltip .close-instruction:hover {
+            color: #333;
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .instruction-highlight {
+            position: relative;
+            z-index: 9999;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.5);
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body class="bg-light dashboard-page">
-    <!-- Loading Overlay -->
-    <div id="loading-overlay">
-        <span class="loader"></span>
-    </div>
 
     <div id="sidebarOverlay"></div>
     <div class="dashboard-flex">
@@ -67,7 +171,9 @@
             <div style="padding-top: 0;">
         <!-- Main Content Area -->
                 <div class="p-0">
-                    <h2 class="mb-3 fs-5" style="font-size: 1.1rem; padding-top: 10px;">Dashboard Overview</h2>
+                    <div class="d-flex justify-content-between align-items-center mb-3" style="padding-top: 10px;">
+                        <h2 class="mb-0 fs-5" style="font-size: 1.1rem;">Dashboard Overview</h2>
+                    </div>
             <!-- Summary Cards Row - Reduced height via CSS -->
             <div class="row mb-4">
                 <div class="col-md-6 mb-2 mb-md-0">
@@ -79,7 +185,7 @@
                                 </div>
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-muted">Total Plants in Stock</h6>
-                                            <h2 class="card-title mb-0">182</h2>
+                                            <h2 class="card-title mb-0">{{ $totalStock }}</h2>
                                 </div>
                             </div>
                         </div>
@@ -94,7 +200,7 @@
                                 </div>
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-muted">Low Stock Items</h6>
-                                            <h2 class="card-title mb-0">1</h2>
+                                            <h2 class="card-title mb-0">{{ $lowStockItems->count() }}</h2>
                                 </div>
                             </div>
                         </div>
@@ -116,19 +222,25 @@
                         </div>
                         <div class="card-body">
                             <div class="list-group list-group-flush">
+                                @forelse($lowStockItems as $item)
                                     <div class="list-group-item">
                                         <div class="d-flex justify-content-between align-items-center w-100">
                                             <div>
-                                                    <h6 class="mb-0">RADDISH</h6>
-                                                    <small class="text-muted">herbs</small>
+                                                <h6 class="mb-0">{{ strtoupper($item->name) }}</h6>
+                                                <small class="text-muted">{{ $item->category }}</small>
                                             </div>
-                                                <span class="badge bg-warning">5 left</span>
+                                            <span class="badge bg-warning">{{ $item->quantity }} left</span>
                                         </div>
                                     </div>
+                                @empty
+                                    <div class="list-group-item">
+                                        <p class="text-muted mb-0 text-center">No low stock items</p>
+                                    </div>
+                                @endforelse
                             </div>
-                                </div>
                         </div>
                     </div>
+                </div>
                 <!-- Middle Column - Stock Distribution -->
                 <div class="col-md-6">
                     <!-- Chart Container with Tabs -->
@@ -165,7 +277,8 @@
                     </div>
                 <!-- Right Column - Quick Actions and Recent Plants -->
                 <div class="col-md-3">
-                    <!-- Quick Actions -->
+                    <!-- Quick Actions - Only show for Admin, not Super Admin -->
+                    @if(Auth::user()->role !== 'super_admin')
                     <div class="card right-column-card">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -182,6 +295,7 @@
                             </div>
                         </div>
                     </div>
+                    @endif
                     <!-- Recent Plants -->
                     <div class="card recent-plants-card">
                         <div class="card-header">
@@ -250,7 +364,7 @@
 
     <!-- Update Stock Modal -->
     <div class="modal fade" id="updateStockModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="fas fa-sync me-2"></i>Update Stock</h5>
@@ -259,8 +373,8 @@
                 <div class="modal-body modal-body-fullheight p-0">
                     <div class="row g-0 h-100">
                         <!-- Category Sidebar -->
-                        <div class="col-md-3 border-end h-100 sidebar-scroll" style="position: sticky; top: 0; height: 100vh; overflow-y: auto;">
-                            <div class="p-3">
+                        <div class="col-md-2 border-end h-100 sidebar-scroll" style="position: sticky; top: 0; height: 100vh; overflow-y: auto;">
+                            <div class="p-2">
                                 <div class="list-group list-group-flush">
                                     <a href="#" class="list-group-item list-group-item-action active" data-category="all">
                                         <i class="fas fa-layer-group me-2"></i>All Plants
@@ -290,7 +404,7 @@
                             </div>
                         </div>
                         <!-- Main Content -->
-                        <div class="col-md-9 d-flex flex-column h-100">
+                        <div class="col-md-10 d-flex flex-column h-100">
                             <!-- Fixed Search Bar -->
                             <div class="p-3 border-bottom">
                                 <div class="input-group">
@@ -304,15 +418,14 @@
                                 </div>
                             </div>
                             <!-- Scrollable Table -->
-                            <div class="flex-grow-1 table-scroll" style="overflow-y: auto; max-height: 70vh;">
+                            <div class="flex-grow-1 table-scroll" style="overflow-y: auto; max-height: 55vh;">
                                 <div class="table-responsive h-100">
                                     <table class="table table-hover mb-0">
                                         <thead class="table-header-sticky">
                                             <tr>
                                                 <th>Plant Name</th>
                                                 <th>Category</th>
-                                                <th>Current Stock</th>
-                                                <th>New Stock</th>
+                                                <th>Stock</th>
                                             </tr>
                                         </thead>
                                         <tbody id="stockUpdateTableBody">
@@ -320,7 +433,6 @@
                                             <tr data-category="{{ $plant->category }}">
                                                 <td>{{ $plant->name }}</td>
                                                 <td>{{ ucfirst($plant->category) }}</td>
-                                                <td>{{ $plant->quantity }}</td>
                                                 <td>
                                                     <input type="number" 
                                                            class="form-control stock-input" 
@@ -334,14 +446,17 @@
                                     </table>
                                 </div>
                             </div>
+                            <!-- Fixed Footer inside modal body -->
+                            <div class="border-top p-3 bg-light">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-info text-white" id="saveStockUpdates">
+                                        <i class="fas fa-save me-1"></i> Save Changes
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-info text-white" id="saveStockUpdates">
-                        <i class="fas fa-save me-1"></i> Save Changes
-                    </button>
                 </div>
             </div>
         </div>
@@ -509,11 +624,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ asset('js/loading.js') }}"></script>
+    <script src="{{ asset('js/push-notifications.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/dashboard.js') }}?v=2"></script>
     <script>
         $(document).ready(function() {
-            // Hide loading overlay when page is ready
-            $('#loading-overlay').fadeOut();
             
             // Ensure modals exist before adding event listeners
             const updateStockModal = document.getElementById('updateStockModal');
@@ -551,10 +666,12 @@
                     });
                 });
 
-                // Show loading state
+                // Show loading state with domino loader
                 const $saveBtn = $(this);
-                const originalText = $saveBtn.html();
-                $saveBtn.html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+                LoadingManager.buttonStart($saveBtn[0], 'Saving...');
+                
+                // Show full page loading immediately
+                LoadingManager.show('Updating Stock...', 'Please wait');
 
                 // Send AJAX request to update stock
                 $.ajax({
@@ -565,6 +682,8 @@
                         _token: $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(response) {
+                        LoadingManager.hide();
+                        LoadingManager.buttonStop($saveBtn[0]);
                         showAlert('Stock updated successfully!', 'success');
                         $('#updateStockModal').modal('hide');
                         setTimeout(() => {
@@ -577,7 +696,8 @@
                             errorMessage = xhr.responseJSON.message;
                         }
                         showAlert(errorMessage, 'danger');
-                        $saveBtn.html(originalText).prop('disabled', false);
+                        LoadingManager.hide();
+                        LoadingManager.buttonStop($saveBtn[0]);
                     }
                 });
             });
@@ -649,6 +769,133 @@
             if (e.key === 'Escape') closeSidebar();
             });
         });
+    </script>
+    
+    <!-- Instruction Overlay -->
+    <div id="instructionOverlay"></div>
+    
+    <!-- Instruction System Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const instructionBtn = document.getElementById('instructionBtn');
+        const overlay = document.getElementById('instructionOverlay');
+        
+        // Only setup if elements exist
+        if (!instructionBtn || !overlay) {
+            return;
+        }
+        
+        let instructionsActive = false;
+        
+        const instructions = [
+            {
+                selector: '.col-md-6:first-child .card',
+                title: 'Total Plants in Stock',
+                text: 'Shows the total number of plants currently available in your inventory.'
+            },
+            {
+                selector: '.col-md-6:last-child .card',
+                title: 'Low Stock Items',
+                text: 'Displays the count of plants with stock levels below 10 units.'
+            },
+            {
+                selector: '.low-stock-card',
+                title: 'Low Stock Alerts',
+                text: 'Lists all plants that are running low on stock. Keep an eye on these items to reorder before they run out.'
+            },
+            {
+                selector: '.chart-container-card',
+                title: 'Stock & Sales Distribution',
+                text: 'View your inventory distribution by category (Stock Distribution) or see sales performance by category (Sales by Category). Switch between tabs to see different views.'
+            },
+            {
+                selector: '.right-column-card',
+                title: 'Quick Actions',
+                text: 'Click "Update Stock" to quickly modify inventory quantities for multiple plants at once.'
+            },
+            {
+                selector: '.recent-plants-card',
+                title: 'Recent Plants',
+                text: 'Shows the most recently added plants to your inventory with their current stock levels.'
+            }
+        ];
+        
+        instructionBtn.addEventListener('click', function() {
+            if (instructionsActive) {
+                hideInstructions();
+            } else {
+                showInstructions();
+            }
+        });
+        
+        overlay.addEventListener('click', function() {
+            hideInstructions();
+        });
+        
+        function showInstructions() {
+            instructionsActive = true;
+            overlay.classList.add('active');
+            instructionBtn.innerHTML = '<i class="fas fa-times"></i> Close';
+            instructionBtn.classList.remove('btn-outline-info');
+            instructionBtn.classList.add('btn-danger');
+            
+            instructions.forEach((instruction, index) => {
+                const element = document.querySelector(instruction.selector);
+                if (element) {
+                    // Add highlight
+                    element.classList.add('instruction-highlight');
+                    
+                    // Create tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'instruction-tooltip';
+                    tooltip.innerHTML = `
+                        <button class="close-instruction" onclick="hideInstructions()">&times;</button>
+                        <h6>${instruction.title}</h6>
+                        <p>${instruction.text}</p>
+                    `;
+                    
+                    // Position tooltip
+                    document.body.appendChild(tooltip);
+                    const rect = element.getBoundingClientRect();
+                    tooltip.style.top = (rect.top + window.scrollY - 10) + 'px';
+                    tooltip.style.left = (rect.right + 15) + 'px';
+                    
+                    // Adjust if tooltip goes off screen
+                    setTimeout(() => {
+                        const tooltipRect = tooltip.getBoundingClientRect();
+                        if (tooltipRect.right > window.innerWidth) {
+                            tooltip.style.left = (rect.left - tooltipRect.width - 15) + 'px';
+                        }
+                        if (tooltipRect.bottom > window.innerHeight) {
+                            tooltip.style.top = (rect.bottom + window.scrollY - tooltipRect.height) + 'px';
+                        }
+                    }, 10);
+                    
+                    // Show with delay for staggered effect
+                    setTimeout(() => {
+                        tooltip.classList.add('active');
+                    }, index * 100);
+                }
+            });
+        }
+        
+        function hideInstructions() {
+            instructionsActive = false;
+            overlay.classList.remove('active');
+            instructionBtn.innerHTML = '<i class="fas fa-question-circle"></i> Help';
+            instructionBtn.classList.remove('btn-danger');
+            instructionBtn.classList.add('btn-outline-info');
+            
+            // Remove all tooltips and highlights
+            document.querySelectorAll('.instruction-tooltip').forEach(el => el.remove());
+            document.querySelectorAll('.instruction-highlight').forEach(el => {
+                el.classList.remove('instruction-highlight');
+            });
+        }
+        
+        // Make hideInstructions globally accessible
+        window.hideInstructions = hideInstructions;
+    });
     </script>
 </body>
 </html>

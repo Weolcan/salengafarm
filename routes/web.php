@@ -10,19 +10,24 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalkInSalesController;
 use App\Http\Controllers\UserPlantRequestController;
 use App\Http\Controllers\WalkInInventoryController;
+use App\Http\Controllers\SiteVisitController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\UserDashboardController;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Log;
+
 
 // Public routes
 Route::get('/', [PublicController::class, 'index'])->name('public.plants');
 Route::post('/display-plants', [PublicController::class, 'store'])->name('display-plants.store');
+Route::put('/display-plants/{plant}', [PublicController::class, 'update'])->name('display-plants.update');
 Route::delete('/display-plants/{plant}', [PublicController::class, 'destroy'])->name('display-plants.destroy');
 Route::post('/display-plants/photo/upload', [PublicController::class, 'uploadPhoto'])->name('display-plants.upload.photo');
 Route::delete('/display-plants/photo/remove/{plant}', [PublicController::class, 'removePhoto'])->name('display-plants.remove.photo');
 
-// Regular user plant request routes (accessible to all)
-Route::prefix('user/plant-request')->name('user.plant-request.')->group(function () {
+// Client-only plant request routes
+Route::middleware(['auth', 'can:client-access'])->prefix('user/plant-request')->name('user.plant-request.')->group(function () {
     Route::get('/', [UserPlantRequestController::class, 'create'])->name('create');
     Route::get('/select-plants', [UserPlantRequestController::class, 'selectPlants'])->name('select-plants');
     Route::post('/store', [UserPlantRequestController::class, 'store'])->name('store');
@@ -49,11 +54,36 @@ Route::middleware(['auth'])->group(function () {
     // Regular user routes
     Route::get('/home', [PublicController::class, 'index'])->name('home');
 
+    // User/Client Dashboard (Request Center)
+    Route::get('/dashboard/user', [UserDashboardController::class, 'index'])->name('dashboard.user');
+    
+    // Client request submission
+    Route::post('/client-request/submit', [UserDashboardController::class, 'submitClientRequest'])->name('client-request.submit');
+
+    // Notification routes (for all authenticated users)
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::post('/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::post('/delete-all', [App\Http\Controllers\NotificationController::class, 'deleteAll'])->name('delete-all');
+        Route::delete('/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
+    });
+
     // Admin-only routes
     Route::middleware(['admin'])->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.update-role');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        
+        // Role request routes
+        Route::get('/users/role-requests/{id}/edit', [UserController::class, 'editRoleRequest'])->name('users.role-requests.edit');
+        Route::put('/users/role-requests/{id}', [UserController::class, 'updateRoleRequest'])->name('users.role-requests.update');
+        Route::delete('/users/role-requests/{id}', [UserController::class, 'deleteRoleRequest'])->name('users.role-requests.delete');
+        Route::post('/users/role-requests/{id}/approve', [UserController::class, 'approveRoleRequest'])->name('users.role-requests.approve');
+        Route::post('/users/role-requests/{id}/reject', [UserController::class, 'rejectRoleRequest'])->name('users.role-requests.reject');
     });
 
     // Admin and Manager routes
@@ -67,11 +97,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/plants/bulk-update', [PlantController::class, 'bulkUpdate'])->name('plants.bulk-update');
         Route::post('/update-stock', [DashboardController::class, 'updateStock'])->name('update-stock');
 
+        // Categories (persisted)
+        Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+        Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+        Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
         // Walk-in sales routes
         Route::get('/walk-in', [WalkInSalesController::class, 'index'])->name('walk-in.index');
         Route::post('/walk-in/process-sale', [WalkInSalesController::class, 'processSale'])->name('walk-in.process-sale');
         Route::get('/walk-in/records', [WalkInSalesController::class, 'getSalesRecords'])->name('walk-in.records');
         Route::get('/walk-in/percentages', [WalkInSalesController::class, 'getSalesPercentages'])->name('walk-in.percentages');
+        Route::delete('/walk-in/bulk-delete', [WalkInSalesController::class, 'bulkDelete'])->name('walk-in.bulk-delete');
 
         // Walk-in inventory management routes
         Route::get('/walk-in/inventory', [WalkInInventoryController::class, 'index'])->name('walk-in.inventory');
@@ -83,8 +119,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/requests', [ClientRequestController::class, 'index'])->name('requests.index');
         Route::post('/requests/send-email/{id}', [ClientRequestController::class, 'sendEmail'])->name('requests.send-email');
         Route::get('/requests/view/{id}', [ClientRequestController::class, 'plainViewRequest'])->name('requests.view');
-        Route::get('/requests/download-pdf/{id}', [ClientRequestController::class, 'downloadPdf'])->name('requests.download-pdf');
-        Route::get('/requests/view-pdf/{id}', [ClientRequestController::class, 'viewPdf'])->name('requests.view-pdf');
         Route::delete('/requests/{id}', [ClientRequestController::class, 'destroy'])->name('requests.destroy');
         Route::post('/requests/update/{id}', [ClientRequestController::class, 'updateRequest'])->name('requests.update');
         Route::post('/requests/update-pricing/{id}', [ClientRequestController::class, 'updatePricing'])->name('requests.update-pricing');
@@ -92,12 +126,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/requests/update-client/{id}', [ClientRequestController::class, 'updateClient'])->name('requests.update-client');
         Route::post('/requests/update-items/{id}', [ClientRequestController::class, 'updateItems'])->name('requests.update-items');
         Route::get('/requests/direct-view/{id}', [ClientRequestController::class, 'plainViewRequest'])->name('requests.direct-view');
-        Route::get('/requests/plain-view/{id}', [ClientRequestController::class, 'plainViewRequest'])->name('requests.plain-view');
 
-        // Site Visits placeholder route
-        Route::get('/site-visits', function () {
-            return view('site-visits');
-        })->name('site-visits');
+        // Site Visits routes
+        Route::get('/site-visits', [SiteVisitController::class, 'index'])->name('site-visits.index');
+        Route::resource('site-visits', SiteVisitController::class)->except(['index']);
+        // Quick status update from show page
+        Route::post('/site-visits/{siteVisit}/status', [SiteVisitController::class, 'updateStatus'])->name('site-visits.update-status');
+        Route::get('/site-visits-data', [SiteVisitController::class, 'getVisitsJson'])->name('site-visits.data');
+        Route::get('/site-visits/{siteVisit}/data', [SiteVisitController::class, 'getVisitData'])->name('site-visits.get-data');
+        Route::delete('/site-visits/{siteVisit}/media/{file_index}', [SiteVisitController::class, 'deleteMediaFile'])->name('site-visits.delete-media');
+
+        // Site Visit Checklists endpoints moved to general auth below
 
         // Move these routes inside the admin middleware group
         Route::post('/plants/photo/upload', [PlantController::class, 'uploadPhoto']);
@@ -105,12 +144,35 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Common routes for all authenticated users
+    
+    // PDF routes - accessible to all authenticated users for their own requests
+    Route::get('/requests/download-pdf/{id}', [ClientRequestController::class, 'downloadPdf'])->name('requests.download-pdf');
+    Route::get('/requests/view-pdf/{id}', [ClientRequestController::class, 'viewPdf'])->name('requests.view-pdf');
+    
+    // Site Visit Checklists: allow client to upload Client's Data and approve Proposal; admin checks enforced in controller
+    Route::post('/site-visits/{siteVisit}/client-data/{itemKey}/upload', [SiteVisitController::class, 'uploadClientData'])
+        ->name('site-visits.client-data.upload');
+    Route::delete('/site-visits/{siteVisit}/client-data/{itemKey}/{fileIndex}', [SiteVisitController::class, 'deleteClientData'])
+        ->name('site-visits.client-data.delete');
+    Route::delete('/site-visits/{siteVisit}/client-data-bulk-delete', [SiteVisitController::class, 'bulkDeleteClientData'])
+        ->name('site-visits.client-data.bulk-delete');
+    Route::post('/site-visits/{siteVisit}/client-data/{itemKey}/status', [SiteVisitController::class, 'setClientDataItemStatus'])
+        ->name('site-visits.client-data.status');
+    Route::post('/site-visits/{siteVisit}/proposal/{itemKey}/upload', [SiteVisitController::class, 'uploadProposalItem'])
+        ->name('site-visits.proposal.upload');
+    Route::post('/site-visits/{siteVisit}/proposal/approval', [SiteVisitController::class, 'setProposalApproval'])
+        ->name('site-visits.proposal.approval');
+
+    // Client: My Site Visits
+    Route::get('/my-site-visits', [SiteVisitController::class, 'myVisits'])->name('site-visits.my');
+    // Client-accessible Site Visit details (read-only except uploads), gated in controller
+    Route::get('/site-visits/{siteVisit}/view', [SiteVisitController::class, 'showForClient'])->name('site-visits.view');
+    // Client Data (client-only focused pages)
+    Route::get('/client-data', [SiteVisitController::class, 'clientDataIndex'])->name('client-data.index');
+    Route::get('/client-data/{siteVisit}', [SiteVisitController::class, 'clientDataShow'])->name('client-data.show');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Add these routes for photo management
-    Route::post('/plants', [PlantController::class, 'store']);
 
     Route::patch('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
 
@@ -118,6 +180,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/request-form', [App\Http\Controllers\RequestFormController::class, 'index'])->name('request-form');
     Route::post('/request-form', [App\Http\Controllers\RequestFormController::class, 'store'])->name('request-form.store');
     Route::get('/request-form/confirmation', [App\Http\Controllers\RequestFormController::class, 'confirmation'])->name('request-form.confirmation');
+
+
 });
 
 Route::middleware(['auth', 'admin'])->group(function () {

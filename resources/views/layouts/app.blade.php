@@ -15,9 +15,50 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
         <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/loading.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/push-notifications.css') }}?v={{ time() }}" rel="stylesheet">
         
         <!-- Custom CSS -->
-        <link href="{{ asset('css/public.css') }}" rel="stylesheet">
+        <link href="{{ asset('csss/public.css') }}" rel="stylesheet">
+        
+        <!-- FontAwesome spin fix -->
+        <style>
+        .fa-spin,
+        .fas.fa-spin,
+        .far.fa-spin,
+        .fab.fa-spin,
+        .fal.fa-spin,
+        i.fa-spin,
+        i.fas.fa-spin,
+        .fa-spinner.fa-spin {
+            -webkit-animation: custom-fa-spin 1s infinite linear !important;
+            animation: custom-fa-spin 1s infinite linear !important;
+            -webkit-transform-origin: center !important;
+            transform-origin: center !important;
+        }
+        
+        @-webkit-keyframes custom-fa-spin {
+            0% { 
+                -webkit-transform: rotate(0deg); 
+                transform: rotate(0deg); 
+            }
+            100% { 
+                -webkit-transform: rotate(360deg); 
+                transform: rotate(360deg); 
+            }
+        }
+        
+        @keyframes custom-fa-spin {
+            0% { 
+                -webkit-transform: rotate(0deg); 
+                transform: rotate(0deg); 
+            }
+            100% { 
+                -webkit-transform: rotate(360deg); 
+                transform: rotate(360deg); 
+            }
+        }
+        </style>
         
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -45,8 +86,16 @@
         <!-- Base Scripts -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="{{ asset('js/loading.js') }}"></script>
+        @auth
+        <script src="{{ asset('js/push-notifications.js') }}?v={{ time() }}"></script>
+        @endauth
         
         <!-- Scripts Section -->
         @yield('scripts')
+        
+        <!-- Toast Container for Notifications -->
+        <div id="toastContainer" class="toast-container"></div>
     </body>
 </html>

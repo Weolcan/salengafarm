@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Plant;
 use App\Models\PlantRequest;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class RequestFormController extends Controller
@@ -22,85 +24,138 @@ class RequestFormController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the request
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'contact_number' => 'required|string|max:20',
-            'plants' => 'required|array',
-            'plants.*.id' => 'required|exists:plants,id',
-            'plants.*.quantity' => 'required|integer|min:1',
-            'plants.*.height' => 'nullable|numeric',
-            'plants.*.spread' => 'nullable|numeric',
-            'plants.*.spacing' => 'nullable|numeric',
+        $requestId = $request->header('X-Request-ID', 'unknown');
+        Log::info('Request form submission received', [
+            'request_id' => $requestId,
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'plants_count' => count($request->input('plants', [])),
         ]);
         
-        // Get plant details
-        $plantData = [];
-        foreach ($validated['plants'] as $index => $plant) {
-            $plantModel = Plant::find($plant['id']);
-            if ($plantModel) {
+        try {
+            
+            // Convert plant IDs to integers before validation
+            $plantsData = $request->input('plants', []);
+            foreach ($plantsData as $key => $plant) {
+                if (isset($plant['id'])) {
+                    $plantsData[$key]['id'] = (int)$plant['id'];
+                }
+            }
+            $request->merge(['plants' => $plantsData]);
+            
+            // Validate the request
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'contact_number' => 'required|string|max:20',
+                'plants' => 'required|array|min:1',
+                'plants.*.id' => 'nullable|integer',
+                'plants.*.name' => 'nullable|string',
+                'plants.*.quantity' => 'required|integer|min:1',
+                'plants.*.height' => 'nullable|numeric',
+                'plants.*.spread' => 'nullable|numeric',
+                'plants.*.spacing' => 'nullable|numeric',
+            ], [
+                'plants.required' => 'Please select at least one plant.',
+                'plants.min' => 'Please select at least one plant.',
+            ]);
+            
+            // Get plant details
+            $plantData = [];
+            foreach ($validated['plants'] as $index => $plant) {
+                // Use the plant data as provided, don't look it up in database
                 $plantData[] = [
-                    'id' => $plantModel->id,
-                    'name' => $plantModel->name,
-                    'code' => $plantModel->code ?? 'N/A',
+                    'id' => $plant['id'] ?? null,
+                    'name' => $plant['name'] ?? 'Unknown',
+                    'code' => $plant['code'] ?? 'N/A',
                     'quantity' => $plant['quantity'],
-                    'height' => $plant['height'] ?? $plantModel->height_mm,
-                    'spread' => $plant['spread'] ?? $plantModel->spread_mm,
-                    'spacing' => $plant['spacing'] ?? $plantModel->spacing_mm,
+                    'height' => $plant['height'] ?? null,
+                    'spread' => $plant['spread'] ?? null,
+                    'spacing' => $plant['spacing'] ?? null,
                 ];
             }
-        }
-        
-        // Now SAVE the request to the database
-        try {
+            
+            // Save the request to the database
             Log::info('Saving new plant request', ['user' => $validated['name'], 'email' => $validated['email']]);
             
             $plantRequest = new PlantRequest();
             $plantRequest->name = $validated['name'];
             $plantRequest->email = $validated['email'];
-            $plantRequest->phone = $validated['contact_number']; // Save as phone since that's the field in the database
+            $plantRequest->phone = $validated['contact_number'];
             $plantRequest->request_date = now();
             $plantRequest->due_date = now()->addDays(14);
             $plantRequest->items_json = $plantData;
             $plantRequest->status = 'pending';
-            $plantRequest->request_type = 'user'; // Set the request_type to 'user'
+            $plantRequest->request_type = 'user';
             $plantRequest->save();
             
             Log::info('Plant request saved successfully', ['id' => $plantRequest->id]);
-        } catch (\Exception $e) {
-            Log::error('Failed to save plant request', ['error' => $e->getMessage()]);
             
-            // If AJAX request, return error response
+            // Create notification for admins only (not super admin) about new plant request
+            $admins = User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'new_request',
+                    'title' => 'New Plant Request',
+                    'message' => "New plant request from {$validated['name']}",
+                    'link' => '/requests',
+                    'is_read' => false
+                ]);
+            }
+            
+            // Store the request data in session for the confirmation view
+            session()->flash('request_data', [
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'contact_number' => $validated['contact_number'],
+                'plants' => $plantData,
+                'created_at' => now()->format('Y-m-d H:i:s'),
+            ]);
+            
+            // For AJAX requests, return JSON response
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Your plant request has been submitted successfully.',
+                    'redirect' => route('request-form.confirmation')
+                ]);
+            }
+            
+            // Redirect to confirmation page
+            return redirect()->route('request-form.confirmation');
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed for plant request', [
+                'errors' => $e->errors(),
+                'input' => $request->all()
+            ]);
+            
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to save your request. Please try again.'
+                    'message' => 'Validation failed: ' . implode(' ', array_map(fn($err) => implode(' ', $err), $e->errors()))
+                ], 422);
+            }
+            
+            return back()->withErrors($e->errors())->withInput();
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to save plant request', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all()
+            ]);
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to save your request. Please try again. Error: ' . $e->getMessage()
                 ], 500);
             }
             
-            return back()->with('error', 'Failed to save your request. Please try again.');
+            return back()->with('error', 'Failed to save your request. Please try again.')->withInput();
         }
-        
-        // For AJAX requests, return JSON response
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Your plant request has been submitted successfully.'
-            ]);
-        }
-        
-        // Store the request data in session for the confirmation view
-        session()->flash('request_data', [
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'contact_number' => $validated['contact_number'],
-            'plants' => $plantData,
-            'created_at' => now()->format('Y-m-d H:i:s'),
-        ]);
-        
-        // Redirect to a confirmation page with the same format
-        return redirect()->route('request-form.confirmation');
     }
 
     /**

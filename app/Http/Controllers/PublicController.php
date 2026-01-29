@@ -17,6 +17,40 @@ class PublicController extends Controller
         return view('public.plants', compact('plants', 'inventoryPlants'));
     }
 
+    public function update(Request $request, DisplayPlant $plant)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'code' => 'nullable|string|max:50',
+                'scientific_name' => 'nullable|string|max:255',
+                'category' => 'required|string',
+                'description' => 'nullable|string',
+                'height_mm' => 'nullable|numeric',
+                'spread_mm' => 'nullable|numeric',
+                'spacing_mm' => 'nullable|numeric',
+            ]);
+
+            $plant->update($validated);
+
+            return response()->json([
+                'message' => 'Display plant updated successfully',
+                'plant' => $plant->fresh()
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating display plant: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error updating display plant',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -69,7 +103,8 @@ class PublicController extends Controller
 
                 return response()->json([
                     'message' => 'Photo uploaded successfully',
-                    'path' => Storage::url($path)
+                    // Return relative path for client consistency
+                    'path' => $path
                 ]);
             }
 
