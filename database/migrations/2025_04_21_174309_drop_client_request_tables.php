@@ -12,15 +12,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Temporarily disable foreign key checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        // Temporarily disable foreign key checks (database-specific)
+        $driver = DB::getDriverName();
+        
+        if ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        } elseif ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        }
         
         // Drop both tables
         Schema::dropIfExists('client_request_items');
         Schema::dropIfExists('client_requests');
         
         // Re-enable foreign key checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        if ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        } elseif ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON');
+        }
     }
 
     /**
