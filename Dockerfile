@@ -125,6 +125,9 @@ php artisan migrate --force\n\
 # Create admin user if it does not exist\n\
 php artisan db:seed --class=AdminUserSeeder --force\n\
 \n\
+# Create storage symlink for public access to uploaded files\n\
+php artisan storage:link --force\n\
+\n\
 # Clear ALL caches before recaching\n\
 php artisan cache:clear\n\
 php artisan config:clear\n\
