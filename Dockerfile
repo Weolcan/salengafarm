@@ -55,6 +55,7 @@ RUN mkdir -p /var/www/html/storage/framework/sessions \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache \
+    && chmod -R 755 /var/www/html/public \
     && chmod 664 /var/www/html/database/database.sqlite
 
 # NGINX configuration
@@ -91,6 +92,15 @@ stderr_logfile_maxbytes=0' > /etc/supervisor/conf.d/supervisord.conf
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
+# Force SQLite configuration (override any Render auto-config)\n\
+export DB_CONNECTION=sqlite\n\
+export DB_DATABASE=/var/www/html/database/database.sqlite\n\
+unset DATABASE_URL\n\
+unset DB_HOST\n\
+unset DB_PORT\n\
+unset DB_USERNAME\n\
+unset DB_PASSWORD\n\
+\n\
 # Ensure storage directories exist and have correct permissions\n\
 mkdir -p /var/www/html/storage/framework/sessions\n\
 mkdir -p /var/www/html/storage/framework/views\n\
@@ -112,11 +122,15 @@ fi\n\
 # Run migrations\n\
 php artisan migrate --force\n\
 \n\
-# Clear and cache configuration\n\
+# Clear ALL caches before recaching\n\
+php artisan cache:clear\n\
 php artisan config:clear\n\
+php artisan route:clear\n\
+php artisan view:clear\n\
+\n\
+# Now cache with correct configuration\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
-php artisan view:clear\n\
 \n\
 # Fix permissions one more time after artisan commands\n\
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache\n\
