@@ -20,7 +20,7 @@ class AdminUserSeeder extends Seeder
                 'email' => 'admin@salenga.com',
                 'email_verified_at' => now(),
                 'password' => \Illuminate\Support\Facades\Hash::make('admin@salenga.com'),
-                'role' => 'admin',
+                'role' => 'super_admin',
                 'contact_number' => '0000000000',
                 'company_name' => 'Admin Company',
                 'is_client' => false,
