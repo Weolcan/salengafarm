@@ -21,3 +21,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# SQLite database file in root (should be in database/ folder)
+/inventory
