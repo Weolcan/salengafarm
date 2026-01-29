@@ -147,7 +147,6 @@
     @endguest
 </nav>
 
-<script src="{{ asset('js/alerts.js') }}?v={{ time() }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logout-btn');
