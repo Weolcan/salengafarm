@@ -10,6 +10,40 @@
     .btn-sm i {
         font-size: 0.875rem;
     }
+    
+    /* Fixed height for recent requests table - max 8 rows */
+    .recent-requests-wrapper {
+        max-height: 480px; /* Approximately 8 rows at ~60px per row */
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    /* Sticky table header */
+    .recent-requests-wrapper thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: #f8f9fa;
+    }
+    
+    /* Custom scrollbar styling */
+    .recent-requests-wrapper::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .recent-requests-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .recent-requests-wrapper::-webkit-scrollbar-thumb {
+        background: #198754;
+        border-radius: 4px;
+    }
+    
+    .recent-requests-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #146c43;
+    }
 </style>
 @endpush
 
@@ -26,7 +60,7 @@
                     <h6 class="mb-0">Recent Requests</h6>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    <div class="recent-requests-wrapper">
                         <table class="table table-hover mb-0 align-middle">
                             <thead class="table-light">
                                 <tr>

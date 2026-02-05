@@ -18,6 +18,18 @@ class DisplayPlant extends Model
         'height_mm',
         'spread_mm',
         'spacing_mm',
-        'photo_path'
+        'photo_path',
+        'care_watering',
+        'care_sunlight',
+        'care_soil',
+        'care_temperature',
+        'care_humidity',
+        'care_fertilizing',
+        'care_pruning',
+        'care_propagation',
+        'care_pests',
+        'care_growth_rate',
+        'care_toxicity',
+        'care_notes'
     ];
 } 

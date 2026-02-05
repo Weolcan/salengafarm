@@ -1,62 +1,136 @@
 @extends('layouts.public')
 
+@push('styles')
+<link href="{{ asset('css/client-data.css') }}?v={{ time() }}" rel="stylesheet">
+<style>
+    /* Compact header with inline visit info */
+    .client-data-header {
+        background: linear-gradient(135deg, #198754 0%, #157347 100%);
+        color: white;
+        padding: 1rem;
+        margin: -0.5rem -0.5rem 1rem -0.5rem;
+        border-radius: 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .client-data-header h2 {
+        font-size: 1.1rem !important;
+        margin: 0 0 0.5rem 0 !important;
+        color: white !important;
+    }
+    
+    .visit-info-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+    
+    .visit-info-inline .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .visit-info-inline .info-label {
+        font-weight: 600;
+        opacity: 0.9;
+    }
+    
+    .visit-info-inline .badge {
+        font-size: 0.75rem;
+        padding: 0.25em 0.6em;
+    }
+    
+    .back-btn-header {
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .back-btn-header:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+    }
+</style>
+@endpush
+
 @section('content')
-    <div class="container-fluid py-3">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>
-                <i class="fas fa-folder-open me-2 text-success"></i>
-                Client Data
-            </h2>
-            <a href="{{ route('client-data.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Back to Client Data
-            </a>
+    <div class="container-fluid client-data-page" style="padding: 0.5rem;">
+        <!-- Compact Header with Visit Info -->
+        <div class="client-data-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h2>
+                        <i class="fas fa-folder-open me-2"></i>
+                        Client Data
+                    </h2>
+                    <div class="visit-info-inline">
+                        <div class="info-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span class="info-label">Visit Date:</span>
+                            <span>{{ optional($siteVisit->visit_date)->format('M j, Y') }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="info-label">Status:</span>
+                            <span class="badge bg-{{ $siteVisit->status_badge_color }}">{{ ucfirst(str_replace('_',' ', $siteVisit->status)) }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span class="info-label">Location:</span>
+                            <span>{{ $siteVisit->location_address ?? $siteVisit->location ?? '—' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-upload"></i>
+                            <span class="info-label">Uploads:</span>
+                            @php $isOpen = $isOpen ?? false; @endphp
+                            @if($isOpen)
+                                <span class="badge bg-success">Open</span>
+                            @else
+                                <span class="badge bg-secondary">Not Open</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ route('client-data.index') }}" class="btn back-btn-header">
+                    <i class="fas fa-arrow-left me-1"></i>Back
+                </a>
+            </div>
         </div>
 
         @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+            <div class="alert alert-success alert-dismissible fade show" style="padding: 0.5rem; margin-bottom: 0.5rem;" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="padding: 0.5rem; font-size: 0.7rem;"></button>
+            </div>
         @endif
         @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
+            <div class="alert alert-danger alert-dismissible fade show" style="padding: 0.5rem; margin-bottom: 0.5rem;" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="padding: 0.5rem; font-size: 0.7rem;"></button>
+            </div>
         @endif
         @if($errors->any())
-            <div class="alert alert-danger">
+            <div class="alert alert-danger alert-dismissible fade show" style="padding: 0.5rem; margin-bottom: 0.5rem;" role="alert">
                 <ul class="mb-0">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="padding: 0.5rem; font-size: 0.7rem;"></button>
             </div>
         @endif
 
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div><strong>Visit Date:</strong> {{ optional($siteVisit->visit_date)->format('M j, Y') }}</div>
-                        <div class="mt-1"><strong>Status:</strong> <span class="badge bg-{{ $siteVisit->status_badge_color }}">{{ ucfirst(str_replace('_',' ', $siteVisit->status)) }}</span></div>
-                    </div>
-                    <div class="col-md-8">
-                        <div><strong>Location:</strong> {{ $siteVisit->location_address ?? $siteVisit->location ?? '—' }}</div>
-                        @php $isOpen = $isOpen ?? false; @endphp
-                        <div class="mt-1">
-                            <strong>Uploads:</strong>
-                            @if($isOpen)
-                                <span class="badge bg-success">Open</span>
-                            @else
-                                <span class="badge bg-secondary">Not yet open</span>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Client's Data Checklist -->
-        <div class="card mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="fas fa-file-upload me-2 text-success"></i>Client's Data Checklist</h5>
+        <div class="card" style="margin-bottom: 0.5rem; height: auto;">
+            <div class="card-header bg-white" style="padding: 0.4rem 0.5rem;">
+                <h5 style="margin: 0; font-size: 0.9rem;"><i class="fas fa-file-upload me-2 text-success"></i>Client's Data Checklist</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="padding: 0.5rem; height: auto; max-height: none; overflow: visible;">
                 @php
                     $clientDataItems = [
                         'land_title' => 'Land Title',
@@ -74,31 +148,31 @@
                     $canUpload = ($isAdmin || $isLinkedClient) && $isOpen;
                 @endphp
 
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered align-middle bg-white">
+                <div>
+                    <table class="client-data-table" style="width: 100%; border-collapse: collapse; background: white; font-size: 0.8rem;">
                         <thead>
-                            <tr>
-                                <th style="width: 28%">Item</th>
-                                <th>
+                            <tr style="background: #f8f9fa;">
+                                <th style="width: 250px; padding: 0.5rem; font-size: 0.8rem; border: 1px solid #dee2e6; white-space: normal; word-wrap: break-word; text-align: left; font-weight: 600;">Item</th>
+                                <th style="padding: 0.3rem 0.5rem; font-size: 0.8rem; border: 1px solid #dee2e6; text-align: left; font-weight: 600;">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>Files</span>
                                         @if($canUpload)
                                             <div id="deleteButtonsContainer">
-                                                <button type="button" id="toggleDeleteMode" class="btn btn-sm btn-outline-danger">
+                                                <button type="button" id="toggleDeleteMode" class="btn btn-sm btn-outline-danger" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
                                                     <i class="fas fa-trash me-1"></i>Delete
                                                 </button>
-                                                <button type="button" id="cancelDeleteMode" class="btn btn-sm btn-secondary d-none">
+                                                <button type="button" id="cancelDeleteMode" class="btn btn-sm btn-secondary d-none" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
                                                     <i class="fas fa-times me-1"></i>Cancel
                                                 </button>
-                                                <button type="button" id="deleteSelectedFiles" class="btn btn-sm btn-danger d-none">
+                                                <button type="button" id="deleteSelectedFiles" class="btn btn-sm btn-danger d-none" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
                                                     <i class="fas fa-trash me-1"></i>Delete Selected
                                                 </button>
                                             </div>
                                         @endif
                                     </div>
                                 </th>
-                                <th style="width: 22%">Upload</th>
-                                <th style="width: 18%">Status</th>
+                                <th style="width: 250px; padding: 0.5rem; font-size: 0.8rem; border: 1px solid #dee2e6; text-align: left; font-weight: 600;">Upload</th>
+                                <th style="width: 150px; padding: 0.5rem; font-size: 0.8rem; border: 1px solid #dee2e6; text-align: left; font-weight: 600;">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,51 +182,51 @@
                                     $st = $cdStatus[$key]['status'] ?? 'missing';
                                     $note = $cdStatus[$key]['note'] ?? null;
                                 @endphp
-                                <tr>
-                                    <td class="fw-semibold">{{ $label }}</td>
-                                    <td>
+                                <tr style="border-bottom: 1px solid #dee2e6;">
+                                    <td style="width: 200px; padding: 0.4rem; font-size: 0.8rem; border: 1px solid #dee2e6; white-space: normal; word-wrap: break-word; vertical-align: middle; font-weight: 600;">{{ $label }}</td>
+                                    <td style="padding: 0.1rem 0.5rem; font-size: 0.8rem; border: 1px solid #dee2e6; white-space: normal; word-wrap: break-word; vertical-align: middle;">
                                         @if(empty($files))
-                                            <span class="text-muted">No files uploaded.</span>
+                                            <span class="text-muted" style="font-size: 0.75rem;">No files uploaded.</span>
                                         @else
                                             <ul class="mb-0 list-unstyled">
                                                 @foreach($files as $index => $f)
-                                                    <li class="d-flex align-items-center mb-2 file-item">
+                                                    <li class="d-flex align-items-center" style="margin-bottom: 0.2rem; font-size: 0.75rem;">
                                                         <input type="checkbox" class="file-checkbox me-2 d-none" 
                                                                data-item-key="{{ $key }}" 
                                                                data-file-index="{{ $index }}"
                                                                data-site-visit-id="{{ $siteVisit->id }}">
                                                         <div class="flex-grow-1">
                                                             <a href="{{ asset('storage/' . $f['path']) }}" target="_blank">{{ $f['original_name'] }}</a>
-                                                            <small class="text-muted">({{ $f['type'] }})</small>
+                                                            <small class="text-muted" style="font-size: 0.7rem;">({{ $f['type'] }})</small>
                                                         </div>
                                                     </li>
                                                 @endforeach
                                             </ul>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td style="width: 280px; padding: 0.4rem; font-size: 0.8rem; border: 1px solid #dee2e6; white-space: normal; word-wrap: break-word; vertical-align: middle;">
                                         @if($canUpload)
                                             <form action="{{ route('site-visits.client-data.upload', ['siteVisit' => $siteVisit->id, 'itemKey' => $key]) }}" method="POST" enctype="multipart/form-data">
                                                 @csrf
                                                 <div class="input-group input-group-sm">
-                                                    <input type="file" name="file" class="form-control" required>
-                                                    <button class="btn btn-success" type="submit"><i class="fas fa-upload me-1"></i>Upload</button>
+                                                    <input type="file" name="file" class="form-control" required style="font-size: 0.7rem; padding: 0.2rem 0.3rem;">
+                                                    <button class="btn btn-success" type="submit" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;"><i class="fas fa-upload me-1"></i>Upload</button>
                                                 </div>
                                                 @if($key === 'drone_map')
-                                                    <small class="text-muted">Allowed: pdf, jpg, jpeg, png, mp4, mov. Max 20MB.</small>
+                                                    <small class="text-muted" style="font-size: 0.65rem;">Allowed: pdf, jpg, jpeg, png, mp4, mov. Max 20MB.</small>
                                                 @else
-                                                    <small class="text-muted">Allowed: pdf, jpg, jpeg, png. Max 20MB.</small>
+                                                    <small class="text-muted" style="font-size: 0.65rem;">Allowed: pdf, jpg, jpeg, png. Max 20MB.</small>
                                                 @endif
                                             </form>
                                         @else
                                             @if(!$isOpen)
-                                                <span class="text-muted">Uploads not open yet.</span>
+                                                <span class="text-muted" style="font-size: 0.75rem;">Uploads not open yet.</span>
                                             @else
-                                                <span class="text-muted">No permission to upload.</span>
+                                                <span class="text-muted" style="font-size: 0.75rem;">No permission to upload.</span>
                                             @endif
                                         @endif
                                     </td>
-                                    <td>
+                                    <td style="width: 120px; padding: 0.4rem; font-size: 0.8rem; border: 1px solid #dee2e6; white-space: normal; word-wrap: break-word; vertical-align: middle;">
                                         @php
                                             $badge = match($st) {
                                                 'received' => 'success',
@@ -162,9 +236,9 @@
                                                 default => 'secondary'
                                             };
                                         @endphp
-                                        <span class="badge bg-{{ $badge }}">{{ ucfirst($st) }}</span>
+                                        <span class="badge bg-{{ $badge }}" style="font-size: 0.7rem;">{{ ucfirst($st) }}</span>
                                         @if($note)
-                                            <small class="text-muted d-block">Note: {{ $note }}</small>
+                                            <small class="text-muted d-block" style="font-size: 0.65rem;">Note: {{ $note }}</small>
                                         @endif
                                     </td>
                                 </tr>
@@ -176,11 +250,11 @@
         </div>
 
         <!-- Proposal Checklist (read-only for clients) -->
-        <div class="card mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="fas fa-file-alt me-2 text-success"></i>Proposal Checklist</h5>
+        <div class="card" style="margin-bottom: 0.5rem; height: auto;">
+            <div class="card-header bg-white" style="padding: 0.4rem 0.5rem;">
+                <h5 style="margin: 0; font-size: 0.9rem;"><i class="fas fa-file-alt me-2 text-success"></i>Proposal Checklist</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="padding: 0.5rem; height: auto; max-height: none; overflow: visible;">
                 @php
                     $proposalItems = [
                         'concept_board' => 'Concept Board',
@@ -195,13 +269,13 @@
                     $ppStatus = $siteVisit->proposal_item_statuses ?? [];
                 @endphp
 
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered align-middle bg-white">
+                <div>
+                    <table class="client-data-table" style="width: 100%; border-collapse: collapse; background: white; font-size: 0.8rem;">
                         <thead>
-                            <tr>
-                                <th style="width: 28%">Item</th>
-                                <th>Files</th>
-                                <th style="width: 18%">Status</th>
+                            <tr style="background: #f8f9fa;">
+                                <th style="width: 280px; padding: 0.4rem; font-size: 0.8rem; border: 1px solid #dee2e6; white-space: normal; word-wrap: break-word; text-align: left; font-weight: 600;">Item</th>
+                                <th style="padding: 0.4rem; font-size: 0.8rem; border: 1px solid #dee2e6; text-align: left; font-weight: 600;">Files</th>
+                                <th style="width: 120px; padding: 0.4rem; font-size: 0.8rem; border: 1px solid #dee2e6; text-align: left; font-weight: 600;">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -217,24 +291,24 @@
                                         default => 'secondary'
                                     };
                                 @endphp
-                                <tr>
-                                    <td class="fw-semibold">{{ $label }}</td>
-                                    <td>
+                                <tr style="border-bottom: 1px solid #dee2e6;">
+                                    <td style="width: 280px; padding: 0.4rem; font-size: 0.8rem; border: 1px solid #dee2e6; white-space: normal; word-wrap: break-word; vertical-align: middle; font-weight: 600;">{{ $label }}</td>
+                                    <td style="padding: 0.4rem; font-size: 0.8rem; border: 1px solid #dee2e6; white-space: normal; word-wrap: break-word; vertical-align: middle;">
                                         @if(empty($files))
-                                            <span class="text-muted">No files uploaded.</span>
+                                            <span class="text-muted" style="font-size: 0.75rem;">No files uploaded.</span>
                                         @else
-                                            <ul class="mb-0">
+                                            <ul class="mb-0" style="padding-left: 1.2rem;">
                                                 @foreach($files as $f)
-                                                    <li>
+                                                    <li style="font-size: 0.75rem; margin-bottom: 0.2rem;">
                                                         <a href="{{ asset('storage/' . $f['path']) }}" target="_blank">{{ $f['original_name'] }}</a>
-                                                        <small class="text-muted">({{ $f['type'] }})</small>
+                                                        <small class="text-muted" style="font-size: 0.7rem;">({{ $f['type'] }})</small>
                                                     </li>
                                                 @endforeach
                                             </ul>
                                         @endif
                                     </td>
-                                    <td>
-                                        <span class="badge bg-{{ $badge }}">{{ ucfirst($st) }}</span>
+                                    <td style="width: 120px; padding: 0.4rem; font-size: 0.8rem; border: 1px solid #dee2e6; white-space: normal; word-wrap: break-word; vertical-align: middle;">
+                                        <span class="badge bg-{{ $badge }}" style="font-size: 0.7rem;">{{ ucfirst($st) }}</span>
                                     </td>
                                 </tr>
                             @endforeach
@@ -247,6 +321,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Auto-dismiss alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000); // 5 seconds
+            });
+            
+            // No need for JavaScript fixes anymore - using custom table class
+            
             const toggleDeleteBtn = document.getElementById('toggleDeleteMode');
             const cancelDeleteBtn = document.getElementById('cancelDeleteMode');
             const deleteSelectedBtn = document.getElementById('deleteSelectedFiles');

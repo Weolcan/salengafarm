@@ -21,8 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const requestPlantsModal = document.getElementById('requestPlantsModal');
     const selectPlantsBtn = document.getElementById('selectPlantsBtn');
     const rfqFormModal = document.getElementById('rfqFormModal');
-    const sendRfqBtn = document.getElementById('sendRfqBtn');
-    const loadingOverlay = document.getElementById('loadingOverlay');
+    const sendRfqBtn = document.getElementById('submitRequest');
     const successModal = document.getElementById('successModal');
 
     // Initialize event listeners
@@ -152,6 +151,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Reset the selectedPlants array
         selectedPlants = [];
+        
+        // Setup plant cards for selection
+        setupPlantCards();
     }
 
     // Set up plant cards for selection
@@ -194,12 +196,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Add click listener to checkbox only (not the whole card)
                 checkbox.addEventListener('click', e => {
+                    // Stop event propagation
+                    e.stopPropagation();
+                    
                     // Toggle selection for this card
                     toggleCardSelection(card);
-                
-                // Stop event propagation
-                e.stopPropagation();
-            });
+                });
             }
         });
     }
@@ -363,9 +365,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Rebuilt selectedPlants array with', selectedPlants.length, 'plants');
         
-        // Show loading overlay
-        if (loadingOverlay) {
-            loadingOverlay.classList.remove('d-none');
+        // Show loading with LoadingManager
+        if (typeof LoadingManager !== 'undefined') {
+            LoadingManager.show('Preparing RFQ Form...', 'Please wait');
         }
         
         // Process selected plants and show form
@@ -373,9 +375,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Populate the form
             populateRfqForm();
             
-            // Hide loading overlay
-            if (loadingOverlay) {
-                loadingOverlay.classList.add('d-none');
+            // Hide loading
+            if (typeof LoadingManager !== 'undefined') {
+                LoadingManager.hide();
             }
             
             // Show the RFQ form modal
@@ -484,6 +486,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let isSubmitting = false; // Flag to prevent duplicate submissions
     
     function submitRfqForm() {
+        console.log('submitRfqForm called');
+        
         // Prevent duplicate submissions
         if (isSubmitting) {
             console.log('Already submitting, ignoring duplicate click');
@@ -491,9 +495,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         isSubmitting = true;
+        console.log('Starting submission process');
         
-        // Show loading overlay
-        loadingOverlay.classList.remove('d-none');
+        // Show loading with LoadingManager
+        if (typeof LoadingManager !== 'undefined') {
+            LoadingManager.show('Submitting Request...', 'Please wait while we process your request');
+        } else {
+            console.warn('LoadingManager not found');
+        }
         
         // Gather all data from form inputs
         const rows = document.querySelectorAll('#rfqItemsTable tr');
@@ -547,6 +556,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         console.log(`Submitting ${updatedPlants.length} plants`);
+        console.log('User email:', userEmail);
+        console.log('User name:', userName);
         
         // Prepare data for submission
         const requestData = {
@@ -554,12 +565,19 @@ document.addEventListener('DOMContentLoaded', function() {
             name: userName,
             items_json: JSON.stringify(updatedPlants)
         };
+        
+        console.log('Request data:', requestData);
             
-            // Set a timeout to ensure loading overlay doesn't stay indefinitely
+            // Set a timeout to ensure loading doesn't stay indefinitely
             const timeoutId = setTimeout(() => {
-                loadingOverlay.classList.add('d-none');
+                if (typeof LoadingManager !== 'undefined') {
+                    LoadingManager.hide();
+                }
                 alert('Request is taking longer than expected. Please try again.');
+                isSubmitting = false;
             }, 15000); // 15-second timeout
+        
+        console.log('Sending fetch request to /client-request');
         
         // Submit via AJAX
         fetch('/client-request', {
@@ -571,20 +589,25 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify(requestData)
         })
         .then(response => {
+                console.log('Received response:', response);
                 // Clear the timeout since we got a response
                 clearTimeout(timeoutId);
                 
             if (!response.ok) {
+                    console.error('Response not OK:', response.status, response.statusText);
                 throw new Error('Network response was not ok');
             }
             return response.json();
         })
         .then(data => {
+            console.log('Success response data:', data);
             // Reset submission flag
             isSubmitting = false;
             
-            // Hide loading overlay
-            loadingOverlay.classList.add('d-none');
+            // Hide loading
+            if (typeof LoadingManager !== 'undefined') {
+                LoadingManager.hide();
+            }
             
             // Close the RFQ form modal
             const rfqModal = bootstrap.Modal.getInstance(document.getElementById('rfqFormModal'));
@@ -613,25 +636,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
+                console.error('Fetch error:', error);
                 // Reset submission flag
                 isSubmitting = false;
                 
                 // Clear the timeout since we got a response
                 clearTimeout(timeoutId);
                 
-            // Hide loading overlay
-            loadingOverlay.classList.add('d-none');
+            // Hide loading
+            if (typeof LoadingManager !== 'undefined') {
+                LoadingManager.hide();
+            }
             
             // Show error message
             alert('Error submitting request: ' + error.message);
             console.error('Error:', error);
         });
         } catch (error) {
+            console.error('Try-catch error:', error);
             // Reset submission flag
             isSubmitting = false;
             
             // Handle any errors that might occur during data processing
-            loadingOverlay.classList.add('d-none');
+            if (typeof LoadingManager !== 'undefined') {
+                LoadingManager.hide();
+            }
             alert('Error preparing request data: ' + error.message);
             console.error('Error preparing data:', error);
         }

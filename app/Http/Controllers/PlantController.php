@@ -12,7 +12,8 @@ class PlantController extends Controller
     public function index()
     {
         $plants = Plant::orderBy('name', 'asc')->get();
-        return view('plants.index', compact('plants'));
+        $categories = \App\Models\Category::all();
+        return view('plants.index', compact('plants', 'categories'));
     }
 
     public function store(Request $request)

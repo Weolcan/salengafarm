@@ -277,8 +277,7 @@
                     </div>
                 <!-- Right Column - Quick Actions and Recent Plants -->
                 <div class="col-md-3">
-                    <!-- Quick Actions - Only show for Admin, not Super Admin -->
-                    @if(Auth::user()->role !== 'super_admin')
+                    <!-- Quick Actions -->
                     <div class="card right-column-card">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -289,13 +288,19 @@
                         </div>
                         <div class="card-body d-flex align-items-center">
                             <div class="d-grid gap-2 w-100">
+                                @if(Auth::user()->role !== 'super_admin')
                                 <button class="btn btn-info text-white" id="updateStockBtn" data-bs-toggle="modal" data-bs-target="#updateStockModal">
                                     <i class="fas fa-sync me-2"></i>Update Stock
                                 </button>
+                                @endif
+                                @if(Auth::user()->role === 'super_admin')
+                                <button class="btn btn-info text-white" id="viewSystemLogsBtn">
+                                    <i class="fas fa-file-alt me-2"></i>System Logs
+                                </button>
+                                @endif
                             </div>
                         </div>
                     </div>
-                    @endif
                     <!-- Recent Plants -->
                     <div class="card recent-plants-card">
                         <div class="card-header">
@@ -899,5 +904,254 @@
         window.hideInstructions = hideInstructions;
     });
     </script>
+
+    <!-- System Logs Modal (Super Admin Only) -->
+    @if(Auth::user()->role === 'super_admin')
+    <div class="modal fade" id="systemLogsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>System Logs</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Filters -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1">Log Level</label>
+                            <select id="logLevel" class="form-select form-select-sm">
+                                <option value="all">All Levels</option>
+                                <option value="info">INFO</option>
+                                <option value="error">ERROR</option>
+                                <option value="warning">WARNING</option>
+                                <option value="debug">DEBUG</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Lines</label>
+                            <select id="logLines" class="form-select form-select-sm">
+                                <option value="50">50</option>
+                                <option value="100" selected>100</option>
+                                <option value="200">200</option>
+                                <option value="500">500</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small mb-1">Search</label>
+                            <input type="text" id="logSearch" class="form-control form-control-sm" placeholder="Search in logs...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">&nbsp;</label>
+                            <button class="btn btn-primary btn-sm w-100" onclick="loadLogs()">
+                                <i class="fas fa-filter"></i> Apply
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body py-2 px-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small">File Size</span>
+                                        <strong id="logSize" class="text-primary">-</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body py-2 px-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small">Entries</span>
+                                        <strong id="logCount" class="text-success">-</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body py-2 px-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small">Last Updated</span>
+                                        <strong id="logTime" class="text-info">-</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mb-3 d-flex gap-2">
+                        <button class="btn btn-success btn-sm" onclick="downloadLogs()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="clearLogs()">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                        <button class="btn btn-info btn-sm" onclick="loadLogs()">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+
+                    <!-- Logs Table -->
+                    <div class="table-responsive" style="max-height: 450px; border: 1px solid #dee2e6; border-radius: 4px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0" style="font-size: 0.85rem; width: 100%;">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th style="width: 140px; padding: 10px 12px;">Timestamp</th>
+                                    <th style="width: 90px; padding: 10px 12px;">Level</th>
+                                    <th style="width: 40%; padding: 10px 12px;">Message</th>
+                                    <th style="width: 40%; padding: 10px 12px;">Context</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <div class="mt-2 text-muted">Loading logs...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // System Logs Functions
+        function loadLogs() {
+            const level = document.getElementById('logLevel').value;
+            const lines = document.getElementById('logLines').value;
+            const search = document.getElementById('logSearch').value;
+
+            // Show loading
+            document.getElementById('logsTableBody').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="mt-2 text-muted">Loading logs...</div>
+                    </td>
+                </tr>
+            `;
+
+            fetch(`/admin/logs/fetch?level=${level}&lines=${lines}&search=${encodeURIComponent(search)}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update stats
+                    document.getElementById('logSize').textContent = (data.logSize / 1024).toFixed(2) + ' KB';
+                    document.getElementById('logCount').textContent = data.count;
+                    document.getElementById('logTime').textContent = new Date().toLocaleTimeString();
+
+                    // Update table
+                    const tbody = document.getElementById('logsTableBody');
+                    if (data.logs.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                    <div class="text-muted">No logs found</div>
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    tbody.innerHTML = data.logs.map(log => {
+                        const levelConfig = {
+                            'INFO': { class: 'bg-info', icon: 'info-circle' },
+                            'ERROR': { class: 'bg-danger', icon: 'exclamation-circle' },
+                            'WARNING': { class: 'bg-warning text-dark', icon: 'exclamation-triangle' },
+                            'DEBUG': { class: 'bg-secondary', icon: 'bug' }
+                        };
+                        const config = levelConfig[log.level] || { class: 'bg-secondary', icon: 'question' };
+
+                        // Format JSON context for better readability
+                        let formattedContext = log.context;
+                        if (formattedContext && (formattedContext.startsWith('{') || formattedContext.startsWith('['))) {
+                            try {
+                                const parsed = JSON.parse(formattedContext);
+                                formattedContext = JSON.stringify(parsed, null, 2);
+                            } catch (e) {
+                                // Keep original if not valid JSON
+                            }
+                        }
+
+                        return `
+                            <tr style="border-bottom: 2px solid #f0f0f0;">
+                                <td style="padding: 12px; vertical-align: top;">
+                                    <span class="text-muted" style="font-family: 'Courier New', monospace; font-size: 0.75rem; display: block; line-height: 1.3; white-space: nowrap;">
+                                        ${log.timestamp}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; vertical-align: top;">
+                                    <span class="badge ${config.class}" style="font-size: 0.7rem; padding: 4px 8px; white-space: nowrap;">
+                                        <i class="fas fa-${config.icon} me-1"></i>${log.level}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; vertical-align: top;">
+                                    <div style="word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; line-height: 1.5;">
+                                        ${log.message}
+                                    </div>
+                                </td>
+                                <td style="padding: 12px; vertical-align: top;">
+                                    <pre class="text-muted mb-0" style="font-family: 'Courier New', monospace; font-size: 0.7rem; background: #f8f9fa; padding: 8px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; line-height: 1.4; max-height: 250px; overflow-y: auto;">${formattedContext}</pre>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                })
+                .catch(error => {
+                    console.error('Error loading logs:', error);
+                    document.getElementById('logsTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-danger">
+                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                <div>Error loading logs</div>
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+
+        function downloadLogs() {
+            window.location.href = '/admin/logs/download';
+        }
+
+        function clearLogs() {
+            if (confirm('Are you sure you want to clear all logs?\n\nA backup will be created automatically.')) {
+                fetch('/admin/logs/clear', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('✓ Logs cleared successfully!\nBackup has been saved.');
+                    loadLogs();
+                })
+                .catch(error => {
+                    alert('✗ Error clearing logs');
+                    console.error(error);
+                });
+            }
+        }
+
+        // Open modal and load logs
+        document.getElementById('viewSystemLogsBtn')?.addEventListener('click', function() {
+            const modal = new bootstrap.Modal(document.getElementById('systemLogsModal'));
+            modal.show();
+            loadLogs();
+        });
+    </script>
+    @endif
 </body>
 </html>

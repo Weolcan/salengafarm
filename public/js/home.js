@@ -777,26 +777,14 @@ function handleRFQForm() {
 let selectedPlants = [];
 const MAX_PLANTS = 20;
 
-// Initialize plant selection counter - only for authenticated users
+// Initialize plant selection counter - only for regular users (not clients)
 function initPlantSelectionCounter() {
-    // Only show counter for authenticated users who are not clients
-    if (!isUserAuthenticated() || isClientUser()) {
+    // Only show counter for regular users (not clients, not admins)
+    if (!isUserAuthenticated() || isClientUser() || isAdminUser()) {
         return;
     }
     
-    // Create counter element if it doesn't exist
-    if (!document.querySelector('.selected-plants-counter')) {
-        const counter = document.createElement('div');
-        counter.className = 'selected-plants-counter';
-        counter.innerHTML = `
-            <i class="fas fa-leaf"></i>
-            <span class="count">0</span>
-            <span>plants selected</span>
-            <button class="view-btn" onclick="viewSelectedPlants()">View Request</button>
-            <button class="clear-btn" onclick="clearAllSelectedPlants()"><i class="fas fa-trash"></i></button>
-        `;
-        document.body.appendChild(counter);
-    }
+    // Update the top bar button count
     updatePlantCounter();
 }
 
@@ -811,6 +799,13 @@ function isUserAuthenticated() {
 function isClientUser() {
     // Look for a data attribute that identifies client users
     return document.querySelector('[data-user-role="client"]') !== null;
+}
+
+// Check if the current user is an admin
+function isAdminUser() {
+    // Look for a data attribute that identifies admin users
+    return document.querySelector('[data-user-role="admin"]') !== null || 
+           document.querySelector('[data-user-role="super_admin"]') !== null;
 }
 
 // Add a function to clear all selected plants
@@ -841,44 +836,45 @@ function clearAllSelectedPlants() {
     }
 }
 
-// Update the plant selection counter
+// Update the plant selection counter in the top bar button
 function updatePlantCounter() {
-    const counter = document.querySelector('.selected-plants-counter');
-    if (!counter) return;
+    const requestCountElement = document.getElementById('requestCount');
+    const viewRequestBtn = document.getElementById('viewRequestBtn');
     
-    const countElement = counter.querySelector('.count');
-    countElement.textContent = selectedPlants.length;
+    if (requestCountElement) {
+        requestCountElement.textContent = selectedPlants.length;
+    }
     
-    if (selectedPlants.length > 0) {
-        counter.classList.add('has-items');
-    } else {
-        counter.classList.remove('has-items');
+    // Update button color based on count
+    if (viewRequestBtn) {
+        if (selectedPlants.length > 0) {
+            viewRequestBtn.classList.add('has-plants');
+        } else {
+            viewRequestBtn.classList.remove('has-plants');
+        }
     }
 }
 
 // Handle add plant button click
 function initAddPlantButtons() {
-    // Skip for clients or non-authenticated users
-    if (!isUserAuthenticated() || isClientUser()) {
+    // Skip for clients, admins, or non-authenticated users
+    if (!isUserAuthenticated() || isClientUser() || isAdminUser()) {
         return;
     }
 
     document.querySelectorAll('.plant-action-btn').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card from toggling
+            
             const plantId = this.getAttribute('data-plant-id');
             const plantName = this.getAttribute('data-plant-name');
             const plantCode = this.getAttribute('data-plant-code');
             const action = this.getAttribute('data-action');
             
-            // Get the edited measurements from the inputs
-            const card = this.closest('.plant-details-panel');
-            const heightInput = card.querySelector('.editable-measurement[data-field="height"]');
-            const spreadInput = card.querySelector('.editable-measurement[data-field="spread"]');
-            const spacingInput = card.querySelector('.editable-measurement[data-field="spacing"]');
-            
-            const height = heightInput ? heightInput.value : null;
-            const spread = spreadInput ? spreadInput.value : null;
-            const spacing = spacingInput ? spacingInput.value : null;
+            // Get measurements from data attributes (no longer editable)
+            const height = this.getAttribute('data-height');
+            const spread = this.getAttribute('data-spread');
+            const spacing = this.getAttribute('data-spacing');
             
             if (action === 'add') {
                 // Add plant to selection
@@ -886,14 +882,18 @@ function initAddPlantButtons() {
                 
                 // Change button to remove
                 this.setAttribute('data-action', 'remove');
-                this.innerHTML = '<i class="fas fa-minus"></i> Remove Plant';
+                this.classList.remove('btn-success');
+                this.classList.add('btn-danger');
+                this.innerHTML = '<i class="fas fa-minus"></i> Remove';
             } else {
                 // Remove plant from selection
                 removePlantFromSelection(plantId);
                 
                 // Change button back to add
                 this.setAttribute('data-action', 'add');
-                this.innerHTML = '<i class="fas fa-plus"></i> Add Plant';
+                this.classList.remove('btn-danger');
+                this.classList.add('btn-success');
+                this.innerHTML = '<i class="fas fa-plus"></i> Add to Request';
             }
         });
     });
@@ -1291,8 +1291,16 @@ function addPlantToSelection(plantId, plantName, plantCode, height, spread, spac
 
 // Remove plant from selection
 function removePlantFromSelection(plantId) {
+    // Convert to integer to ensure consistency
+    plantId = parseInt(plantId);
+    
+    console.log('removePlantFromSelection called with plantId:', plantId);
+    console.log('Current selectedPlants:', selectedPlants.map(p => ({ id: p.id, name: p.name })));
+    
     // Find and remove from array
-    const index = selectedPlants.findIndex(p => p.id === plantId);
+    const index = selectedPlants.findIndex(p => parseInt(p.id) === plantId);
+    
+    console.log('Found index:', index);
     
     if (index !== -1) {
         const plantName = selectedPlants[index].name;
@@ -1300,6 +1308,9 @@ function removePlantFromSelection(plantId) {
         saveSelectedPlants();
         updatePlantCounter();
         showToast(`Removed ${plantName} from your request`);
+        console.log('Plant removed successfully. New selectedPlants:', selectedPlants);
+    } else {
+        console.log('Plant not found in selectedPlants array');
     }
     
     // Update the button state for this plant
@@ -1312,9 +1323,13 @@ function updatePlantActionButtons(plantId, action) {
         btn.setAttribute('data-action', action);
         
         if (action === 'add') {
-            btn.innerHTML = '<i class="fas fa-plus"></i> Add Plant';
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-success');
+            btn.innerHTML = '<i class="fas fa-plus"></i> Add to Request';
         } else {
-            btn.innerHTML = '<i class="fas fa-minus"></i> Remove Plant';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-danger');
+            btn.innerHTML = '<i class="fas fa-minus"></i> Remove';
         }
     });
 }
@@ -1410,14 +1425,19 @@ function populateRequestFormModal() {
 function initModalRemoveButtons() {
     document.querySelectorAll('.modal-remove-plant').forEach(button => {
         button.addEventListener('click', function() {
-            const plantId = this.getAttribute('data-id');
+            const plantId = parseInt(this.getAttribute('data-id'));
             const row = this.closest('tr');
+            
+            console.log('Removing plant from modal:', plantId);
+            console.log('Selected plants before removal:', selectedPlants);
+            
+            // Remove from selectedPlants array FIRST
+            removePlantFromSelection(plantId);
+            
+            console.log('Selected plants after removal:', selectedPlants);
             
             // Remove from UI
             row.remove();
-            
-            // Remove from selectedPlants array
-            removePlantFromSelection(plantId);
             
             // Show empty state if no plants left
             if (selectedPlants.length === 0) {
@@ -1440,7 +1460,7 @@ function initModalRemoveButtons() {
     });
 }
 
-// Initialize quantity inputs in the modal
+// Initialize quantity inputs in the modal// Initialize quantity inputs in the modal
 function initModalQuantityInputs() {
     document.querySelectorAll('.modal-qty-input').forEach(input => {
         input.addEventListener('change', function() {
@@ -1460,9 +1480,31 @@ function initModalQuantityInputs() {
 // Handle the modal's submit button
 function initModalSubmitButton() {
     const submitButton = document.getElementById('modalSubmitButton');
+    const modal = document.getElementById('requestFormModal');
+    
     if (!submitButton) return;
     
-    submitButton.addEventListener('click', function() {
+    // Add event listener for when modal is hidden (closed)
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function() {
+            // Update counter and button states when modal closes
+            updatePlantCounter();
+            
+            // Update all plant action buttons based on current selection
+            const allPlantIds = Array.from(document.querySelectorAll('.plant-action-btn')).map(btn => 
+                parseInt(btn.getAttribute('data-plant-id'))
+            );
+            
+            allPlantIds.forEach(plantId => {
+                const isSelected = selectedPlants.some(p => parseInt(p.id) === plantId);
+                updatePlantActionButtons(plantId, isSelected ? 'remove' : 'add');
+            });
+        });
+    }
+    
+    submitButton.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent default form submission
+        
         const form = document.getElementById('modalRequestForm');
         
         // Validate form
@@ -1482,64 +1524,110 @@ function initModalSubmitButton() {
         // Submit the form through AJAX
         const formData = new FormData(form);
         
-        // Show loading state
+        // Show domino loading
+        LoadingManager.show('Submitting Your Request...', 'Please wait while we process your plant request');
+        
+        // Show loading state on button
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
         
-        fetch(form.action, {
+        fetch('/request-form', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRF-TOKEN': csrfToken
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
             }
         })
         .then(response => {
+            console.log('Response received:', response);
+            console.log('Response status:', response.status);
+            console.log('Response content-type:', response.headers.get('content-type'));
+            
+            // Check if response is OK (status 200-299)
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             // Check if response is JSON or HTML
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
                 return response.json().then(data => {
+                    console.log('JSON data received:', data);
                     return { success: data.success, message: data.message, isJson: true };
                 });
             } else {
+                console.log('Non-JSON response, redirecting to:', response.url);
                 // If it's HTML, that means it's a redirect
-                // We'll simulate a redirect here
                 window.location.href = response.url;
                 return { success: true, isJson: false };
             }
         })
         .then(data => {
-            if (data.isJson) {
+            console.log('Processing data:', data);
+            
+            if (data && data.isJson) {
                 if (data.success) {
-                    // Show success message
-                    alert('Your plant request has been submitted successfully!');
+                    // Hide loading
+                    LoadingManager.hide();
                     
-                    // Store the plant IDs to update their buttons
-                    const plantIds = selectedPlants.map(plant => plant.id);
+                    // Show success message with SweetAlert
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Request Submitted!',
+                        html: '<p>Your plant request has been submitted successfully!</p><p>A confirmation email has been sent to your email address.</p>',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#28a745'
+                    }).then(() => {
+                        // Store the plant IDs to update their buttons
+                        const plantIds = selectedPlants.map(plant => plant.id);
+                        
+                        // Clear selected plants
+                        selectedPlants = [];
+                        saveSelectedPlants();
+                        updatePlantCounter();
+                        
+                        // Reset all plant action buttons to "Add"
+                        plantIds.forEach(id => {
+                            updatePlantActionButtons(id, 'add');
+                        });
+                        
+                        // Close the modal
+                        bootstrap.Modal.getInstance(document.getElementById('requestFormModal')).hide();
+                        
+                        // Reset button state
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+                    });
+                } else {
+                    // Hide loading
+                    LoadingManager.hide();
                     
-                    // Clear selected plants
-                    selectedPlants = [];
-                    saveSelectedPlants();
-                    updatePlantCounter();
-                    
-                    // Reset all plant action buttons to "Add"
-                    plantIds.forEach(id => {
-                        updatePlantActionButtons(id, 'add');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'An error occurred while submitting your request.',
+                        confirmButtonColor: '#dc3545'
                     });
                     
-                    // Close the modal
-                    bootstrap.Modal.getInstance(document.getElementById('requestFormModal')).hide();
-                } else {
-                    alert('Error: ' + (data.message || 'An error occurred while submitting your request.'));
+                    // Reset button state
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
                 }
             }
-            
-            // Reset button state
-            submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
         })
         .catch(error => {
             console.error('Error submitting form:', error);
-            alert('An error occurred while submitting your request. Please try again.');
+            
+            // Hide loading
+            LoadingManager.hide();
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Submission Failed',
+                text: 'An error occurred while submitting your request. Please try again.',
+                confirmButtonColor: '#dc3545'
+            });
             
             // Reset button state
             submitButton.disabled = false;

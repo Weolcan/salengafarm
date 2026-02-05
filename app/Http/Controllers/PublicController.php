@@ -14,7 +14,8 @@ class PublicController extends Controller
     {
         $plants = DisplayPlant::all();
         $inventoryPlants = Plant::orderBy('name', 'asc')->get();
-        return view('public.plants', compact('plants', 'inventoryPlants'));
+        $additionalCategories = \App\Models\Category::all();
+        return view('public.plants', compact('plants', 'inventoryPlants', 'additionalCategories'));
     }
 
     public function update(Request $request, DisplayPlant $plant)

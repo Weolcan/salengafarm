@@ -1,0 +1,1 @@
+﻿[2026-02-03 21:17:26] local.INFO: Plant created {"id":134,"name":"1","category":"shrub"} 

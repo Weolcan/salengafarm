@@ -393,13 +393,25 @@ class SiteVisitController extends Controller
     public function store(Request $request)
     {
         try {
+            // Log incoming request for debugging
+            Log::info('Site Visit Store Request', [
+                'has_latitude' => $request->has('latitude'),
+                'has_longitude' => $request->has('longitude'),
+                'latitude_value' => $request->input('latitude'),
+                'longitude_value' => $request->input('longitude'),
+                'has_client' => $request->has('client'),
+                'has_email' => $request->has('email'),
+                'has_user_id' => $request->has('user_id'),
+                'user_id_value' => $request->input('user_id'),
+            ]);
+
             $validated = $request->validate([
                 'user_id' => 'nullable|exists:users,id',
                 'latitude' => 'required|numeric|between:-90,90',
                 'longitude' => 'required|numeric|between:-180,180',
                 'location_address' => 'nullable|string|max:500',
-                'client' => 'required_without:user_id|string|max:255',
-                'contact_number' => 'required_without:user_id|string|max:20',
+                'client' => 'required_without:user_id|nullable|string|max:255',
+                'contact_number' => 'required|string|max:20',
                 'email' => 'required_without:user_id|email|max:255',
                 'job_no' => 'nullable|string|max:50',
                 'project_code' => 'nullable|string|max:50',
@@ -582,8 +594,20 @@ class SiteVisitController extends Controller
             return redirect()->route('site-visits.index')
                 ->with('success', 'Site visit created successfully');
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error creating site visit', [
+                'errors' => $e->errors(),
+                'message' => $e->getMessage()
+            ]);
+            
+            return back()->withErrors($e->errors())->withInput()
+                ->with('error', 'Please check the form for errors.');
+                
         } catch (\Exception $e) {
-            Log::error('Error creating site visit: ' . $e->getMessage());
+            Log::error('Error creating site visit', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
             if ($request->expectsJson()) {
                 return response()->json([
@@ -593,7 +617,7 @@ class SiteVisitController extends Controller
             }
 
             return back()->withInput()
-                ->with('error', 'Error creating site visit. Please try again.');
+                ->with('error', 'Error creating site visit: ' . $e->getMessage());
         }
     }
 
@@ -712,7 +736,7 @@ class SiteVisitController extends Controller
                 'longitude' => 'required|numeric|between:-180,180',
                 'location_address' => 'nullable|string|max:500',
                 'client' => 'required_without:user_id|string|max:255',
-                'contact_number' => 'required_without:user_id|string|max:20',
+                'contact_number' => 'required|string|max:20',
                 'email' => 'required_without:user_id|email|max:255',
                 'job_no' => 'nullable|string|max:50',
                 'project_code' => 'nullable|string|max:50',

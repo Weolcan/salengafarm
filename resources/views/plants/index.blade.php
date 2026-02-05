@@ -47,7 +47,7 @@
                         <div class="row g-2 align-items-end">
                         <div class="col-md-4">
                                 <div class="mb-2">
-                                    <input type="text" id="searchInput" class="form-control" placeholder="Search plant name" style="font-size: 0.9rem; padding: 0.4rem 0.75rem;">
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name, code, or scientific name" style="font-size: 0.9rem; padding: 0.4rem 0.75rem;">
                             </div>
                                 <div class="d-flex gap-2 mb-2">
                                     @if(Auth::user()->role !== 'super_admin')
@@ -578,13 +578,30 @@
                 updateRowNumbers();
             });
 
-            // Search functionality
+            // Search functionality - searches in Name, Code, and Scientific Name
             $('#searchInput').on('input', function() {
-                const searchText = $(this).val().toLowerCase();
-                $('.plant-row').each(function() {
-                    const name = $(this).find('td:eq(2)').text().toLowerCase(); // Column 2 is the Name column
-                    $(this).toggle(name.includes(searchText));
-                });
+                const searchText = $(this).val().toLowerCase().trim();
+                
+                if (searchText === '') {
+                    // Show all rows if search is empty
+                    $('.plant-row').show();
+                } else {
+                    $('.plant-row').each(function() {
+                        const row = $(this);
+                        // Get text from Name (column 2), Code (column 3), and Scientific Name (column 4)
+                        const name = row.find('td:eq(2)').text().toLowerCase().trim();
+                        const code = row.find('td:eq(3)').text().toLowerCase().trim();
+                        const scientificName = row.find('td:eq(4)').text().toLowerCase().trim();
+                        
+                        // Show row if search text is found in any of these columns
+                        if (name.includes(searchText) || code.includes(searchText) || scientificName.includes(searchText)) {
+                            row.show();
+                        } else {
+                            row.hide();
+                        }
+                    });
+                }
+                
                 updateRowNumbers(); // Update numbers after search
             });
 
@@ -1079,10 +1096,123 @@
             font-size: 0.85rem !important;
             padding: 0.5rem 0 !important;
         }
+        
+        /* Animated Success Checkmark */
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+        .success-checkmark .check-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            border-radius: 50%;
+            box-sizing: content-box;
+            border: 4px solid #4CAF50;
+            background: white;
+        }
+        .success-checkmark .check-icon::before {
+            top: 3px;
+            left: -2px;
+            width: 30px;
+            transform-origin: 100% 50%;
+            border-radius: 100px 0 0 100px;
+        }
+        .success-checkmark .check-icon::after {
+            top: 0;
+            left: 30px;
+            width: 60px;
+            transform-origin: 0 50%;
+            border-radius: 0 100px 100px 0;
+            animation: rotate-circle 4.25s ease-in;
+        }
+        .success-checkmark .check-icon::before,
+        .success-checkmark .check-icon::after {
+            content: '';
+            height: 100px;
+            position: absolute;
+            background: white;
+            transform: rotate(-45deg);
+        }
+        .success-checkmark .check-icon .icon-line {
+            height: 5px;
+            background-color: #4CAF50;
+            display: block;
+            border-radius: 2px;
+            position: absolute;
+            z-index: 10;
+        }
+        .success-checkmark .check-icon .icon-line.line-tip {
+            top: 46px;
+            left: 14px;
+            width: 25px;
+            transform: rotate(45deg);
+            animation: icon-line-tip 0.75s;
+            animation-fill-mode: forwards;
+        }
+        .success-checkmark .check-icon .icon-line.line-long {
+            top: 38px;
+            right: 8px;
+            width: 47px;
+            transform: rotate(-45deg);
+            animation: icon-line-long 0.75s;
+            animation-fill-mode: forwards;
+        }
+        .success-checkmark .check-icon .icon-circle {
+            top: -4px;
+            left: -4px;
+            z-index: 10;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            position: absolute;
+            box-sizing: content-box;
+            border: 4px solid rgba(76, 175, 80, .5);
+        }
+        .success-checkmark .check-icon .icon-fix {
+            top: 8px;
+            width: 5px;
+            left: 26px;
+            z-index: 1;
+            height: 85px;
+            position: absolute;
+            transform: rotate(-45deg);
+            background-color: white;
+        }
+        @keyframes rotate-circle {
+            0% { transform: rotate(-45deg); }
+            5% { transform: rotate(-45deg); }
+            12% { transform: rotate(-405deg); }
+            100% { transform: rotate(-405deg); }
+        }
+        @keyframes icon-line-tip {
+            0% { width: 0; left: 1px; top: 19px; }
+            54% { width: 0; left: 1px; top: 19px; }
+            70% { width: 50px; left: -8px; top: 37px; }
+            84% { width: 17px; left: 21px; top: 48px; }
+            100% { width: 25px; left: 14px; top: 45px; }
+        }
+        @keyframes icon-line-long {
+            0% { width: 0; right: 46px; top: 54px; }
+            65% { width: 0; right: 46px; top: 54px; }
+            84% { width: 55px; right: 0px; top: 35px; }
+            100% { width: 47px; right: 8px; top: 38px; }
+        }
+        
         .swal2-icon {
             width: 60px !important;
             height: 60px !important;
             margin: 1rem auto 0.5rem !important;
+        }
+        .swal2-icon.swal2-success {
+            border-color: #28a745 !important;
+        }
+        .swal2-icon.swal2-success .swal2-success-ring {
+            border-color: rgba(40, 167, 69, 0.3) !important;
+        }
+        .swal2-icon.swal2-success [class^='swal2-success-line'] {
+            background-color: #28a745 !important;
         }
         .swal2-actions {
             margin: 1rem 0 0.5rem !important;
@@ -1530,9 +1660,11 @@
                 <div class="modal-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <p class="text-muted mb-0" style="font-size: 0.9rem;">Click on a category to filter plants</p>
+                        @if(auth()->check() && auth()->user()->hasAdminAccess() && !auth()->user()->isSuperAdmin())
                         <button type="button" id="deleteModeCategoryBtn" class="btn btn-outline-danger btn-sm" style="min-width: 130px;">
                             <i class="fas fa-trash"></i> Delete Mode
                         </button>
+                        @endif
                     </div>
                     <div id="additionalCategoriesList" class="d-flex flex-wrap gap-3" style="max-height: 100px; overflow-y: auto; overflow-x: hidden; background: transparent !important;">
                         <!-- Additional categories will be displayed here -->
@@ -1595,7 +1727,7 @@
         // Category management functionality
         let deleteMode = false;
         let selectedCategoryToDelete = null;
-        let additionalCategories = JSON.parse(localStorage.getItem('additionalCategories') || '[]');
+        let additionalCategories = @json($categories ?? []);
 
         // Add category button
         $('#addCategoryBtn').on('click', function() {
@@ -1608,22 +1740,76 @@
             const iconFile = $('#newCategoryIcon')[0].files[0];
             
             if (!categoryName) {
-                alert('Please enter a category name');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Information',
+                    text: 'Please enter a category name',
+                    confirmButtonColor: '#28a745'
+                });
                 return;
             }
 
-            const newCategory = {
-                id: 'custom_' + Date.now(),
-                name: categoryName,
-                icon: iconFile ? URL.createObjectURL(iconFile) : null
-            };
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('name', categoryName);
+            if (iconFile) {
+                formData.append('icon', iconFile);
+            }
 
-            additionalCategories.push(newCategory);
-            localStorage.setItem('additionalCategories', JSON.stringify(additionalCategories));
-            
-            $('#addCategoryModal').modal('hide');
-            $('#addCategoryForm')[0].reset();
-            alert('Category added successfully!');
+            // Save to database via AJAX
+            $.ajax({
+                url: '{{ route("categories.store") }}',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    // Add to local array
+                    additionalCategories.push(response.category);
+                    
+                    $('#addCategoryModal').modal('hide');
+                    $('#addCategoryForm')[0].reset();
+                    
+                    Swal.fire({
+                        html: `
+                            <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Success!</h2>
+                            <div style="width: 80px; height: 80px; margin: 1rem auto; position: relative;">
+                                <svg style="width: 80px; height: 80px;" viewBox="0 0 52 52">
+                                    <circle style="stroke: #4CAF50; stroke-width: 2; fill: none; stroke-dasharray: 166; stroke-dashoffset: 166; animation: stroke-circle 0.8s cubic-bezier(0.65, 0, 0.45, 1) forwards;" cx="26" cy="26" r="25"/>
+                                    <path style="fill: none; stroke: #4CAF50; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke-check 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.9s forwards;" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                                </svg>
+                            </div>
+                            <p style="margin-top: 1rem;">Category added successfully!</p>
+                            <style>
+                                @keyframes stroke-circle {
+                                    100% { stroke-dashoffset: 0; }
+                                }
+                                @keyframes stroke-check {
+                                    100% { stroke-dashoffset: 0; }
+                                }
+                            </style>
+                        `,
+                        showConfirmButton: true,
+                        confirmButtonColor: '#28a745',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Reload page to show new category
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    const message = xhr.responseJSON?.message || 'Error adding category';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: message,
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            });
         });
 
         // Show more button - display modal with additional categories
@@ -1658,16 +1844,22 @@
             
             if (additionalCategories.length === 0) {
                 modalBody.html('<p class="text-muted">No additional categories yet. Click the <i class="fas fa-plus"></i> button to add one.</p>');
+                @if(auth()->check() && auth()->user()->hasAdminAccess() && !auth()->user()->isSuperAdmin())
                 $('#deleteModeCategoryBtn').prop('disabled', true);
+                @endif
             } else {
+                @if(auth()->check() && auth()->user()->hasAdminAccess() && !auth()->user()->isSuperAdmin())
                 $('#deleteModeCategoryBtn').prop('disabled', false);
+                @endif
                 additionalCategories.forEach(cat => {
-                    const isActive = activeCategory === cat.name.toLowerCase() ? 'active' : '';
+                    const categorySlug = cat.slug || cat.name.toLowerCase();
+                    const isActive = activeCategory === categorySlug ? 'active' : '';
                     const badgeVisibility = deleteMode ? 'visible' : 'hidden';
+                    const iconPath = cat.icon_path ? `/storage/${cat.icon_path}` : null;
                     const catHtml = `
-                        <div class="category-icon-item text-center position-relative ${isActive}" data-category-id="${cat.id}" data-category="${cat.name.toLowerCase()}" style="cursor: pointer;">
+                        <div class="category-icon-item text-center position-relative ${isActive}" data-category-id="${cat.id}" data-category="${categorySlug}" style="cursor: pointer;">
                             <span class="delete-badge" style="visibility: ${badgeVisibility};"><i class="fas fa-times-circle text-danger"></i></span>
-                            ${cat.icon ? `<img src="${cat.icon}" alt="${cat.name}" class="category-img" style="width: 40px; height: 40px;">` : `<div class="icon-circle"><i class="fas fa-leaf"></i></div>`}
+                            ${iconPath ? `<img src="${iconPath}" alt="${cat.name}" class="category-img" style="width: 40px; height: 40px;">` : `<div class="icon-circle"><i class="fas fa-leaf"></i></div>`}
                             <span class="d-block mt-1">${cat.name}</span>
                         </div>
                     `;
@@ -1686,7 +1878,14 @@
                 // Enter delete mode
                 deleteMode = true;
                 renderAdditionalCategories();
-                alert('Delete mode activated! Click on any custom category to delete it.');
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Delete Mode Activated',
+                    text: 'Click on any custom category to delete it.',
+                    confirmButtonColor: '#28a745',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
             }
         });
 
@@ -1739,15 +1938,33 @@
         // Confirm delete
         $('#confirmDeleteCategoryBtn').on('click', function() {
             if (selectedCategoryToDelete) {
-                additionalCategories = additionalCategories.filter(c => c.id !== selectedCategoryToDelete);
-                localStorage.setItem('additionalCategories', JSON.stringify(additionalCategories));
-                
-                $('#deleteCategoryModal').modal('hide');
-                
-                selectedCategoryToDelete = null;
-                deleteMode = false;
-                renderAdditionalCategories();
-                alert('Category deleted successfully!');
+                // Delete from database via AJAX
+                $.ajax({
+                    url: '{{ url("categories") }}/' + selectedCategoryToDelete,
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        // Remove from local array
+                        additionalCategories = additionalCategories.filter(c => c.id !== selectedCategoryToDelete);
+                        
+                        $('#deleteCategoryModal').modal('hide');
+                        
+                        selectedCategoryToDelete = null;
+                        // Don't exit delete mode - stay in it for continuous deletion
+                        renderAdditionalCategories();
+                    },
+                    error: function(xhr) {
+                        const message = xhr.responseJSON?.message || 'Error deleting category';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: message,
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                });
             }
         });
 

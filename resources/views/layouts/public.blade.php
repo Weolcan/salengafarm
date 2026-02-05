@@ -103,6 +103,23 @@
         min-height: 60px !important;
         max-height: 60px !important;
     }
+    
+    /* Fix layout for non-admin users - no sidebar, no flex */
+    body.no-sidebar {
+        display: block !important;
+    }
+    body.no-sidebar .dashboard-flex {
+        display: block !important;
+        flex-direction: unset !important;
+        min-height: unset !important;
+    }
+    body.no-sidebar .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-left: 0 !important;
+        flex: unset !important;
+        min-width: unset !important;
+    }
     </style>
 </head>
 <body class="bg-light {{ (auth()->check() && auth()->user()->hasAdminAccess()) ? 'with-sidebar' : 'no-sidebar' }}">
@@ -134,30 +151,65 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarMain">
-                <div class="navbar-collapse-inner d-flex align-items-center w-100">
-                    @if(auth()->check() && !auth()->user()->hasAdminAccess())
-                    <ul class="navbar-nav mx-auto">
-                        <li class="nav-item">
-                            <a class="nav-link text-white {{ request()->routeIs('public.plants') ? 'active' : '' }}" href="{{ route('public.plants') }}">
-                                <i class="fas fa-home me-1"></i> Home
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white {{ request()->routeIs('dashboard.user') ? 'active' : '' }}" href="{{ route('dashboard.user') }}">
-                                <i class="fas fa-gauge me-1"></i> Dashboard
-                            </a>
-                        </li>
-                        @if(auth()->user()->isClient())
-                        <li class="nav-item">
-                            <a class="nav-link text-white {{ request()->routeIs('client-data.*') ? 'active' : '' }}" href="{{ route('client-data.index') }}">
-                                <i class="fas fa-folder-open me-1"></i> Client Data
-                            </a>
-                        </li>
-                        @endif
-                    </ul>
+                @if(auth()->check() && !auth()->user()->hasAdminAccess())
+                <!-- Authenticated non-admin users: show centered nav links -->
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('public.plants') ? 'active' : '' }}" href="{{ route('public.plants') }}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('dashboard.user') ? 'active' : '' }}" href="{{ route('dashboard.user') }}">
+                            <i class="fas fa-gauge me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('plant-care.*') ? 'active' : '' }}" href="{{ route('plant-care.index') }}">
+                            <i class="fas fa-leaf me-1"></i> Plant Guide
+                        </a>
+                    </li>
+                    @if(auth()->user()->isClient())
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('client-data.*') ? 'active' : '' }}" href="{{ route('client-data.index') }}">
+                            <i class="fas fa-folder-open me-1"></i> Client Data
+                        </a>
+                    </li>
                     @endif
+                </ul>
+                @elseif(auth()->check() && auth()->user()->hasAdminAccess())
+                <!-- Admin users: show Home and Plant Care nav links -->
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('public.plants') ? 'active' : '' }}" href="{{ route('public.plants') }}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        @if(auth()->user()->role === 'super_admin')
+                            <a class="nav-link text-white {{ request()->routeIs('plant-care.index') || request()->routeIs('plant-care.show') ? 'active' : '' }}" href="{{ route('plant-care.index') }}">
+                                <i class="fas fa-leaf me-1"></i> Plant Guide
+                            </a>
+                        @else
+                            <a class="nav-link text-white {{ request()->routeIs('plant-care.admin') || request()->routeIs('plant-care.edit') || request()->routeIs('plant-care.show') ? 'active' : '' }}" href="{{ route('plant-care.admin') }}">
+                                <i class="fas fa-leaf me-1"></i> Plant Guide
+                            </a>
+                        @endif
+                    </li>
+                    @if(auth()->user()->isSuperAdmin())
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('plants.index') ? 'active' : '' }}" href="{{ route('plants.index') }}">
+                            <i class="fas fa-seedling me-1"></i> Plant Details
+                        </a>
+                    </li>
+                    @endif
+                </ul>
+                @else
+                <!-- Guests: no centered nav, just spacer -->
+                <div class="flex-grow-1"></div>
+                @endif
                 @auth
-                <div class="user-section ms-auto d-flex align-items-center gap-2">
+                <div class="user-section d-flex align-items-center gap-2">
                     <!-- Notification Bell -->
                     <div class="position-relative">
                         <div class="notification-bell notification-bell-trigger" id="navbarNotificationBell" title="Notifications">
@@ -185,6 +237,25 @@
                             </div>
                         </div>
                     </div>
+                    
+                    @if(auth()->user()->hasAdminAccess())
+                    <!-- Menu Dropdown for Admins -->
+                    <div class="dropdown">
+                        <button class="btn btn-link dropdown-toggle text-white" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none;">
+                            <i class="fas fa-bars me-1"></i>Menu
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="menuDropdown">
+                            <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ route('plants.index') }}"><i class="fas fa-seedling me-2"></i>Inventory</a></li>
+                            <li><a class="dropdown-item" href="{{ route('requests.index') }}"><i class="fas fa-envelope-open-text me-2"></i>Request</a></li>
+                            <li><a class="dropdown-item" href="{{ route('walk-in.index') }}"><i class="fas fa-cash-register me-2"></i>Point-of-Sale</a></li>
+                            <li><a class="dropdown-item" href="/site-visits"><i class="fas fa-map-marked-alt me-2"></i>Site Visits</a></li>
+                            @if(auth()->user()->isSuperAdmin())
+                            <li><a class="dropdown-item" href="{{ route('users.index') }}"><i class="fas fa-users-cog me-2"></i>Users</a></li>
+                            @endif
+                        </ul>
+                    </div>
+                    @endif
                     
                     <!-- Profile Dropdown -->
                     <div class="dropdown ms-2">
@@ -217,7 +288,7 @@
                     </div>
                 </div>
                 @else
-                <div class="user-section ms-auto">
+                <div class="user-section">
                     <a href="{{ route('login') }}" class="btn btn-outline-light me-2">
                         <i class="fas fa-user me-1"></i>Login
                     </a>
@@ -226,20 +297,23 @@
                     </a>
                 </div>
                 @endauth
-                </div>
             </div>
         </div>
     </nav>
     @endif
 
+    @if(auth()->check() && auth()->user()->hasAdminAccess())
+    <!-- Admin layout with sidebar -->
     <div class="dashboard-flex">
-        @if(auth()->check() && auth()->user()->hasAdminAccess())
-            @include('layouts.sidebar')
-        @endif
+        @include('layouts.sidebar')
         <div class="main-content">
-        @yield('content')
+            @yield('content')
         </div>
     </div>
+    @else
+    <!-- Regular user/guest layout without sidebar -->
+    @yield('content')
+    @endif
 
     <!-- Toast Container for Notifications -->
     <div id="toastContainer" class="toast-container"></div>

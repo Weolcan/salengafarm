@@ -8,6 +8,8 @@ use App\Models\PlantRequest;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PlantRequestMail;
 
 class RequestFormController extends Controller
 {
@@ -91,6 +93,19 @@ class RequestFormController extends Controller
             
             Log::info('Plant request saved successfully', ['id' => $plantRequest->id]);
             
+            // Send email notification to the user
+            try {
+                Log::info('Attempting to send email to user', ['email' => $plantRequest->email]);
+                Mail::to($plantRequest->email)->send(new PlantRequestMail($plantRequest));
+                Log::info('Email sent successfully to user', ['email' => $plantRequest->email]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send email to user', [
+                    'email' => $plantRequest->email,
+                    'error' => $e->getMessage()
+                ]);
+                // Don't fail the request if email fails, just log it
+            }
+            
             // Create notification for admins only (not super admin) about new plant request
             $admins = User::where('role', 'admin')->get();
             foreach ($admins as $admin) {
@@ -117,8 +132,7 @@ class RequestFormController extends Controller
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Your plant request has been submitted successfully.',
-                    'redirect' => route('request-form.confirmation')
+                    'message' => 'Your plant request has been submitted successfully. A confirmation email has been sent to your email address.'
                 ]);
             }
             

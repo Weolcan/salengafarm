@@ -33,6 +33,29 @@
             z-index: 99999 !important;
         }
         
+        /* View Request button color states */
+        #viewRequestBtn {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        #viewRequestBtn:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+        
+        #viewRequestBtn.has-plants {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        
+        #viewRequestBtn.has-plants:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        
         #page-preloader {
             position: fixed;
             top: 0;
@@ -200,6 +223,162 @@
         #modalSelectedPlantsTable input[name*="spacing"] {
             min-width: 100px;
         }
+        
+        /* Success Modal Animated Checkmark */
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+        
+        .success-checkmark .check-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            border-radius: 50%;
+            box-sizing: content-box;
+            border: 4px solid #4CAF50;
+        }
+        
+        .success-checkmark .check-icon::before {
+            top: 3px;
+            left: -2px;
+            width: 30px;
+            transform-origin: 100% 50%;
+            border-radius: 100px 0 0 100px;
+        }
+        
+        .success-checkmark .check-icon::after {
+            top: 0;
+            left: 30px;
+            width: 60px;
+            transform-origin: 0 50%;
+            border-radius: 0 100px 100px 0;
+            animation: rotate-circle 4.25s ease-in;
+        }
+        
+        .success-checkmark .check-icon::before,
+        .success-checkmark .check-icon::after {
+            content: '';
+            height: 100px;
+            position: absolute;
+            background: #FFFFFF;
+            transform: rotate(-45deg);
+        }
+        
+        .success-checkmark .check-icon .icon-line {
+            height: 5px;
+            background-color: #4CAF50;
+            display: block;
+            border-radius: 2px;
+            position: absolute;
+            z-index: 10;
+        }
+        
+        .success-checkmark .check-icon .icon-line.line-tip {
+            top: 46px;
+            left: 14px;
+            width: 25px;
+            transform: rotate(45deg);
+            animation: icon-line-tip 0.75s;
+        }
+        
+        .success-checkmark .check-icon .icon-line.line-long {
+            top: 38px;
+            right: 8px;
+            width: 47px;
+            transform: rotate(-45deg);
+            animation: icon-line-long 0.75s;
+        }
+        
+        .success-checkmark .check-icon .icon-circle {
+            top: -4px;
+            left: -4px;
+            z-index: 10;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            position: absolute;
+            box-sizing: content-box;
+            border: 4px solid rgba(76, 175, 80, .5);
+        }
+        
+        .success-checkmark .check-icon .icon-fix {
+            top: 8px;
+            width: 5px;
+            left: 26px;
+            z-index: 1;
+            height: 85px;
+            position: absolute;
+            transform: rotate(-45deg);
+            background-color: #FFFFFF;
+        }
+        
+        @keyframes rotate-circle {
+            0% {
+                transform: rotate(-45deg);
+            }
+            5% {
+                transform: rotate(-45deg);
+            }
+            12% {
+                transform: rotate(-405deg);
+            }
+            100% {
+                transform: rotate(-405deg);
+            }
+        }
+        
+        @keyframes icon-line-tip {
+            0% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+            54% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+            70% {
+                width: 50px;
+                left: -8px;
+                top: 37px;
+            }
+            84% {
+                width: 17px;
+                left: 21px;
+                top: 48px;
+            }
+            100% {
+                width: 25px;
+                left: 14px;
+                top: 45px;
+            }
+        }
+        
+        @keyframes icon-line-long {
+            0% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+            65% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+            84% {
+                width: 55px;
+                right: 0px;
+                top: 35px;
+            }
+            100% {
+                width: 47px;
+                right: 8px;
+                top: 38px;
+            }
+        }
     </style>
     <style>
         /* Add Plant Modal Spacing Fix */
@@ -284,6 +463,33 @@
         }
     </style>
     <style>
+        /* Delete button icon styling - remove all backgrounds */
+        .delete-plant-btn {
+            transition: all 0.2s ease;
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+        
+        .delete-plant-btn:hover,
+        .delete-plant-btn:focus,
+        .delete-plant-btn:active {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            transform: scale(1.15);
+        }
+        
+        .delete-plant-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .delete-plant-btn i {
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+        }
+    </style>
+    <style>
         .compact-dropdown .dropdown-item {
             font-size: 0.95rem !important;
             padding: 6px 14px !important;
@@ -311,29 +517,57 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarMain">
-                <div class="navbar-collapse-inner d-flex align-items-center w-100">
-                    @if(Auth::check() && !Auth::user()->hasAdminAccess())
-                    <ul class="navbar-nav mx-auto">
-                        <li class="nav-item">
-                            <a class="nav-link text-white {{ request()->routeIs('public.plants') ? 'active' : '' }}" href="{{ route('public.plants') }}">
-                                <i class="fas fa-home me-1"></i> Home
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white {{ request()->routeIs('dashboard.user') ? 'active' : '' }}" href="{{ route('dashboard.user') }}">
-                                <i class="fas fa-gauge me-1"></i> Dashboard
-                            </a>
-                        </li>
-                        @if(Auth::user()->isClient())
-                        <li class="nav-item">
-                            <a class="nav-link text-white {{ request()->routeIs('client-data.*') ? 'active' : '' }}" href="{{ route('client-data.index') }}">
-                                <i class="fas fa-folder-open me-1"></i> Client Data
-                            </a>
-                        </li>
-                        @endif
-                    </ul>
+                @if(Auth::check() && !Auth::user()->hasAdminAccess())
+                <!-- Authenticated non-admin users: show centered nav links -->
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('public.plants') ? 'active' : '' }}" href="{{ route('public.plants') }}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('dashboard.user') ? 'active' : '' }}" href="{{ route('dashboard.user') }}">
+                            <i class="fas fa-gauge me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('plant-care.*') ? 'active' : '' }}" href="{{ route('plant-care.index') }}">
+                            <i class="fas fa-leaf me-1"></i> Plant Guide
+                        </a>
+                    </li>
+                    @if(Auth::user()->isClient())
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('client-data.*') ? 'active' : '' }}" href="{{ route('client-data.index') }}">
+                            <i class="fas fa-folder-open me-1"></i> Client Data
+                        </a>
+                    </li>
                     @endif
-                    <div class="user-section d-flex align-items-center ms-auto">
+                </ul>
+                @elseif(Auth::check() && Auth::user()->hasAdminAccess())
+                <!-- Admin users: show Home and Plant Care nav links -->
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('public.plants') ? 'active' : '' }}" href="{{ route('public.plants') }}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        @if(Auth::user()->role === 'super_admin')
+                            <a class="nav-link text-white {{ request()->routeIs('plant-care.index') || request()->routeIs('plant-care.show') ? 'active' : '' }}" href="{{ route('plant-care.index') }}">
+                                <i class="fas fa-leaf me-1"></i> Plant Guide
+                            </a>
+                        @else
+                            <a class="nav-link text-white {{ request()->routeIs('plant-care.admin') || request()->routeIs('plant-care.edit') || request()->routeIs('plant-care.show') ? 'active' : '' }}" href="{{ route('plant-care.admin') }}">
+                                <i class="fas fa-leaf me-1"></i> Plant Guide
+                            </a>
+                        @endif
+                    </li>
+                </ul>
+                @else
+                <!-- Guests: no centered nav, just spacer -->
+                <div class="flex-grow-1"></div>
+                @endif
+                <div class="user-section d-flex align-items-center">
                     @auth
                         <!-- Notification Bell -->
                         <div class="position-relative me-3">
@@ -411,10 +645,8 @@
                         </a>
                     @endguest
                 </div>
-                </div>
             </div>
         </div>
-        
     </nav>
 
     <!-- Main content structure -->
@@ -537,6 +769,21 @@
                             <span>Fertilizer</span>
                         </div>
                         @endif
+                        
+                        @if(isset($additionalCategories) && $additionalCategories->count() > 0)
+                            @foreach($additionalCategories as $category)
+                                <div class="category-icon-item" data-category="{{ $category->slug }}">
+                                    @if($category->icon_path)
+                                        <img src="{{ asset('storage/' . $category->icon_path) }}" alt="{{ $category->name }}" class="category-img">
+                                    @else
+                                        <div class="icon-circle">
+                                            <i class="fas fa-leaf"></i>
+                                        </div>
+                                    @endif
+                                    <span>{{ $category->name }}</span>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             </div>
@@ -559,12 +806,15 @@
                     @endif
 
                     @if(Auth::check() && Auth::user()->isClient())
-                    <!-- Client RFQ button -->
-                    <button class="btn btn-success me-2" id="requestPlantsBtn">
-                        <i class="fas fa-file-invoice me-1"></i>Request for Quotation (RFQ)
-                </button>
-                    @else
-                    <!-- No longer needed button - removed -->
+                        <!-- Client RFQ button -->
+                        <button class="btn btn-success" id="requestPlantsBtn">
+                            <i class="fas fa-file-invoice me-1"></i>Request for Quotation (RFQ)
+                        </button>
+                    @elseif(Auth::check() && Auth::user()->role === 'user' && !Auth::user()->is_client)
+                        <!-- Regular User ONLY - View Request button -->
+                        <button class="btn" id="viewRequestBtn" onclick="viewSelectedPlants()">
+                            <i class="fas fa-clipboard-list me-1"></i>View Request (<span id="requestCount">0</span>)
+                        </button>
                     @endif
             </div>
         </div>
@@ -696,11 +946,12 @@
                                                         type="button">
                                                     <i class="fas fa-edit fa-lg text-white"></i>
                                                 </button>
-                                                <button class="btn btn-link p-0 text-danger delete-plant-btn"
+                                                <button class="btn btn-link p-0 delete-plant-btn"
+                                                        style="background: transparent !important; border: none !important; box-shadow: none !important; color: #dc3545 !important;"
                                                         title="Delete"
                                                         data-plant-id="{{ $plant->id }}"
                                                         data-plant-name="{{ $plant->name }}">
-                                                    <i class="fas fa-trash fa-lg"></i>
+                                                    <i class="fas fa-trash-can fa-lg"></i>
                                                 </button>
                                             </div>
                                             @endif
@@ -765,105 +1016,72 @@
 
                                     <!-- Sliding Details Panel -->
                                     <div class="plant-details-panel">
-                                        <!-- Back Button Header -->
-                                        <div class="details-header d-flex justify-content-between align-items-center p-3 border-bottom text-white">
-                                            <button type="button" class="btn btn-sm btn-link back-to-main" onclick="toggleUserDetails(this)">
+                                        <!-- Header with Add to Request Button -->
+                                        <div class="details-header d-flex justify-content-between align-items-center p-2 text-white">
+                                            <button type="button" class="btn btn-sm btn-link back-to-main text-white p-1" onclick="toggleUserDetails(this)">
                                                 <i class="fas fa-chevron-left"></i>
                                             </button>
-                                            <h6 class="mb-0">Plant Details</h6>
+                                            @if(Auth::check() && Auth::user()->role === 'user' && !Auth::user()->is_client)
+                                                <div class="d-flex gap-2 align-items-center">
+                                                    <button type="button" class="btn btn-sm btn-success plant-action-btn"
+                                                            data-plant-id="{{ $plant->id }}"
+                                                            data-plant-name="{{ $plant->name }}"
+                                                            data-plant-code="{{ $plant->code }}"
+                                                            data-height="{{ $plant->height_mm }}"
+                                                            data-spread="{{ $plant->spread_mm }}"
+                                                            data-spacing="{{ $plant->spacing_mm }}"
+                                                            data-action="add"
+                                                            style="font-size: 0.7rem; padding: 0.2rem 0.35rem; white-space: nowrap;">
+                                                        <i class="fas fa-plus"></i> Add to Request
+                                                    </button>
+                                                    <span class="text-white" style="font-size: 0.85rem; white-space: nowrap; cursor: default;">
+                                                        Plant Details
+                                                    </span>
+                                                </div>
+                                            @endif
                                         </div>
 
                                         <!-- Plant Information -->
-                                        <div class="p-3">
+                                        <div class="p-2">
                                             <div class="info-section text-white">
                                                 <div class="section-content">
-                                                    <p><small class="text-muted">Category:</small> <span class="value-text">{{ ucfirst($plant->category) }}</span></p>
-                                                    <p><small class="text-muted">Code:</small> <span class="value-text">{{ $plant->code ?? 'N/A' }}</span></p>
+                                                    <p class="mb-1" style="font-size: 0.9rem;"><small class="text-muted">Category:</small> <span class="value-text">{{ ucfirst($plant->category) }}</span></p>
+                                                    <p class="mb-1" style="font-size: 0.9rem;"><small class="text-muted">Code:</small> <span class="value-text">{{ $plant->code ?? 'N/A' }}</span></p>
                                                     @if($plant->scientific_name)
-                                                        <p><small class="text-muted">Scientific Name:</small> <em class="value-text">{{ $plant->scientific_name }}</em></p>
+                                                        <p class="mb-2" style="font-size: 0.9rem;"><small class="text-muted">Scientific Name:</small> <em class="value-text">{{ $plant->scientific_name }}</em></p>
                                                     @endif
 
                                                     <div class="measurements mt-2">
                                                         <ul class="list-unstyled mb-0">
-                                                            @if(Auth::check() && (Auth::user()->role === 'user' || Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin'))
-                                                                <!-- For logged-in users - editable fields -->
-                                                                <li class="d-flex align-items-center mb-1">
-                                                                    <label class="text-muted mb-0" style="width: 60px; flex-shrink: 0">Height:</label>
-                                                                    <div class="input-group input-group-sm" style="width: calc(100% - 70px);">
-                                                                        <input type="number" class="form-control form-control-sm editable-measurement"
-                                                                               data-field="height"
-                                                                               data-original="{{ $plant->height_mm }}"
-                                                                               value="{{ $plant->height_mm }}" min="0"
-                                                                               style="color: #000 !important; background-color: #fff !important;">
-                                                                        <div class="input-group-text" style="color: #000 !important; background-color: #e9ecef !important;">mm</div>
-                                                                    </div>
+                                                            @if($plant->height_mm)
+                                                                <li class="mb-1" style="font-size: 0.9rem;">
+                                                                    <small class="text-muted">Height:</small>
+                                                                    <span class="value-text">{{ $plant->height_mm }} mm</span>
                                                                 </li>
-                                                                <li class="d-flex align-items-center mb-1">
-                                                                    <label class="text-muted mb-0" style="width: 60px; flex-shrink: 0">Spread:</label>
-                                                                    <div class="input-group input-group-sm" style="width: calc(100% - 70px);">
-                                                                        <input type="number" class="form-control form-control-sm editable-measurement"
-                                                                               data-field="spread"
-                                                                               data-original="{{ $plant->spread_mm }}"
-                                                                               value="{{ $plant->spread_mm }}" min="0"
-                                                                               style="color: #000 !important; background-color: #fff !important;">
-                                                                        <div class="input-group-text" style="color: #000 !important; background-color: #e9ecef !important;">mm</div>
-                                                                    </div>
+                                                            @endif
+                                                            @if($plant->spread_mm)
+                                                                <li class="mb-1" style="font-size: 0.9rem;">
+                                                                    <small class="text-muted">Spread:</small>
+                                                                    <span class="value-text">{{ $plant->spread_mm }} mm</span>
                                                                 </li>
-                                                                <li class="d-flex align-items-center">
-                                                                    <label class="text-muted mb-0" style="width: 60px; flex-shrink: 0">Spacing:</label>
-                                                                    <div class="input-group input-group-sm" style="width: calc(100% - 70px);">
-                                                                        <input type="number" class="form-control form-control-sm editable-measurement"
-                                                                               data-field="spacing"
-                                                                               data-original="{{ $plant->spacing_mm }}"
-                                                                               value="{{ $plant->spacing_mm }}" min="0"
-                                                                               style="color: #000 !important; background-color: #fff !important;">
-                                                                        <div class="input-group-text" style="color: #000 !important; background-color: #e9ecef !important;">mm</div>
-                                                                    </div>
+                                                            @endif
+                                                            @if($plant->spacing_mm)
+                                                                <li class="mb-1" style="font-size: 0.9rem;">
+                                                                    <small class="text-muted">Spacing:</small>
+                                                                    <span class="value-text">{{ $plant->spacing_mm }} mm</span>
                                                                 </li>
-                                                            @else
-                                                                <!-- For guests - non-editable display -->
-                                                                @if($plant->height_mm)
-                                                                    <li class="d-flex align-items-center">
-                                                                        <small class="text-muted" style="width: 60px; flex-shrink: 0">Height:</small>
-                                                                        <span class="value-text">{{ $plant->height_mm }} mm</span>
-                                                                    </li>
-                                                                @endif
-                                                                @if($plant->spread_mm)
-                                                                    <li class="d-flex align-items-center">
-                                                                        <small class="text-muted" style="width: 60px; flex-shrink: 0">Spread:</small>
-                                                                        <span class="value-text">{{ $plant->spread_mm }} mm</span>
-                                                                    </li>
-                                                                @endif
-                                                                @if($plant->spacing_mm)
-                                                                    <li class="d-flex align-items-center">
-                                                                        <small class="text-muted" style="width: 60px; flex-shrink: 0">Spacing:</small>
-                                                                        <span class="value-text">{{ $plant->spacing_mm }} mm</span>
-                                                                    </li>
-                                                                @endif
                                                             @endif
                                                         </ul>
                                                     </div>
 
-                                                    <!-- Action buttons section -->
-                                                    <div class="action-controls mt-3">
-                                                        @if(Auth::check() && (Auth::user()->role === 'user' || Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin'))
-                                                            <!-- For logged-in users - Add/Remove Plant button -->
-                                                            <button type="button" class="btn btn-sm plant-action-btn"
-                                                                    data-plant-id="{{ $plant->id }}"
-                                                                    data-plant-name="{{ $plant->name }}"
-                                                                    data-plant-code="{{ $plant->code }}"
-                                                                    data-action="add">
-                                                                <i class="fas fa-plus"></i> Add Plant
-                                                            </button>
-                                                        @else
-                                                            <!-- For guests - Login prompt -->
-                                                            <div class="login-prompt">
-                                                                <a href="{{ route('login') }}" class="text-white">
-                                                                    <i class="fas fa-sign-in-alt"></i> Want to order? Let's log you in first.
-                                                                </a>
-                                                            </div>
-                                                        @endif
-                                                    </div>
+                                                    @guest
+                                                        <!-- For guests - Login prompt -->
+                                                        <div class="login-prompt mt-2">
+                                                            <a href="{{ route('login') }}" class="text-white" style="font-size: 0.85rem;">
+                                                                <i class="fas fa-sign-in-alt"></i> Want to request? Let's log you in first.
+                                                            </a>
+                                                        </div>
+                                                    @endguest
                                                 </div>
                                             </div>
                                         </div>
@@ -1484,134 +1702,7 @@
 <script>
 // UX improvement for modalRequestForm submission
 console.log('Loading modal form submission handler');
-$(function() {
-    console.log('Document ready, setting up modal form');
-    var $modal = $('#requestFormModal');
-    var $form = $('#modalRequestForm');
-    var $submitBtn = $('#modalSubmitButton');
-    var isSubmitting = false; // Flag to prevent double submission
 
-    if ($submitBtn.length) {
-        console.log('Submit button found, attaching handlers');
-        // Prevent form from submitting normally
-        $form.on('submit', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        
-        $submitBtn.off('click').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            console.log('Submit button clicked, isSubmitting:', isSubmitting);
-            
-            // Prevent double submission
-            if (isSubmitting) {
-                console.log('Already submitting, ignoring click');
-                return;
-            }
-            
-            if ($form[0].checkValidity() === false) {
-                $form[0].reportValidity();
-                return;
-            }
-            if (window.selectedPlants && window.selectedPlants.length === 0) {
-                Swal.fire({ icon: 'warning', title: 'No plants selected', text: 'Please select at least one plant.' });
-                return;
-            }
-            
-            // Set submitting flag
-            isSubmitting = true;
-            var requestId = Date.now() + '-' + Math.random();
-            console.log('Setting isSubmitting to true, requestId:', requestId);
-            
-            // Show loading with domino loader
-            LoadingManager.show('Submitting Your Request...', 'Please wait while we process your quotation request');
-            $submitBtn.prop('disabled', true);
-            
-            // Submit via AJAX
-            console.log('Sending AJAX request, requestId:', requestId);
-            $.ajax({
-                url: '{{ route("request-form.store") }}',
-                type: 'POST',
-                data: $form.serialize(),
-                headers: { 
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'X-Request-ID': requestId
-                },
-                success: function(resp) {
-                    console.log('AJAX success, resetting flag');
-                    // Reset submitting flag
-                    isSubmitting = false;
-                    
-                    // Hide loading and reset button
-                    LoadingManager.hide();
-                    $submitBtn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Submit Request');
-                    
-                    // Hide modal
-                    $modal.modal('hide');
-                    
-                    // Clear selected plants (sessionStorage & UI)
-                    if (typeof window.selectedPlants !== 'undefined') {
-                        window.selectedPlants = [];
-                    }
-                    sessionStorage.removeItem('selectedPlants');
-                    
-                    // Show success modal
-                    $('#successModal').modal('show');
-                    
-                    // Reload page after modal is shown to reset selection
-                    $('#successModal').on('hidden.bs.modal', function() {
-                        window.location.reload();
-                    });
-                },
-                error: function(xhr) {
-                    // Reset submitting flag
-                    isSubmitting = false;
-                    
-                    // Hide loading and reset button
-                    LoadingManager.hide();
-                    $submitBtn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Submit Request');
-                    
-                    let errorMessage = 'An error occurred. Please try again.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    } else if (xhr.responseText) {
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            errorMessage = response.message || errorMessage;
-                        } catch(e) {
-                            // Keep default message
-                        }
-                    }
-                    
-                    Swal.fire({ 
-                        icon: 'error', 
-                        title: 'Submission Failed', 
-                        html: errorMessage + '<br><br><small>This usually happens when selected plants have been removed from the system.</small>',
-                        showCancelButton: true,
-                        confirmButtonText: 'Clear Selection & Refresh',
-                        cancelButtonText: 'Cancel',
-                        confirmButtonColor: '#d33'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Clear sessionStorage and reload
-                            sessionStorage.removeItem('selectedPlants');
-                            window.location.reload();
-                        }
-                    });
-                }
-            });
-        });
-    }
-    // Hide loading on modal close (failsafe)
-    $modal.on('hidden.bs.modal', function() {
-        LoadingManager.hide();
-        $submitBtn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Submit Request');
-    });
-});
-</script>
 
     <!-- Remove any existing selection-related inline styles -->
     <style>

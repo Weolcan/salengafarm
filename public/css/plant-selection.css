@@ -265,3 +265,115 @@ body.plant-selection-mode .selection-checkbox {
     color: #146c43;
     text-decoration: underline;
 } 
+
+
+/* Floating selection counter - ALWAYS VISIBLE AND STICKY */
+.plant-selection-counter {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #198754 0%, #157347 100%);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 50px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 9999;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.plant-selection-counter.has-items {
+    opacity: 1;
+    transform: translateY(0) scale(1.02);
+    pointer-events: all;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        box-shadow: 0 8px 30px rgba(25, 135, 84, 0.5);
+    }
+}
+
+.plant-selection-counter .count {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 30px;
+    text-align: center;
+}
+
+.plant-selection-counter .view-btn {
+    background: white;
+    color: #198754;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.plant-selection-counter .view-btn:hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.plant-selection-counter .clear-btn {
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plant-selection-counter .clear-btn:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: scale(1.1);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .plant-selection-counter {
+        bottom: 15px;
+        right: 15px;
+        padding: 12px 18px;
+        font-size: 14px;
+        gap: 10px;
+    }
+    
+    .plant-selection-counter .count {
+        font-size: 14px;
+        padding: 3px 10px;
+    }
+    
+    .plant-selection-counter .view-btn {
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+    
+    .plant-selection-counter .clear-btn {
+        width: 32px;
+        height: 32px;
+    }
+}

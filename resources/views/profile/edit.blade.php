@@ -1,7 +1,11 @@
 @php
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Facades\Storage;
+    $user = Auth::user();
+    $isAdmin = $user && $user->hasAdminAccess();
 @endphp
+
+@if($isAdmin)
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,6 +23,45 @@
     <link href="{{ asset('css/inventory.css') }}" rel="stylesheet">
     <link href="{{ asset('css/profile.css') }}?v=1" rel="stylesheet">
     <link href="{{ asset('css/push-notifications.css') }}?v={{ time() }}" rel="stylesheet">
+    <style>
+        /* Admin profile page proper spacing */
+        .main-content {
+            padding: 2rem !important;
+            background-color: #f5f8f7 !important;
+        }
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Ensure profile cards have proper styling for admin */
+        .profile-card {
+            background-color: white !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05) !important;
+            border: none !important;
+            overflow: hidden !important;
+            margin-bottom: 1.5rem !important;
+        }
+        
+        .profile-card .card-header {
+            background: linear-gradient(145deg, #2a9d4e, #6cbf84) !important;
+            color: white !important;
+            border-bottom: none !important;
+            padding: 1rem 1.25rem !important;
+            font-weight: 600 !important;
+            font-size: 1.1rem !important;
+        }
+        
+        .profile-card .card-body {
+            padding: 1.5rem !important;
+        }
+        
+        /* Override any sidebar/inventory styles */
+        .dashboard-page .profile-card {
+            background: white !important;
+        }
+    </style>
 </head>
 <body class="bg-light dashboard-page">
     <div id="sidebarOverlay"></div>
@@ -29,9 +72,66 @@
             <i class="fa fa-bars" style="font-size: 1.3rem;"></i>
         </button>
         <div class="main-content">
-            <div style="padding-top: 0;">
-                <div class="p-0">
-                    <h2 class="mb-3 fs-5" style="font-size: 1.1rem; padding-top: 10px;">Profile Settings</h2>
+@else
+@extends('layouts.public')
+
+@push('styles')
+<link href="{{ asset('css/profile.css') }}?v=1" rel="stylesheet">
+<link href="{{ asset('css/push-notifications.css') }}?v={{ time() }}" rel="stylesheet">
+<style>
+/* Hide sidebar for non-admin users */
+body.with-sidebar {
+    display: block !important;
+}
+body.with-sidebar .dashboard-flex {
+    display: block !important;
+}
+body.with-sidebar .dashboard-flex .sidebar {
+    display: none !important;
+}
+body.with-sidebar .dashboard-flex .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+}
+
+/* User profile page proper spacing */
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Ensure profile cards have proper styling */
+.profile-card {
+    background-color: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05) !important;
+    border: none !important;
+    overflow: hidden !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.profile-card .card-header {
+    background: linear-gradient(145deg, #2a9d4e, #6cbf84) !important;
+    color: white !important;
+    border-bottom: none !important;
+    padding: 1rem 1.25rem !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+}
+
+.profile-card .card-body {
+    padding: 1.5rem !important;
+}
+</style>
+@endpush
+
+@section('content')
+<div class="container-fluid px-4 py-4" style="max-width: 1400px; margin: 0 auto;">
+@endif
+
+                    <h2 class="mb-4">Profile Settings</h2>
                     
                     <!-- Notification Container with Push Animation -->
                     <div class="notification-container">
@@ -416,5 +516,11 @@
         confirmInput.addEventListener('input', validatePassword);
         currentInput.addEventListener('input', validatePassword);
     </script>
+
+@if($isAdmin)
 </body>
 </html>
+@else
+</div>
+@endsection
+@endif

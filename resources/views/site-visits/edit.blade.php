@@ -156,6 +156,29 @@
             outline: 2px solid rgba(25, 135, 84, 0.3);
             outline-offset: 2px;
         }
+        
+        /* Required field validation styling */
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545 !important;
+            padding-right: calc(1.5em + 0.75rem);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .invalid-feedback {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.875em;
+            color: #dc3545;
+        }
+        
+        /* Smooth fade out for auto-dismissing alerts */
+        .alert.fade {
+            transition: opacity 0.5s ease-out;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -182,6 +205,13 @@
                         </ul>
                     </div>
                 @endif
+
+                <div class="alert alert-info alert-dismissible fade show" role="alert" id="info-note-alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> Fields marked with an asterisk (*) are required. Please ensure all required information is filled in before updating.
+                    <small class="ms-2 text-muted" id="info-note-timer">(Auto-dismiss in <span id="countdown">5</span>s)</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
 
                 <form action="{{ route('site-visits.update', $siteVisit) }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -248,15 +278,24 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="client" class="form-label">Client Name *</label>
-                                <input type="text" class="form-control" id="client" name="client" value="{{ old('client', $siteVisit->client) }}">
+                                <input type="text" class="form-control @error('client') is-invalid @enderror" id="client" name="client" value="{{ old('client', $siteVisit->client) }}" required>
+                                @error('client')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="contact_number" class="form-label">Contact Number *</label>
-                                <input type="text" class="form-control" id="contact_number" name="contact_number" value="{{ old('contact_number', $siteVisit->contact_number) }}">
+                                <input type="text" class="form-control @error('contact_number') is-invalid @enderror" id="contact_number" name="contact_number" value="{{ old('contact_number', $siteVisit->contact_number) }}" required>
+                                @error('contact_number')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label">Email *</label>
-                                <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $siteVisit->email) }}">
+                                <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $siteVisit->email) }}" required>
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="job_no" class="form-label">Job Number</label>
@@ -1109,6 +1148,30 @@
             initMap();
             setupCurrentLocationButton();
             setupToggleableRadios();
+            
+            // Auto-dismiss info note after 5 seconds
+            const infoNoteAlert = document.getElementById('info-note-alert');
+            if (infoNoteAlert) {
+                let countdown = 5;
+                const countdownSpan = document.getElementById('countdown');
+                
+                // Update countdown every second
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    if (countdownSpan) {
+                        countdownSpan.textContent = countdown;
+                    }
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                    }
+                }, 1000);
+                
+                // Dismiss after 5 seconds
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(infoNoteAlert);
+                    bsAlert.close();
+                }, 5000);
+            }
         });
 
         function setupCurrentLocationButton() {
@@ -1286,9 +1349,11 @@
 
             function toggleClientRequired() {
                 const hasUser = !!userSelect && userSelect.value !== '';
+                // Client name and email can be auto-filled from user, so they're optional when user is selected
                 nameInput.required = !hasUser;
-                contactInput.required = !hasUser;
                 emailInput.required = !hasUser;
+                // Contact number is ALWAYS required, even when user is selected
+                contactInput.required = true;
             }
 
             function fillFromSelectedUser() {
@@ -1308,6 +1373,109 @@
                 // Initialize on load
                 toggleClientRequired();
                 if (userSelect.value) fillFromSelectedUser();
+            }
+            
+            // Add form validation for edit form
+            const form = document.querySelector('form[action*="site-visits"]');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // First, let browser's native HTML5 validation run
+                    if (!form.checkValidity()) {
+                        // Browser will show native validation messages
+                        return;
+                    }
+                    
+                    const lat = document.getElementById('latitude').value;
+                    const lng = document.getElementById('longitude').value;
+                    
+                    console.log('Form submitting - Contact Number:', document.getElementById('contact_number').value);
+                    
+                    // Check location coordinates
+                    if (!lat || !lng || lat === '' || lng === '') {
+                        e.preventDefault();
+                        alert('⚠️ LOCATION REQUIRED\n\nPlease click on the map to select a location before saving.\n\nThe latitude and longitude coordinates are required.');
+                        document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return false;
+                    }
+                    
+                    // Check required fields (double-check after HTML5 validation)
+                    const requiredFields = [
+                        { id: 'client', name: 'Client Name', element: document.getElementById('client') },
+                        { id: 'contact_number', name: 'Contact Number', element: document.getElementById('contact_number') },
+                        { id: 'email', name: 'Email', element: document.getElementById('email') },
+                        { id: 'location', name: 'Site Location', element: document.querySelector('input[name="location"]') },
+                        { id: 'site_inspector', name: 'Site Inspector', element: document.querySelector('input[name="site_inspector"]') },
+                        { id: 'visit_date', name: 'Visit Date', element: document.querySelector('input[name="visit_date"]') },
+                        { id: 'status', name: 'Status', element: document.querySelector('select[name="status"]') }
+                    ];
+                    
+                    const missingFields = [];
+                    const emptyElements = [];
+                    
+                    for (const field of requiredFields) {
+                        if (field.element && field.element.required && !field.element.value.trim()) {
+                            missingFields.push(field.name);
+                            emptyElements.push(field.element);
+                            field.element.classList.add('is-invalid');
+                            field.element.style.borderColor = '#dc3545';
+                            field.element.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+                        } else if (field.element) {
+                            field.element.classList.remove('is-invalid');
+                            field.element.style.borderColor = '';
+                            field.element.style.boxShadow = '';
+                        }
+                    }
+                    
+                    if (missingFields.length > 0) {
+                        e.preventDefault();
+                        
+                        const message = '⚠️ REQUIRED FIELDS MISSING\n\n' +
+                                      'Please fill in the following required fields:\n\n' +
+                                      missingFields.map((field, index) => `${index + 1}. ${field}`).join('\n') +
+                                      '\n\nAll fields marked with (*) are required.';
+                        
+                        alert(message);
+                        
+                        if (emptyElements.length > 0) {
+                            emptyElements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            setTimeout(() => {
+                                emptyElements[0].focus();
+                            }, 500);
+                        }
+                        
+                        return false;
+                    }
+                    
+                    // Show loading indicator
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+                    }
+                });
+                
+                // Add real-time validation feedback
+                const allInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+                allInputs.forEach(input => {
+                    input.addEventListener('blur', function() {
+                        if (this.required && !this.value.trim()) {
+                            this.classList.add('is-invalid');
+                            this.style.borderColor = '#dc3545';
+                        } else {
+                            this.classList.remove('is-invalid');
+                            this.style.borderColor = '';
+                            this.style.boxShadow = '';
+                        }
+                    });
+                    
+                    input.addEventListener('input', function() {
+                        if (this.value.trim()) {
+                            this.classList.remove('is-invalid');
+                            this.style.borderColor = '';
+                            this.style.boxShadow = '';
+                        }
+                    });
+                });
             }
         });
     </script>

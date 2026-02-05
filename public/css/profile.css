@@ -397,7 +397,21 @@ body {
   .card-body {
     padding: 1.25rem;
   }
+}
+
+/* Ensure profile picture maintains size on all screens above mobile */
+@media (min-width: 768px) {
+  .profile-pic-container {
+    width: 220px !important;
+    height: 220px !important;
+  }
   
+  .profile-pic,
+  .profile-pic-placeholder {
+    width: 220px !important;
+    height: 220px !important;
+  }
+}
   .form-control {
     height: 2.75rem;
   }

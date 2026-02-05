@@ -423,12 +423,29 @@
                 showToast('Refresh', 'Data has been refreshed', 'success');
             });
 
-            // Search functionality
+            // Search functionality - improved to search specifically in plant name
             $('#inventory-search').on('keyup', function() {
-                var value = $(this).val().toLowerCase();
-                $('#inventory-table-body tr').filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-                });
+                var value = $(this).val().toLowerCase().trim();
+                
+                if (value === '') {
+                    // Show all rows if search is empty
+                    $('#inventory-table-body tr').show();
+                } else {
+                    $('#inventory-table-body tr').each(function() {
+                        var row = $(this);
+                        // Get the plant name from the first column
+                        var plantName = row.find('td:first').text().toLowerCase().trim();
+                        // Get the plant code from the second column
+                        var plantCode = row.find('td:eq(1)').text().toLowerCase().trim();
+                        
+                        // Show row if search value is found in plant name or code
+                        if (plantName.indexOf(value) > -1 || plantCode.indexOf(value) > -1) {
+                            row.show();
+                        } else {
+                            row.hide();
+                        }
+                    });
+                }
             });
 
             // Category filter for low stock modal

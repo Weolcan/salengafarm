@@ -14,12 +14,29 @@ use App\Http\Controllers\SiteVisitController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\SystemLogController;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Log;
 
 
 // Public routes
 Route::get('/', [PublicController::class, 'index'])->name('public.plants');
+
+// Plant Care Library - accessible to authenticated users
+Route::middleware(['auth'])->group(function () {
+    Route::get('/plant-care', [App\Http\Controllers\PlantCareController::class, 'index'])->name('plant-care.index');
+    Route::get('/plant-care/{id}', [App\Http\Controllers\PlantCareController::class, 'show'])->name('plant-care.show');
+});
+
+// Plant Care Edit - Admin only
+Route::middleware(['auth'])->group(function () {
+    // Admin Plant Care Management Page
+    Route::get('/admin/plant-care', [App\Http\Controllers\PlantCareController::class, 'adminIndex'])->name('plant-care.admin');
+    
+    Route::get('/plant-care/{id}/edit', [App\Http\Controllers\PlantCareController::class, 'edit'])->name('plant-care.edit');
+    Route::put('/plant-care/{id}', [App\Http\Controllers\PlantCareController::class, 'update'])->name('plant-care.update');
+});
+
 Route::post('/display-plants', [PublicController::class, 'store'])->name('display-plants.store');
 Route::put('/display-plants/{plant}', [PublicController::class, 'update'])->name('display-plants.update');
 Route::delete('/display-plants/{plant}', [PublicController::class, 'destroy'])->name('display-plants.destroy');
@@ -84,6 +101,11 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/users/role-requests/{id}', [UserController::class, 'deleteRoleRequest'])->name('users.role-requests.delete');
         Route::post('/users/role-requests/{id}/approve', [UserController::class, 'approveRoleRequest'])->name('users.role-requests.approve');
         Route::post('/users/role-requests/{id}/reject', [UserController::class, 'rejectRoleRequest'])->name('users.role-requests.reject');
+        
+        // System Logs (Super Admin only) - API endpoint
+        Route::get('/admin/logs/fetch', [SystemLogController::class, 'fetchLogs'])->name('admin.logs.fetch');
+        Route::post('/admin/logs/clear', [SystemLogController::class, 'clear'])->name('admin.logs.clear');
+        Route::get('/admin/logs/download', [SystemLogController::class, 'download'])->name('admin.logs.download');
     });
 
     // Admin and Manager routes
