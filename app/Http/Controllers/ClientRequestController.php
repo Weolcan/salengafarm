@@ -63,14 +63,15 @@ class ClientRequestController extends Controller
             
             try {
                 // Send email using the new Mailable class
-                Mail::send(new PlantRequestMail($request));
+                Mail::to($request->email)->send(new PlantRequestMail($request));
                 
                 $emailSent = true;
                 
                 Log::info('Email sent successfully', [
                     'request_id' => $request->id,
                     'recipient' => $request->email,
-                    'type' => $recipientType
+                    'type' => $recipientType,
+                    'mailer' => config('mail.default')
                 ]);
                 
             } catch (\Exception $mailException) {
@@ -79,9 +80,15 @@ class ClientRequestController extends Controller
                 
                 Log::error('Mail sending failed', [
                     'error' => $mailException->getMessage(),
+                    'trace' => $mailException->getTraceAsString(),
                     'request_id' => $request->id,
-                    'recipient' => $request->email
+                    'recipient' => $request->email,
+                    'mailer_config' => config('mail.default'),
+                    'resend_key_set' => !empty(config('services.resend.key'))
                 ]);
+                
+                // Throw the exception so we can see it in Railway logs
+                throw $mailException;
             }
             
             // Provide appropriate feedback based on email sending result
