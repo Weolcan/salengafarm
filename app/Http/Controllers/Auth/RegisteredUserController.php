@@ -99,11 +99,9 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        event(new Registered($user));
+        // Skip email verification event to avoid SMTP timeout
+        // event(new Registered($user));
 
         return redirect('/');
-
-        // Instead of logging in, redirect to login with success message
-        return redirect()->route('login')->with('success', 'Registration successful! Please log in to continue.');
     }
 }
