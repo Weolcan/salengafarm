@@ -17,7 +17,62 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\SystemLogController;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
+
+// Test email routes (remove after testing)
+Route::get('/test-email-config', function () {
+    $config = [
+        'MAIL_MAILER' => env('MAIL_MAILER'),
+        'MAIL_HOST' => env('MAIL_HOST'),
+        'MAIL_PORT' => env('MAIL_PORT'),
+        'MAIL_USERNAME' => env('MAIL_USERNAME'),
+        'MAIL_ENCRYPTION' => env('MAIL_ENCRYPTION'),
+        'MAIL_FROM_ADDRESS' => env('MAIL_FROM_ADDRESS'),
+        'MAIL_FROM_NAME' => env('MAIL_FROM_NAME'),
+        'MAIL_PASSWORD_SET' => !empty(env('MAIL_PASSWORD')) ? 'YES' : 'NO',
+        'RESEND_KEY_SET' => !empty(env('RESEND_KEY')) ? 'YES (PROBLEM!)' : 'NO (Good)',
+        'config_mail_default' => config('mail.default'),
+        'config_mail_host' => config('mail.mailers.smtp.host'),
+        'config_mail_port' => config('mail.mailers.smtp.port'),
+    ];
+    
+    return response()->json($config, 200, [], JSON_PRETTY_PRINT);
+});
+
+Route::get('/test-send-email/{email}', function ($email) {
+    try {
+        Log::info('Test email attempt', [
+            'to' => $email,
+            'mailer' => config('mail.default'),
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'username' => config('mail.mailers.smtp.username'),
+        ]);
+        
+        Mail::raw('Test email from Salenga Farm via Brevo SMTP. If you receive this, the configuration is working!', function ($message) use ($email) {
+            $message->to($email)
+                    ->subject('Test Email - Brevo Configuration Check');
+        });
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Email sent! Check your inbox and Brevo dashboard.',
+            'sent_to' => $email
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Test email failed', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
 
 // Public routes
 Route::get('/', [PublicController::class, 'index'])->name('public.plants');

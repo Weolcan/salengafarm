@@ -95,13 +95,33 @@ class RequestFormController extends Controller
             
             // Send email notification to the user
             try {
-                Log::info('Attempting to send email to user', ['email' => $plantRequest->email]);
+                Log::info('Attempting to send email to user', [
+                    'email' => $plantRequest->email,
+                    'mail_config' => [
+                        'mailer' => config('mail.default'),
+                        'host' => config('mail.mailers.smtp.host'),
+                        'port' => config('mail.mailers.smtp.port'),
+                        'username' => config('mail.mailers.smtp.username'),
+                        'encryption' => env('MAIL_ENCRYPTION'),
+                        'from_address' => config('mail.from.address'),
+                    ]
+                ]);
+                
                 Mail::to($plantRequest->email)->send(new PlantRequestMail($plantRequest));
+                
                 Log::info('Email sent successfully to user', ['email' => $plantRequest->email]);
+            } catch (\Swift_TransportException $e) {
+                Log::error('SMTP Transport Error', [
+                    'email' => $plantRequest->email,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
             } catch (\Exception $e) {
                 Log::error('Failed to send email to user', [
                     'email' => $plantRequest->email,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
+                    'error_class' => get_class($e),
+                    'trace' => $e->getTraceAsString()
                 ]);
                 // Don't fail the request if email fails, just log it
             }
