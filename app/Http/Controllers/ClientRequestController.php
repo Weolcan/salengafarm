@@ -62,6 +62,22 @@ class ClientRequestController extends Controller
             $errorMessage = '';
             
             try {
+                // Log detailed mail configuration before sending
+                Log::info('Attempting to send email with configuration', [
+                    'request_id' => $request->id,
+                    'recipient' => $request->email,
+                    'type' => $recipientType,
+                    'mail_mailer' => config('mail.default'),
+                    'mail_host' => config('mail.mailers.smtp.host'),
+                    'mail_port' => config('mail.mailers.smtp.port'),
+                    'mail_encryption' => env('MAIL_ENCRYPTION'),
+                    'mail_username' => config('mail.mailers.smtp.username'),
+                    'mail_from_address' => config('mail.from.address'),
+                    'mail_from_name' => config('mail.from.name'),
+                    'resend_key_exists' => !empty(config('services.resend.key')),
+                    'env_mail_mailer' => env('MAIL_MAILER'),
+                ]);
+                
                 // Send email using the new Mailable class
                 Mail::to($request->email)->send(new PlantRequestMail($request));
                 
