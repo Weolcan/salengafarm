@@ -1,5 +1,7 @@
 @extends('layouts.public')
 
+@section('title', 'User Dashboard - Salenga Farm')
+
 @push('styles')
 <link href="{{ asset('css/loading.css') }}" rel="stylesheet">
 <style>
