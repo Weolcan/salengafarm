@@ -21,6 +21,25 @@ use Illuminate\Support\Facades\Mail;
 
 
 // Test email routes (remove after testing)
+Route::get('/test-brevo-api', function () {
+    try {
+        $brevoService = new \App\Services\BrevoEmailService();
+        $result = $brevoService->sendEmail(
+            'farmsalenga@gmail.com',
+            'Test Email via Brevo API - ' . now(),
+            '<h1>Test Email</h1><p>This email was sent via Brevo API at ' . now() . '</p>'
+        );
+        
+        return response()->json($result);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 Route::get('/test-email-simple', function () {
     try {
         \Illuminate\Support\Facades\Mail::raw('Test email from Salenga Farm - ' . now(), function($message) {

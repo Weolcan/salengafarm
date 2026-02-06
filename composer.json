@@ -9,6 +9,7 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "doctrine/dbal": "^4.2",
+        "getbrevo/brevo-php": "^2.0",
         "laravel/framework": "^11.31",
         "laravel/socialite": "^5.20",
         "laravel/tinker": "^2.9",

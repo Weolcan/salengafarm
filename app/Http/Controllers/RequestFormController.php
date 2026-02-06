@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PlantRequestMail;
+use App\Services\BrevoEmailService;
 
 class RequestFormController extends Controller
 {
@@ -93,31 +94,35 @@ class RequestFormController extends Controller
             
             Log::info('Plant request saved successfully', ['id' => $plantRequest->id]);
             
-            // Send email notification to the user
+            // Send email notification to the user using Brevo API
             try {
-                Log::info('Attempting to send email to user', [
-                    'email' => $plantRequest->email,
-                    'mail_config' => [
-                        'mailer' => config('mail.default'),
-                        'host' => config('mail.mailers.smtp.host'),
-                        'port' => config('mail.mailers.smtp.port'),
-                        'username' => config('mail.mailers.smtp.username'),
-                        'encryption' => env('MAIL_ENCRYPTION'),
-                        'from_address' => config('mail.from.address'),
-                    ]
-                ]);
+                Log::info('Attempting to send email via Brevo API', ['email' => $plantRequest->email]);
                 
-                Mail::to($plantRequest->email)->send(new PlantRequestMail($plantRequest));
+                $brevoService = new BrevoEmailService();
+                $emailView = view('emails.plant-request', [
+                    'request' => $plantRequest,
+                    'recipientType' => 'User'
+                ])->render();
                 
-                Log::info('Email sent successfully to user', ['email' => $plantRequest->email]);
-            } catch (\Swift_TransportException $e) {
-                Log::error('SMTP Transport Error', [
-                    'email' => $plantRequest->email,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
+                $result = $brevoService->sendEmail(
+                    $plantRequest->email,
+                    "Plant Request #{$plantRequest->id} - Quotation from Salenga Farm",
+                    $emailView
+                );
+                
+                if ($result['success']) {
+                    Log::info('Email sent successfully via Brevo API', [
+                        'email' => $plantRequest->email,
+                        'messageId' => $result['messageId']
+                    ]);
+                } else {
+                    Log::error('Brevo API returned error', [
+                        'email' => $plantRequest->email,
+                        'error' => $result['error']
+                    ]);
+                }
             } catch (\Exception $e) {
-                Log::error('Failed to send email to user', [
+                Log::error('Failed to send email via Brevo API', [
                     'email' => $plantRequest->email,
                     'error' => $e->getMessage(),
                     'error_class' => get_class($e),
