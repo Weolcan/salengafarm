@@ -2,9 +2,13 @@
 /node_modules
 /public/build
 /public/hot
-/public/storage
+# /public/storage - Commented out to persist images on Railway
 /storage/*.key
 /storage/pail
+# Keep avatars and plant photos in git for Railway
+!/storage/app/public/avatars
+!/storage/app/public/plant-photos
+!/storage/app/public/display-plant-photos
 /vendor
 .env
 .env.backup
