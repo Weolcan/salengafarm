@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Inventory Management System</title>
+    <title>Salenga Farm</title>
     <!-- Force favicon refresh -->
     <link rel="icon" type="image/x-icon" href="{{ asset('tree-leaf.ico') }}?v=2">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('tree-leaf.ico') }}?v=2">
