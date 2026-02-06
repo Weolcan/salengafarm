@@ -75,10 +75,19 @@ class ClientRequestController extends Controller
                     'recipientType' => $recipientType
                 ])->render();
                 
+                // Attach PDF only for client requests (not user requests)
+                $attachmentPath = null;
+                if ($request->request_type === 'client' && $request->pdf_path) {
+                    $attachmentPath = $request->pdf_path;
+                }
+                
                 $result = $brevoService->sendEmail(
                     $request->email,
                     $subject,
-                    $emailView
+                    $emailView,
+                    null,
+                    null,
+                    $attachmentPath
                 );
                 
                 $emailSent = $result['success'];
@@ -90,7 +99,8 @@ class ClientRequestController extends Controller
                     'request_id' => $request->id,
                     'recipient' => $request->email,
                     'success' => $emailSent,
-                    'messageId' => $result['messageId'] ?? null
+                    'messageId' => $result['messageId'] ?? null,
+                    'has_pdf' => !empty($attachmentPath)
                 ]);
                 
             } catch (\Exception $mailException) {

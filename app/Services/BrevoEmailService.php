@@ -18,25 +18,38 @@ class BrevoEmailService
         $this->apiInstance = new TransactionalEmailsApi(new Client(), $config);
     }
 
-    public function sendEmail($to, $subject, $htmlContent, $fromEmail = null, $fromName = null)
+    public function sendEmail($to, $subject, $htmlContent, $fromEmail = null, $fromName = null, $attachmentPath = null)
     {
         try {
             $fromEmail = $fromEmail ?? config('mail.from.address');
             $fromName = $fromName ?? config('mail.from.name');
 
-            $sendSmtpEmail = new SendSmtpEmail([
+            $emailData = [
                 'subject' => $subject,
                 'sender' => ['name' => $fromName, 'email' => $fromEmail],
                 'to' => [['email' => $to]],
                 'htmlContent' => $htmlContent
-            ]);
+            ];
 
+            // Add attachment if provided
+            if ($attachmentPath && \Storage::exists($attachmentPath)) {
+                $fileContent = \Storage::get($attachmentPath);
+                $fileName = basename($attachmentPath);
+                
+                $emailData['attachment'] = [[
+                    'content' => base64_encode($fileContent),
+                    'name' => $fileName
+                ]];
+            }
+
+            $sendSmtpEmail = new SendSmtpEmail($emailData);
             $result = $this->apiInstance->sendTransacEmail($sendSmtpEmail);
             
             Log::info('Brevo API email sent successfully', [
                 'to' => $to,
                 'subject' => $subject,
-                'messageId' => $result->getMessageId()
+                'messageId' => $result->getMessageId(),
+                'has_attachment' => !empty($attachmentPath)
             ]);
 
             return ['success' => true, 'messageId' => $result->getMessageId()];
