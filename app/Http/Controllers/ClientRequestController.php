@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Artisan;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\BrevoEmailService;
 
 class ClientRequestController extends Controller
 {
@@ -57,54 +58,51 @@ class ClientRequestController extends Controller
             $recipientType = ($request->request_type == 'user') ? 'User' : 'Client';
             $subject = "Plant Request #{$request->id} - Quotation from Salenga Farm";
             
-            // Attempt to send email
+            // Attempt to send email using Brevo API
             $emailSent = false;
             $errorMessage = '';
             
             try {
-                // Log detailed mail configuration before sending
-                Log::info('Attempting to send email with configuration', [
+                Log::info('Attempting to send email via Brevo API', [
                     'request_id' => $request->id,
                     'recipient' => $request->email,
-                    'type' => $recipientType,
-                    'mail_mailer' => config('mail.default'),
-                    'mail_host' => config('mail.mailers.smtp.host'),
-                    'mail_port' => config('mail.mailers.smtp.port'),
-                    'mail_encryption' => env('MAIL_ENCRYPTION'),
-                    'mail_username' => config('mail.mailers.smtp.username'),
-                    'mail_from_address' => config('mail.from.address'),
-                    'mail_from_name' => config('mail.from.name'),
-                    'resend_key_exists' => !empty(config('services.resend.key')),
-                    'env_mail_mailer' => env('MAIL_MAILER'),
+                    'type' => $recipientType
                 ]);
                 
-                // Send email using the new Mailable class
-                Mail::to($request->email)->send(new PlantRequestMail($request));
+                $brevoService = new BrevoEmailService();
+                $emailView = view('emails.plant-request', [
+                    'request' => $request,
+                    'recipientType' => $recipientType
+                ])->render();
                 
-                $emailSent = true;
+                $result = $brevoService->sendEmail(
+                    $request->email,
+                    $subject,
+                    $emailView
+                );
                 
-                Log::info('Email sent successfully', [
+                $emailSent = $result['success'];
+                if (!$emailSent) {
+                    $errorMessage = $result['error'] ?? 'Unknown error';
+                }
+                
+                Log::info('Brevo API email result', [
                     'request_id' => $request->id,
                     'recipient' => $request->email,
-                    'type' => $recipientType,
-                    'mailer' => config('mail.default')
+                    'success' => $emailSent,
+                    'messageId' => $result['messageId'] ?? null
                 ]);
                 
             } catch (\Exception $mailException) {
                 $emailSent = false;
                 $errorMessage = $mailException->getMessage();
                 
-                Log::error('Mail sending failed', [
+                Log::error('Brevo API email failed', [
                     'error' => $mailException->getMessage(),
                     'trace' => $mailException->getTraceAsString(),
                     'request_id' => $request->id,
-                    'recipient' => $request->email,
-                    'mailer_config' => config('mail.default'),
-                    'resend_key_set' => !empty(config('services.resend.key'))
+                    'recipient' => $request->email
                 ]);
-                
-                // Throw the exception so we can see it in Railway logs
-                throw $mailException;
             }
             
             // Provide appropriate feedback based on email sending result
