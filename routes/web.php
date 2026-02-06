@@ -21,6 +21,29 @@ use Illuminate\Support\Facades\Mail;
 
 
 // Test email routes (remove after testing)
+Route::get('/test-email-simple', function () {
+    try {
+        \Illuminate\Support\Facades\Mail::raw('Test email from Salenga Farm - ' . now(), function($message) {
+            $message->to('farmsalenga@gmail.com')
+                    ->subject('Test Email - ' . now());
+        });
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Email sent! Check farmsalenga@gmail.com',
+            'time' => now()->toDateTimeString()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'error_class' => get_class($e),
+            'line' => $e->getLine(),
+            'file' => $e->getFile(),
+        ], 500);
+    }
+});
+
 Route::get('/test-email-config', function () {
     $config = [
         'MAIL_MAILER' => env('MAIL_MAILER'),
