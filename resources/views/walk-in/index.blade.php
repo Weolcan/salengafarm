@@ -1,5 +1,7 @@
 @extends('layouts.public')
 
+@section('title', 'Point of Sale - Salenga Farm')
+
 @section('content')
 <style>
     /* Improve input number styles */

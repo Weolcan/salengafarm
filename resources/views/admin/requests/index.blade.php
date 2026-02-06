@@ -1,5 +1,7 @@
 @extends('layouts.public')
 
+@section('title', 'Requests - Salenga Farm')
+
 @section('content')
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">

@@ -1,5 +1,7 @@
 @extends('layouts.public')
 
+@section('title', 'Inventory - Salenga Farm')
+
 @section('content')
 <style>
     /* Fix spacing between Low Stock Alert header and first item */
