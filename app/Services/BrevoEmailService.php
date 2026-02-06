@@ -7,6 +7,7 @@ use Brevo\Client\Api\TransactionalEmailsApi;
 use Brevo\Client\Model\SendSmtpEmail;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class BrevoEmailService
 {
@@ -32,8 +33,8 @@ class BrevoEmailService
             ];
 
             // Add attachment if provided
-            if ($attachmentPath && \Storage::exists($attachmentPath)) {
-                $fileContent = \Storage::get($attachmentPath);
+            if ($attachmentPath && Storage::exists($attachmentPath)) {
+                $fileContent = Storage::get($attachmentPath);
                 $fileName = basename($attachmentPath);
                 
                 $emailData['attachment'] = [[
