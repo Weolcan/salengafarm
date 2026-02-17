@@ -33,7 +33,7 @@
             z-index: 99999 !important;
         }
         
-        /* View Request button color states */
+        /* View Inquiry button color states */
         #viewRequestBtn {
             background-color: #6c757d;
             border-color: #6c757d;
@@ -811,9 +811,9 @@
                             <i class="fas fa-file-invoice me-1"></i>Request for Quotation (RFQ)
                         </button>
                     @elseif(Auth::check() && Auth::user()->role === 'user' && !Auth::user()->is_client)
-                        <!-- Regular User ONLY - View Request button -->
+                        <!-- Regular User ONLY - View Inquiry button -->
                         <button class="btn" id="viewRequestBtn" onclick="viewSelectedPlants()">
-                            <i class="fas fa-clipboard-list me-1"></i>View Request (<span id="requestCount">0</span>)
+                            <i class="fas fa-clipboard-list me-1"></i>View Inquiry (<span id="requestCount">0</span>)
                         </button>
                     @endif
             </div>
@@ -1016,7 +1016,7 @@
 
                                     <!-- Sliding Details Panel -->
                                     <div class="plant-details-panel">
-                                        <!-- Header with Add to Request Button -->
+                                        <!-- Header with Add to Inquiry Button -->
                                         <div class="details-header d-flex justify-content-between align-items-center p-2 text-white">
                                             <button type="button" class="btn btn-sm btn-link back-to-main text-white p-1" onclick="toggleUserDetails(this)">
                                                 <i class="fas fa-chevron-left"></i>
@@ -1032,7 +1032,7 @@
                                                             data-spacing="{{ $plant->spacing_mm }}"
                                                             data-action="add"
                                                             style="font-size: 0.7rem; padding: 0.2rem 0.35rem; white-space: nowrap;">
-                                                        <i class="fas fa-plus"></i> Add to Request
+                                                        <i class="fas fa-plus"></i> Add to Inquiry
                                                     </button>
                                                     <span class="text-white" style="font-size: 0.85rem; white-space: nowrap; cursor: default;">
                                                         Plant Details
@@ -1554,12 +1554,12 @@
         </div>
     </div>
 
-    <!-- Request Form Modal -->
+    <!-- Inquiry Form Modal -->
     <div class="modal fade" id="requestFormModal" tabindex="-1" aria-labelledby="requestFormModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl extra-wide-modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="requestFormModalLabel">Plant Request Form</h5>
+                    <h5 class="modal-title" id="requestFormModalLabel">Plant Inquiry Form</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1596,7 +1596,7 @@
                         </div>
 
                         <!-- Selected Plants Table -->
-                        <h5 class="mb-3">Selected Plants</h5>
+                        <h5 class="mb-3">Selected Plants for Inquiry</h5>
                         <div class="table-responsive">
                             <table class="table table-bordered" id="modalSelectedPlantsTable">
                                 <thead class="table-light">
@@ -1628,7 +1628,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-success" id="modalSubmitButton">
-                        <i class="fas fa-paper-plane"></i> Submit Request
+                        <i class="fas fa-paper-plane"></i> Submit Inquiry
                     </button>
                 </div>
             </div>
@@ -1917,23 +1917,12 @@ console.log('Loading modal form submission handler');
                 // Toggle the selected class
                 card.classList.toggle('selected');
 
-                // First, ensure the checkbox overlay exists
+                // Find the existing checkbox (should already exist from setup)
                 let checkbox = card.querySelector('.selection-checkbox');
+                
+                // If checkbox doesn't exist for some reason, create it
                 if (!checkbox) {
-                    // Create checkbox overlay if it doesn't exist
-                    const overlay = document.createElement('div');
-                    overlay.classList.add('selection-overlay');
-                    overlay.style.position = 'absolute';
-                    overlay.style.top = '0';
-                    overlay.style.left = '0';
-                    overlay.style.width = '100%';
-                    overlay.style.height = '100%';
-                    overlay.style.background = 'rgba(0,0,0,0.1)';
-                    overlay.style.display = 'block';
-                    overlay.style.zIndex = '999';
-                    card.style.position = 'relative';
-                    card.appendChild(overlay);
-
+                    console.warn('Checkbox not found, creating new one');
                     checkbox = document.createElement('div');
                     checkbox.classList.add('selection-checkbox');
                     checkbox.style.position = 'absolute';
@@ -1957,10 +1946,11 @@ console.log('Loading modal form submission handler');
                 }
 
                 // Update checkbox visual state
+                const checkIcon = checkbox.querySelector('i');
                 if (card.classList.contains('selected')) {
                     checkbox.style.backgroundColor = '#198754';
                     checkbox.style.border = '2px solid #198754';
-                    checkbox.querySelector('i').style.color = 'white';
+                    if (checkIcon) checkIcon.style.color = 'white';
 
                     // Add border highlight - applied with !important
                     card.style.setProperty('border', '2px solid #198754', 'important');
@@ -1968,7 +1958,7 @@ console.log('Loading modal form submission handler');
                 } else {
                     checkbox.style.backgroundColor = 'white';
                     checkbox.style.border = '2px solid #ddd';
-                    checkbox.querySelector('i').style.color = 'transparent';
+                    if (checkIcon) checkIcon.style.color = 'transparent';
 
                     // Remove border highlight - reset to default
                     card.style.removeProperty('border');
@@ -2044,38 +2034,42 @@ console.log('Loading modal form submission handler');
                             // Ensure consistent border on all cards
                             card.style.setProperty('border', '1px solid #dee2e6', 'important');
 
-                            // Create checkboxes on all cards for selection mode
-                            const checkbox = document.createElement('div');
-                            checkbox.classList.add('selection-checkbox');
-                            checkbox.style.position = 'absolute';
-                            checkbox.style.top = '10px';
-                            checkbox.style.right = '10px';
-                            checkbox.style.width = '34px';
-                            checkbox.style.height = '34px';
-                            checkbox.style.borderRadius = '50%';
-                            checkbox.style.background = 'white';
-                            checkbox.style.border = '2px solid #ddd';
-                            checkbox.style.display = 'flex';
-                            checkbox.style.alignItems = 'center';
-                            checkbox.style.justifyContent = 'center';
-                            checkbox.style.zIndex = '1000';
-                            checkbox.style.pointerEvents = 'auto';
-                            checkbox.style.cursor = 'pointer';
-                            checkbox.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
-                            checkbox.innerHTML = '<i class="fas fa-check" style="color: transparent; font-size: 18px;"></i>';
-                            checkbox.style.display = document.body.classList.contains('plant-selection-mode') ? 'flex' : 'none';
-                            card.appendChild(checkbox);
+                            // Check if checkbox already exists to avoid duplicates
+                            let checkbox = card.querySelector('.selection-checkbox');
+                            if (!checkbox) {
+                                // Create checkboxes on all cards for selection mode
+                                checkbox = document.createElement('div');
+                                checkbox.classList.add('selection-checkbox');
+                                checkbox.style.position = 'absolute';
+                                checkbox.style.top = '10px';
+                                checkbox.style.right = '10px';
+                                checkbox.style.width = '34px';
+                                checkbox.style.height = '34px';
+                                checkbox.style.borderRadius = '50%';
+                                checkbox.style.background = 'white';
+                                checkbox.style.border = '2px solid #ddd';
+                                checkbox.style.display = 'flex';
+                                checkbox.style.alignItems = 'center';
+                                checkbox.style.justifyContent = 'center';
+                                checkbox.style.zIndex = '1000';
+                                checkbox.style.pointerEvents = 'auto';
+                                checkbox.style.cursor = 'pointer';
+                                checkbox.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+                                checkbox.innerHTML = '<i class="fas fa-check" style="color: transparent; font-size: 18px;"></i>';
+                                checkbox.style.display = document.body.classList.contains('plant-selection-mode') ? 'flex' : 'none';
+                                card.appendChild(checkbox);
 
-                            // Only checkbox should toggle selection, not card
+                                // Only checkbox should toggle selection, not card
                                 checkbox.addEventListener('click', function(e) {
                                     if (!document.body.classList.contains('plant-selection-mode')) return;
 
                                     // Toggle selection of parent card
-                                directToggleSelection(card, true);
+                                    directToggleSelection(card, true);
                                     e.stopPropagation();
 
                                     console.log('Checkbox clicked, selection toggled');
                                 });
+                            }
                         });
 
                         // Initial counter update
