@@ -171,6 +171,9 @@ Route::middleware(['auth'])->group(function () {
     // User/Client Dashboard (Request Center)
     Route::get('/dashboard/user', [UserDashboardController::class, 'index'])->name('dashboard.user');
     
+    // User inquiry response view
+    Route::get('/user/inquiries/{id}/response', [UserDashboardController::class, 'viewResponse'])->name('user.inquiry.response');
+    
     // Client request submission
     Route::post('/client-request/submit', [UserDashboardController::class, 'submitClientRequest'])->name('client-request.submit');
 
@@ -237,6 +240,7 @@ Route::middleware(['auth'])->group(function () {
         // Requests management routes
         Route::get('/requests', [ClientRequestController::class, 'index'])->name('requests.index');
         Route::post('/requests/send-email/{id}', [ClientRequestController::class, 'sendEmail'])->name('requests.send-email');
+        Route::post('/requests/{id}/send-response', [ClientRequestController::class, 'sendResponse'])->name('requests.send-response');
         Route::get('/requests/view/{id}', [ClientRequestController::class, 'plainViewRequest'])->name('requests.view');
         Route::delete('/requests/{id}', [ClientRequestController::class, 'destroy'])->name('requests.destroy');
         Route::post('/requests/update/{id}', [ClientRequestController::class, 'updateRequest'])->name('requests.update');
