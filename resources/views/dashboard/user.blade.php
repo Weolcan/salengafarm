@@ -59,7 +59,7 @@
         <div class="col-12 col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-header bg-white d-flex align-items-center justify-content-between">
-                    <h6 class="mb-0">Recent Requests</h6>
+                    <h6 class="mb-0">Recent Inquiries</h6>
                 </div>
                 <div class="card-body p-0">
                     <div class="recent-requests-wrapper">
@@ -67,7 +67,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 60px;">ID</th>
-                                    <th>Request Date</th>
+                                    <th>Inquiry Date</th>
                                     <th>Status</th>
                                     <th style="width: 150px;">Actions</th>
                                 </tr>
@@ -82,17 +82,35 @@
                                             $status = strtolower($r->status ?? 'pending');
                                             // Change 'sent' to 'received' for display
                                             $displayStatus = $status === 'sent' ? 'received' : $status;
-                                            $badgeClass = in_array($status, ['approved','sent','completed']) ? 'success' : ($status === 'pending' ? 'warning' : 'secondary');
+                                            $badgeClass = $status === 'responded' ? 'success' : ($status === 'pending' ? 'warning' : 'secondary');
                                         @endphp
                                         <span class="badge bg-{{ $badgeClass }}">
                                             {{ ucfirst($displayStatus) }}
                                         </span>
                                     </td>
+                                    <td>
+                                        @if($status === 'responded')
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ route('user.inquiry.response', $r->id) }}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye me-1"></i>View Response
+                                                </a>
+                                                @if($r->request_type === 'client' && $r->pdf_path)
+                                                    <a href="{{ route('requests.download-pdf', $r->id) }}" 
+                                                       class="btn btn-sm btn-success">
+                                                        <i class="fas fa-download me-1"></i>Download RFQ
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">
-                                        No requests yet. Go to <a href="{{ route('public.plants') }}">Home</a> to place a request.
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        No inquiries yet. Go to <a href="{{ route('public.plants') }}">Home</a> to place an inquiry.
                                     </td>
                                 </tr>
                                 @endforelse
@@ -105,7 +123,7 @@
         <div class="col-12 col-lg-4">
             <div class="mb-3">
                 <a href="{{ route('public.plants') }}" class="btn btn-success w-100">
-                    <i class="fas fa-rotate-left me-2"></i>Return to Home to Request
+                    <i class="fas fa-rotate-left me-2"></i>Return to Home to Inquire
                 </a>
             </div>
             @if(!auth()->user()->is_client)
@@ -119,9 +137,9 @@
                 <div class="card-body">
                     <h6 class="mb-2">Tips</h6>
                     <ul class="mb-0">
-                        <li>To request plants, go back to Home and use the Request button.</li>
+                        <li>To inquire about plants, go back to Home and use the Inquiry button.</li>
                         <li>We’ll email you when your quotation is ready.</li>
-                        <li>This page shows a simple summary of your recent requests.</li>
+                        <li>This page shows a simple summary of your recent inquiries.</li>
                     </ul>
                 </div>
             </div>
