@@ -18,12 +18,15 @@ class PlantRequest extends Model
         'items_json',
         'status',
         'request_type',
-        'pdf_path'
+        'pdf_path',
+        'response_sent_at',
+        'responded_by'
     ];
 
     protected $casts = [
         'request_date' => 'datetime',
         'due_date' => 'datetime',
+        'response_sent_at' => 'datetime',
         'items_json' => 'array'
     ];
 } 

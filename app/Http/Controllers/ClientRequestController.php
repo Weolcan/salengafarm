@@ -197,11 +197,22 @@ class ClientRequestController extends Controller
                 
                 // Parse items_json, which might be a string that needs to be decoded
                 $itemsJson = $request->items_json;
+                
+                // Log for debugging
+                Log::info('Items JSON type: ' . gettype($itemsJson));
+                Log::info('Items JSON value: ' . print_r($itemsJson, true));
+                
                 if (is_string($itemsJson)) {
-                    $plantRequest->items_json = json_decode($itemsJson, true);
+                    $decoded = json_decode($itemsJson, true);
+                    Log::info('Decoded items: ' . print_r($decoded, true));
+                    $plantRequest->items_json = $decoded;
                 } else {
+                    Log::info('Items already an array');
                     $plantRequest->items_json = $itemsJson;
                 }
+                
+                // Log final items_json
+                Log::info('Final items_json to save: ' . print_r($plantRequest->items_json, true));
                 
                 // Set pricing field (default to None if not provided)
                 $plantRequest->pricing = $request->pricing ?? 'None';
@@ -746,5 +757,91 @@ class ClientRequestController extends Controller
             
             return redirect()->back()->with('error', 'Failed to update items. Please try again.');
         }
+    }
+    
+    /**
+     * Send response to user for their inquiry
+     * 
+     * @param int $id - Plant request ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function sendResponse($id)
+    {
+        try {
+            // Find the request
+            $request = PlantRequest::findOrFail($id);
+            
+            // Validate that items have availability set
+            $items = is_array($request->items_json) ? $request->items_json : json_decode($request->items_json, true);
+            $hasAvailability = false;
+            foreach ($items as $item) {
+                if (!empty($item['availability'])) {
+                    $hasAvailability = true;
+                    break;
+                }
+            }
+            
+            if (!$hasAvailability) {
+                return redirect()->back()->with('error', 'Please set availability for at least one plant before sending response.');
+            }
+            
+            // Update request status
+            $request->status = 'responded';
+            $request->response_sent_at = now();
+            $request->responded_by = auth()->id();
+            $request->save();
+            
+            // Send email notification to user
+            try {
+                $this->sendResponseEmail($request);
+            } catch (\Exception $e) {
+                Log::error('Failed to send response email: ' . $e->getMessage());
+                // Continue even if email fails
+            }
+            
+            // Create in-app notification for user
+            $user = User::where('email', $request->email)->first();
+            if ($user) {
+                Notification::create([
+                    'user_id' => $user->id,
+                    'type' => 'inquiry_response',
+                    'title' => 'Inquiry Response',
+                    'message' => "Your inquiry #{$request->id} has been responded to. Click to view details.",
+                    'link' => route('user.inquiry.response', $request->id),
+                    'is_read' => false
+                ]);
+            }
+            
+            return redirect()->back()->with('success', 'Response sent successfully to user.');
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to send response: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to send response: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Send response email to user using Brevo API
+     * 
+     * @param PlantRequest $request
+     * @return void
+     */
+    private function sendResponseEmail($request)
+    {
+        $brevoService = new BrevoEmailService();
+        
+        $subject = "Response to Your Plant Inquiry #{$request->id}";
+        
+        $htmlContent = view('emails.inquiry-response', [
+            'request' => $request,
+            'viewLink' => route('user.inquiry.response', $request->id)
+        ])->render();
+        
+        $brevoService->sendEmail(
+            $request->email,
+            $request->name,
+            $subject,
+            $htmlContent
+        );
     }
 } 

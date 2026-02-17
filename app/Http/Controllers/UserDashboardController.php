@@ -34,6 +34,40 @@ class UserDashboardController extends Controller
     }
     
     /**
+     * View admin response for an inquiry
+     * 
+     * @param int $id - Plant request ID
+     * @return \Illuminate\View\View
+     */
+    public function viewResponse($id)
+    {
+        $user = Auth::user();
+        
+        // Find the request and verify it belongs to this user
+        $request = PlantRequest::where('id', $id)
+            ->where('email', $user->email)
+            ->firstOrFail();
+        
+        // Check if response has been sent
+        if (!$request->response_sent_at) {
+            return redirect()->route('dashboard.user')
+                ->with('error', 'This inquiry has not been responded to yet.');
+        }
+        
+        // items_json is already an array due to model casting
+        $items = $request->items_json;
+        
+        // Get admin who responded
+        $respondedBy = $request->responded_by ? User::find($request->responded_by) : null;
+        
+        return view('user.inquiry-response', [
+            'request' => $request,
+            'items' => $items,
+            'respondedBy' => $respondedBy
+        ]);
+    }
+    
+    /**
      * Submit client request
      */
     public function submitClientRequest(Request $request)
