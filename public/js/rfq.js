@@ -384,8 +384,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const rfqModal = new bootstrap.Modal(document.getElementById('rfqFormModal'));
             rfqModal.show();
             
-            // Exit selection mode
-            cancelSelectionMode();
+            // DON'T exit selection mode yet - wait until form is submitted
+            // The selectedPlants array needs to stay populated for submission
         }, 1000);
     }
 
@@ -485,17 +485,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Submit RFQ form with updated data
     let isSubmitting = false; // Flag to prevent duplicate submissions
     
-    function submitRfqForm() {
+    function submitRfqForm(event) {
+        // Prevent default form submission if this is from a form
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
         console.log('submitRfqForm called');
+        console.log('selectedPlants array:', selectedPlants);
+        console.log('selectedPlants length:', selectedPlants.length);
         
         // Prevent duplicate submissions
         if (isSubmitting) {
             console.log('Already submitting, ignoring duplicate click');
-            return;
+            return false;
+        }
+        
+        // Check if we have plants to submit
+        if (!selectedPlants || selectedPlants.length === 0) {
+            console.error('No plants in selectedPlants array!');
+            alert('No plants selected. Please try again.');
+            return false;
         }
         
         isSubmitting = true;
         console.log('Starting submission process');
+        
+        // Disable the submit button to prevent double-clicks
+        const submitBtn = document.getElementById('submitRequest');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+        }
         
         // Show loading with LoadingManager
         if (typeof LoadingManager !== 'undefined') {
@@ -508,6 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rows = document.querySelectorAll('#rfqItemsTable tr');
         const updatedPlants = [];
         
+        console.log(`Found ${rows.length} rows in #rfqItemsTable`);
         console.log(`Processing ${rows.length} rows for submission`);
         
         try {
@@ -519,7 +542,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                   selectedPlants[plantIndex] : null;
             
             if (!originalPlant) {
-                console.error(`Missing original plant data for row`);
+                console.error(`Missing original plant data for row with index ${plantIndex}`);
+                console.error(`selectedPlants array:`, selectedPlants);
                 return;
             }
             
@@ -573,6 +597,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (typeof LoadingManager !== 'undefined') {
                     LoadingManager.hide();
                 }
+                // Re-enable submit button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Submit Request';
+                }
                 alert('Request is taking longer than expected. Please try again.');
                 isSubmitting = false;
             }, 15000); // 15-second timeout
@@ -604,6 +633,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset submission flag
             isSubmitting = false;
             
+            // Re-enable submit button
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Submit Request';
+            }
+            
             // Hide loading
             if (typeof LoadingManager !== 'undefined') {
                 LoadingManager.hide();
@@ -614,6 +649,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (rfqModal) {
                 rfqModal.hide();
             }
+            
+            // NOW exit selection mode and clear the array
+            cancelSelectionMode();
             
             // Show success message
             const successModalElement = document.getElementById('successModal');
@@ -627,9 +665,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show the success modal
                 const successModal = new bootstrap.Modal(successModalElement);
                 successModal.show();
-                    
-                    // Reset selection mode
-                    document.body.classList.remove('plant-selection-mode');
             } else {
                 // Fallback to alert
                 alert(data.message || 'Your request has been submitted successfully!');
@@ -639,6 +674,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Fetch error:', error);
                 // Reset submission flag
                 isSubmitting = false;
+                
+                // Re-enable submit button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Submit Request';
+                }
                 
                 // Clear the timeout since we got a response
                 clearTimeout(timeoutId);
