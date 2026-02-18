@@ -639,6 +639,7 @@
                             <select class="form-select" id="status" name="status" required>
                                 <option value="pending" {{ $request->status == 'pending' ? 'selected' : '' }}>Pending</option>
                                 <option value="sent" {{ $request->status == 'sent' ? 'selected' : '' }}>Sent</option>
+                                <option value="responded" {{ $request->status == 'responded' ? 'selected' : '' }}>Responded</option>
                                 <option value="cancelled" {{ $request->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                             </select>
                         </div>
