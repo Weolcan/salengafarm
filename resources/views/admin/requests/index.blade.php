@@ -90,6 +90,8 @@
                                                 <span class="badge bg-warning">Pending</span>
                                             @elseif($request->status == 'sent')
                                                 <span class="badge bg-success">Sent</span>
+                                            @elseif($request->status == 'responded')
+                                                <span class="badge bg-info">Responded</span>
                                             @elseif($request->status == 'cancelled')
                                                 <span class="badge bg-danger">Cancelled</span>
                                             @endif
@@ -119,7 +121,7 @@
                                                         <i class="fas fa-envelope"></i>
                                                     </button>
                                                 </form>
-                                                @elseif($request->status == 'sent' && $request->pdf_path)
+                                                @elseif(($request->status == 'sent' || $request->status == 'responded') && $request->pdf_path)
                                                 <a href="{{ route('requests.download-pdf', $request->id) }}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Download PDF">
                                                     <i class="fas fa-download"></i>
                                                 </a>
@@ -177,6 +179,8 @@
                                                 <span class="badge bg-warning">Pending</span>
                                             @elseif($request->status == 'sent')
                                                 <span class="badge bg-success">Sent</span>
+                                            @elseif($request->status == 'responded')
+                                                <span class="badge bg-info">Responded</span>
                                             @elseif($request->status == 'cancelled')
                                                 <span class="badge bg-danger">Cancelled</span>
                                             @endif
@@ -194,7 +198,7 @@
                                                         <i class="fas fa-envelope"></i>
                                                     </button>
                                                 </form>
-                                                @elseif($request->status == 'sent' && $request->pdf_path)
+                                                @elseif(($request->status == 'sent' || $request->status == 'responded') && $request->pdf_path)
                                                 <a href="{{ route('requests.download-pdf', $request->id) }}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Download PDF">
                                                     <i class="fas fa-download"></i>
                                                 </a>
