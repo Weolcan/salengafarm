@@ -62,8 +62,8 @@
                                 <td>
                                     @if($request->status == 'pending')
                                         <span class="badge bg-warning">Pending</span>
-                                    @elseif($request->status == 'sent')
-                                        <span class="badge bg-success">Sent</span>
+                                    @elseif($request->status == 'sent' || $request->status == 'responded')
+                                        <span class="badge bg-success">Responded</span>
                                     @elseif($request->status == 'cancelled')
                                         <span class="badge bg-danger">Cancelled</span>
                                     @endif

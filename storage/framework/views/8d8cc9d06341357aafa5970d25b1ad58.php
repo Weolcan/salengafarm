@@ -1,3 +1,5 @@
+<?php $__env->startSection('title', 'Point of Sale - Salenga Farm'); ?>
+
 <?php $__env->startSection('content'); ?>
 <style>
     /* Improve input number styles */
@@ -835,24 +837,50 @@
     <div class="modal fade" id="salesRecordsModal" tabindex="-1" aria-labelledby="salesRecordsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="salesRecordsModalLabel">Sales Records</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="salesRecordsModalLabel">
+                        <i class="fas fa-receipt me-2"></i>Sales Records
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Quick Filter Buttons -->
+                    <div class="mb-3">
+                        <div class="btn-group btn-group-sm mb-2" role="group">
+                            <button type="button" class="btn btn-outline-success" data-pos-filter="today" onclick="applyPOSQuickFilter('today')">
+                                <i class="fas fa-calendar-day me-1"></i>Today
+                            </button>
+                            <button type="button" class="btn btn-outline-success" data-pos-filter="week" onclick="applyPOSQuickFilter('week')">
+                                <i class="fas fa-calendar-week me-1"></i>This Week
+                            </button>
+                            <button type="button" class="btn btn-outline-success" data-pos-filter="month" onclick="applyPOSQuickFilter('month')">
+                                <i class="fas fa-calendar-alt me-1"></i>This Month
+                            </button>
+                            <button type="button" class="btn btn-outline-success" data-pos-filter="year" onclick="applyPOSQuickFilter('year')">
+                                <i class="fas fa-calendar me-1"></i>This Year
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary active" data-pos-filter="all" onclick="applyPOSQuickFilter('all')">
+                                <i class="fas fa-infinity me-1"></i>All Time
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Date Range & Actions -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">From</span>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-success text-white">From</span>
                                 <input type="date" class="form-control" id="start-date">
-                                <span class="input-group-text">To</span>
+                                <span class="input-group-text bg-success text-white">To</span>
                                 <input type="date" class="form-control" id="end-date">
-                                <button class="btn btn-primary" id="filter-records-btn">Filter</button>
+                                <button class="btn btn-success" id="filter-records-btn">
+                                    <i class="fas fa-filter me-1"></i>Apply Custom
+                                </button>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="d-flex justify-content-end">
-                                <button class="btn btn-secondary" id="bulk-delete-btn" disabled>
+                                <button class="btn btn-danger btn-sm" id="bulk-delete-btn" disabled>
                                     <i class="fas fa-trash me-1"></i>Delete Selected
                                 </button>
                             </div>
@@ -994,6 +1022,53 @@
 
 <?php $__env->startSection('scripts'); ?>
 <script>
+    // Global function for POS quick filters (must be outside document.ready for onclick to work)
+    function applyPOSQuickFilter(filter) {
+        // Update button states
+        $('[data-pos-filter]').removeClass('active');
+        $(`[data-pos-filter="${filter}"]`).addClass('active');
+        
+        // Calculate date range based on filter
+        const today = new Date();
+        let startDate = null;
+        let endDate = null;
+        
+        switch(filter) {
+            case 'today':
+                startDate = today.toISOString().split('T')[0];
+                endDate = today.toISOString().split('T')[0];
+                break;
+            case 'week':
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay());
+                startDate = weekStart.toISOString().split('T')[0];
+                endDate = today.toISOString().split('T')[0];
+                break;
+            case 'month':
+                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                startDate = monthStart.toISOString().split('T')[0];
+                endDate = today.toISOString().split('T')[0];
+                break;
+            case 'year':
+                const yearStart = new Date(today.getFullYear(), 0, 1);
+                startDate = yearStart.toISOString().split('T')[0];
+                endDate = today.toISOString().split('T')[0];
+                break;
+            case 'all':
+                // No date filter
+                break;
+        }
+        
+        // Update date inputs
+        $('#start-date').val(startDate || '');
+        $('#end-date').val(endDate || '');
+        
+        // Load records (call the function from document.ready scope)
+        if (typeof window.loadPOSSalesRecords === 'function') {
+            window.loadPOSSalesRecords(1);
+        }
+    }
+
     $(document).ready(function() {
         let cart = [];
         let salesRecordsModal;
@@ -1006,15 +1081,11 @@
         
         // Records button click handler
         $('#records-btn').click(function() {
-            // Reset filters
-            $('#start-date').val('');
-            $('#end-date').val('');
-            
-            // Load records
-            loadSalesRecords();
-            
             // Show modal
             salesRecordsModal.show();
+            
+            // Apply all time filter by default
+            applyPOSQuickFilter('all');
         });
         
         // Helper function to initialize tooltips
@@ -1038,7 +1109,11 @@
             loadSalesRecords();
         });
         
-        // Function to load sales records
+        // Function to load sales records (expose to global scope)
+        window.loadPOSSalesRecords = function(page = 1) {
+            loadSalesRecords(page);
+        };
+        
         function loadSalesRecords(page = 1) {
             currentPage = page;
             $('#no-records-message').addClass('d-none');

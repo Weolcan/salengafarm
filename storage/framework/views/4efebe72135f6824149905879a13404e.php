@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
-    <title>Dashboard - Plant Inventory</title>
+    <title>Dashboard - Salenga Farm</title>
     <link rel="icon" type="image/x-icon" href="<?php echo e(asset('tree-leaf.ico')); ?>?v=2">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -296,6 +296,9 @@
                                 <?php if(Auth::user()->role === 'super_admin'): ?>
                                 <button class="btn btn-info text-white" id="viewSystemLogsBtn">
                                     <i class="fas fa-file-alt me-2"></i>System Logs
+                                </button>
+                                <button class="btn btn-success text-white" id="viewSalesRecordsBtn">
+                                    <i class="fas fa-receipt me-2"></i>Sales Records
                                 </button>
                                 <?php endif; ?>
                             </div>
@@ -1153,6 +1156,300 @@
             const modal = new bootstrap.Modal(document.getElementById('systemLogsModal'));
             modal.show();
             loadLogs();
+        });
+    </script>
+
+    <!-- Sales Records Modal (Super Admin Only) -->
+    <div class="modal fade" id="salesRecordsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-receipt me-2"></i>Sales Records</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Summary Cards -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="card border-success">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            <i class="fas fa-shopping-cart fa-lg text-success opacity-50"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Total Sales</small>
+                                            <h5 class="mb-0" id="totalSalesCount">-</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-primary">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            <i class="fas fa-box fa-lg text-primary opacity-50"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Total Quantity</small>
+                                            <h5 class="mb-0" id="totalQuantitySold">-</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-warning">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            <i class="fas fa-peso-sign fa-lg text-warning opacity-50"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Total Revenue</small>
+                                            <h5 class="mb-0" id="totalRevenue">-</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Filter Buttons -->
+                    <div class="mb-3">
+                        <div class="btn-group btn-group-sm mb-2" role="group">
+                            <button type="button" class="btn btn-outline-success" data-filter="today" onclick="applySalesQuickFilter('today')">
+                                <i class="fas fa-calendar-day me-1"></i>Today
+                            </button>
+                            <button type="button" class="btn btn-outline-success" data-filter="week" onclick="applySalesQuickFilter('week')">
+                                <i class="fas fa-calendar-week me-1"></i>This Week
+                            </button>
+                            <button type="button" class="btn btn-outline-success" data-filter="month" onclick="applySalesQuickFilter('month')">
+                                <i class="fas fa-calendar-alt me-1"></i>This Month
+                            </button>
+                            <button type="button" class="btn btn-outline-success" data-filter="year" onclick="applySalesQuickFilter('year')">
+                                <i class="fas fa-calendar me-1"></i>This Year
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary active" data-filter="all" onclick="applySalesQuickFilter('all')">
+                                <i class="fas fa-infinity me-1"></i>All Time
+                            </button>
+                        </div>
+                        
+                        <!-- Custom Date Range -->
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label class="form-label small mb-1">Start Date</label>
+                                <input type="date" id="salesStartDate" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small mb-1">End Date</label>
+                                <input type="date" id="salesEndDate" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small mb-1">&nbsp;</label>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-success btn-sm flex-fill" onclick="loadSalesRecords()">
+                                        <i class="fas fa-filter"></i> Apply Custom
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm flex-fill" onclick="resetSalesFilters()">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Table -->
+                    <div class="table-responsive" style="max-height: 450px; border: 1px solid #dee2e6; border-radius: 4px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0" style="font-size: 0.85rem;">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th style="padding: 10px 12px;">ID</th>
+                                    <th style="padding: 10px 12px;">Date</th>
+                                    <th style="padding: 10px 12px;">Plant Name</th>
+                                    <th style="padding: 10px 12px;">Qty</th>
+                                    <th style="padding: 10px 12px;">Unit Price</th>
+                                    <th style="padding: 10px 12px;">Total</th>
+                                    <th style="padding: 10px 12px;">Customer</th>
+                                    <th style="padding: 10px 12px;">Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <div class="spinner-border spinner-border-sm text-success" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <div class="mt-2 text-muted">Loading sales records...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sales Records Functions
+        let currentSalesFilter = 'all'; // Default to all time
+        
+        function applySalesQuickFilter(filter) {
+            currentSalesFilter = filter;
+            
+            // Update button states
+            document.querySelectorAll('[data-filter]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+            
+            // Calculate date range based on filter
+            const today = new Date();
+            let startDate = null;
+            let endDate = null;
+            
+            switch(filter) {
+                case 'today':
+                    startDate = today.toISOString().split('T')[0];
+                    endDate = today.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+                    startDate = weekStart.toISOString().split('T')[0];
+                    endDate = today.toISOString().split('T')[0];
+                    break;
+                case 'month':
+                    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                    startDate = monthStart.toISOString().split('T')[0];
+                    endDate = today.toISOString().split('T')[0];
+                    break;
+                case 'year':
+                    const yearStart = new Date(today.getFullYear(), 0, 1);
+                    startDate = yearStart.toISOString().split('T')[0];
+                    endDate = today.toISOString().split('T')[0];
+                    break;
+                case 'all':
+                    // No date filter
+                    break;
+            }
+            
+            // Update date inputs
+            document.getElementById('salesStartDate').value = startDate || '';
+            document.getElementById('salesEndDate').value = endDate || '';
+            
+            // Load records
+            loadSalesRecords(startDate, endDate);
+        }
+        
+        function loadSalesRecords(startDate = null, endDate = null) {
+            // If no dates provided, use the input values
+            if (startDate === null) {
+                startDate = document.getElementById('salesStartDate').value;
+            }
+            if (endDate === null) {
+                endDate = document.getElementById('salesEndDate').value;
+            }
+            
+            // Show loading state
+            const tbody = document.getElementById('salesTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-success" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="mt-2 text-muted">Loading sales records...</div>
+                    </td>
+                </tr>
+            `;
+            
+            let url = '/walk-in/records';
+            const params = new URLSearchParams();
+            
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+            
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displaySalesRecords(data.data.data);
+                        updateSalesSummary(data.data.data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading sales:', error);
+                    document.getElementById('salesTableBody').innerHTML = 
+                        '<tr><td colspan="8" class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle me-2"></i>Error loading sales records</td></tr>';
+                });
+        }
+        
+        function displaySalesRecords(sales) {
+            const tbody = document.getElementById('salesTableBody');
+            
+            if (!sales || sales.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No sales records found</td></tr>';
+                // Reset summary to zero
+                document.getElementById('totalSalesCount').textContent = '0';
+                document.getElementById('totalQuantitySold').textContent = '0';
+                document.getElementById('totalRevenue').textContent = '₱0.00';
+                return;
+            }
+            
+            tbody.innerHTML = sales.map(sale => {
+                const saleDate = sale.sale_date ? new Date(sale.sale_date).toLocaleDateString('en-US', { 
+                    month: 'short', day: 'numeric', year: 'numeric' 
+                }) : 'N/A';
+                
+                const plantName = sale.plant ? sale.plant.name : 'N/A';
+                const customerName = sale.customer_name || 'Walk-in';
+                const paymentBadge = sale.payment_method === 'cash' ? 
+                    '<span class="badge bg-success">Cash</span>' : 
+                    '<span class="badge bg-primary">' + sale.payment_method.charAt(0).toUpperCase() + sale.payment_method.slice(1) + '</span>';
+                
+                return `
+                    <tr>
+                        <td style="padding: 8px 12px;">#${sale.id}</td>
+                        <td style="padding: 8px 12px;">${saleDate}</td>
+                        <td style="padding: 8px 12px;"><strong>${plantName}</strong></td>
+                        <td style="padding: 8px 12px;">${sale.quantity}</td>
+                        <td style="padding: 8px 12px;">₱${parseFloat(sale.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 8px 12px;"><strong>₱${parseFloat(sale.total_price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                        <td style="padding: 8px 12px;">${customerName}</td>
+                        <td style="padding: 8px 12px;">${paymentBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function updateSalesSummary(sales) {
+            const totalSales = sales.length;
+            const totalQuantity = sales.reduce((sum, sale) => sum + parseInt(sale.quantity), 0);
+            const totalRevenue = sales.reduce((sum, sale) => sum + parseFloat(sale.total_price), 0);
+            
+            document.getElementById('totalSalesCount').textContent = totalSales.toLocaleString();
+            document.getElementById('totalQuantitySold').textContent = totalQuantity.toLocaleString();
+            document.getElementById('totalRevenue').textContent = '₱' + totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        
+        function resetSalesFilters() {
+            // Reset to all time
+            applySalesQuickFilter('all');
+        }
+        
+        // Open modal and load sales (default to all time)
+        document.getElementById('viewSalesRecordsBtn')?.addEventListener('click', function() {
+            const modal = new bootstrap.Modal(document.getElementById('salesRecordsModal'));
+            modal.show();
+            applySalesQuickFilter('all'); // Load all records by default
         });
     </script>
     <?php endif; ?>

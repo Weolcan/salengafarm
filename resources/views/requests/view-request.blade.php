@@ -396,9 +396,7 @@
                                         <span class="info-value">
                                             @if($request->status == 'pending')
                                                 <span class="status-badge status-pending">Pending</span>
-                                            @elseif($request->status == 'sent')
-                                                <span class="status-badge status-sent">Sent</span>
-                                            @elseif($request->status == 'responded')
+                                            @elseif($request->status == 'sent' || $request->status == 'responded')
                                                 <span class="status-badge status-responded">Responded</span>
                                             @else
                                                 <span class="status-badge status-cancelled">Cancelled</span>
@@ -455,18 +453,14 @@
                                                 </button>
                                             </form>
                                             
-                                            <form action="{{ route('requests.send-response', $request->id) }}" method="POST" style="flex: 1; margin: 0;" 
-                                                  onsubmit="return confirm('This will mark the inquiry as responded and notify the user. Continue?');">
-                                                @csrf
-                                                <button type="submit" class="action-btn action-btn-primary" id="sendResponseBtn">
-                                                    <i class="fas fa-paper-plane"></i>
-                                                    @if($request->request_type == 'user')
-                                                        Send Response to User
-                                                    @else
-                                                        Send Response to Client
-                                                    @endif
-                                                </button>
-                                            </form>
+                                            <button type="button" class="action-btn action-btn-primary" id="sendResponseBtn" data-bs-toggle="modal" data-bs-target="#sendResponseModal">
+                                                <i class="fas fa-paper-plane"></i>
+                                                @if($request->request_type == 'user')
+                                                    Send Response to User
+                                                @else
+                                                    Send Response to Client
+                                                @endif
+                                            </button>
                                         </div>
                                     @elseif($request->status == 'sent')
                                         <div class="action-buttons">
@@ -482,18 +476,14 @@
                                                 </button>
                                             </form>
                                             
-                                            <form action="{{ route('requests.send-response', $request->id) }}" method="POST" style="flex: 1; margin: 0;" 
-                                                  onsubmit="return confirm('This will mark the inquiry as responded and notify the user. Continue?');">
-                                                @csrf
-                                                <button type="submit" class="action-btn action-btn-primary" id="sendResponseBtn">
-                                                    <i class="fas fa-paper-plane"></i>
-                                                    @if($request->request_type == 'user')
-                                                        Send Response to User
-                                                    @else
-                                                        Send Response to Client
-                                                    @endif
-                                                </button>
-                                            </form>
+                                            <button type="button" class="action-btn action-btn-primary" id="sendResponseBtn2" data-bs-toggle="modal" data-bs-target="#sendResponseModal">
+                                                <i class="fas fa-paper-plane"></i>
+                                                @if($request->request_type == 'user')
+                                                    Send Response to User
+                                                @else
+                                                    Send Response to Client
+                                                @endif
+                                            </button>
                                         </div>
                                     @elseif($request->status == 'responded')
                                         <div class="response-alert">
@@ -638,8 +628,7 @@
                             <label for="status" class="form-label">Status</label>
                             <select class="form-select" id="status" name="status" required>
                                 <option value="pending" {{ $request->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="sent" {{ $request->status == 'sent' ? 'selected' : '' }}>Sent</option>
-                                <option value="responded" {{ $request->status == 'responded' ? 'selected' : '' }}>Responded</option>
+                                <option value="responded" {{ $request->status == 'responded' || $request->status == 'sent' ? 'selected' : '' }}>Responded</option>
                                 <option value="cancelled" {{ $request->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                             </select>
                         </div>
@@ -764,6 +753,31 @@
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Response Confirmation Modal -->
+    <div class="modal fade" id="sendResponseModal" tabindex="-1" aria-labelledby="sendResponseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sendResponseModalLabel">Confirm Send Response</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">This will mark the @if($request->request_type == 'user')inquiry @else request @endif as responded and notify the @if($request->request_type == 'user')user @else client @endif.</p>
+                    <p class="mb-0"><strong>Continue?</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ route('requests.send-response', $request->id) }}" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-primary" id="confirmSendResponseBtn">
+                            Send Response
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -1000,6 +1014,12 @@
                         });
                     }
                 });
+            });
+            
+            // Send Response confirmation modal - add loading state
+            $('#confirmSendResponseBtn').on('click', function() {
+                const btn = $(this);
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Sending...');
             });
         });
     </script>

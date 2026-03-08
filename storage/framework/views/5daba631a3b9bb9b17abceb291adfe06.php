@@ -17,6 +17,300 @@
     <link href="<?php echo e(asset('css/sidebar.css')); ?>" rel="stylesheet">
     <link href="<?php echo e(asset('css/dashboard.css')); ?>?v=4" rel="stylesheet">
     <link href="<?php echo e(asset('css/push-notifications.css')); ?>?v=<?php echo e(time()); ?>" rel="stylesheet">
+    
+    <style>
+        /* Custom Request Details Styling - Override Bootstrap */
+        .request-details-container {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .request-header {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .request-header h2 {
+            margin: 0;
+            color: #2d3748;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .request-header .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Custom Grid Layout - No Bootstrap */
+        .info-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .info-cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .items-section {
+            width: 100%;
+        }
+        
+        .custom-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .custom-card-header {
+            background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+            color: white;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: none;
+        }
+        
+        .custom-card-header h5 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        
+        .custom-card-header .edit-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+        
+        .custom-card-header .edit-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        
+        .custom-card-body {
+            padding: 10px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-row:hover {
+            background: #f8f9fa;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.85rem;
+        }
+        
+        .info-value {
+            color: #2d3748;
+            font-size: 0.85rem;
+        }
+        
+        .status-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-sent {
+            background: #d1f0dd;
+            color: #198754;
+        }
+        
+        .status-responded {
+            background: #cfe2ff;
+            color: #0d6efd;
+        }
+        
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .pricing-section {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .pricing-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.85rem;
+        }
+        
+        .pricing-select {
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            padding: 5px 25px 5px 8px;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .pricing-select:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 3px rgba(25,135,84,0.1);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            padding: 8px 10px;
+            background: #f8f9fa;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .action-btn-success {
+            background: #198754;
+            color: white;
+        }
+        
+        .action-btn-success:hover {
+            background: #146c43;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25,135,84,0.3);
+        }
+        
+        .action-btn-primary {
+            background: #0d6efd;
+            color: white;
+        }
+        
+        .action-btn-primary:hover {
+            background: #0b5ed7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+        }
+        
+        .action-btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .action-btn-warning:hover {
+            background: #ffca2c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,193,7,0.3);
+        }
+        
+        .response-alert {
+            background: #d1f0dd;
+            border: 1px solid #badbcc;
+            color: #0f5132;
+            padding: 8px 10px;
+            border-radius: 5px;
+            margin: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .items-table-container {
+            overflow-x: auto;
+            padding: 0;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        .items-table thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .items-table th {
+            padding: 8px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            white-space: nowrap;
+            font-size: 0.8rem;
+        }
+        
+        .items-table tbody tr {
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.2s;
+        }
+        
+        .items-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .items-table td {
+            padding: 8px 8px;
+            color: #2d3748;
+            font-size: 0.8rem;
+        }
+        
+        .items-table th:first-child,
+        .items-table td:first-child {
+            padding-left: 15px;
+        }
+        
+        .items-table th:last-child,
+        .items-table td:last-child {
+            padding-right: 15px;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div id="sidebarOverlay"></div>
@@ -27,23 +321,21 @@
             <i class="fa fa-bars" style="font-size: 1.3rem;"></i>
         </button>
         <div class="main-content">
-            <div style="padding-top: 0;">
-                <div class="p-0">
-                    <!-- Main Content -->
-                    <div class="container my-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h2 class="mb-0">Request Details #<?php echo e($request->id); ?></h2>
-                            <div>
-                                <a href="<?php echo e(route('requests.index')); ?>" class="btn btn-outline-secondary">
-                                    <i class="fas fa-arrow-left me-1"></i>Back to List
-                                </a>
-                                <?php if(auth()->user()->role !== 'super_admin'): ?>
-                                <button id="printRequestBtn" class="btn btn-outline-primary">
-                                    <i class="fas fa-print me-1"></i>Print
-                                </button>
-                                <?php endif; ?>
-                            </div>
+            <div class="request-details-container">
+                    <!-- Header -->
+                    <div class="request-header">
+                        <h2>Request Details #<?php echo e($request->id); ?></h2>
+                        <div class="header-actions">
+                            <a href="<?php echo e(route('requests.index')); ?>" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to List
+                            </a>
+                            <?php if(auth()->user()->role !== 'super_admin'): ?>
+                            <button id="printRequestBtn" class="btn btn-outline-primary">
+                                <i class="fas fa-print me-1"></i>Print
+                            </button>
+                            <?php endif; ?>
                         </div>
+                    </div>
 
                         <!-- Notification Container with Push Animation -->
                         <div class="notification-container">
@@ -76,11 +368,11 @@
                             <?php endif; ?>
                         </div>
 
-                        <!-- Pricing Options Dropdown - Only for Client Requests -->
+                        <!-- Pricing Options - Only for Client Requests -->
                         <?php if($request->request_type == 'client'): ?>
-                        <div class="pricing-options" style="margin-bottom: 20px;">
+                        <div class="pricing-section">
                             <span class="pricing-label">Pricing Options:</span>
-                            <select class="form-select pricing-select" id="pricingOptions" style="max-width: 300px; display: inline-block; margin-left: 10px; padding-right: 30px; text-overflow: ellipsis;">
+                            <select class="pricing-select" id="pricingOptions">
                                 <option value="None" <?php echo e($request->pricing == 'None' ? 'selected' : ''); ?>>None</option>
                                 <option value="Low cost" <?php echo e($request->pricing == 'Low cost' ? 'selected' : ''); ?>>Low cost</option>
                                 <option value="High cost" <?php echo e($request->pricing == 'High cost' ? 'selected' : ''); ?>>High cost</option>
@@ -88,185 +380,213 @@
                         </div>
                         <?php endif; ?>
 
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="card mb-4">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="card-title mb-0">Request Information</h5>
-                                        <?php if(auth()->user()->role !== 'super_admin'): ?>
-                                        <button class="btn btn-sm btn-outline-primary edit-request-info-btn" title="Edit Request Information">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="card-body" style="padding: 0;">
-                                        <div id="request-info-view">
-                                            <ul class="list-group list-group-flush">
-                                                <li class="list-group-item" style="display: flex; justify-content: space-between; align-items: center; min-width: 100%; flex-wrap: nowrap;">
-                                                    <div style="flex: 0 1 auto; white-space: nowrap; padding-right: 10px;">Status</div>
-                                                    <div style="flex: 0 0 auto;">
-                                                        <?php if($request->status == 'pending'): ?>
-                                                            <span class="badge bg-warning">Pending</span>
-                                                        <?php elseif($request->status == 'sent'): ?>
-                                                            <span class="badge bg-success">Sent</span>
-                                                        <?php else: ?>
-                                                            <span class="badge bg-danger">Cancelled</span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </li>
-                                                <li class="list-group-item" style="display: flex; justify-content: space-between; align-items: center; min-width: 100%; flex-wrap: nowrap;">
-                                                    <div style="flex: 0 1 auto; white-space: nowrap; padding-right: 10px;">Request Date</div>
-                                                    <div style="flex: 0 0 auto; text-align: right; min-width: 100px;"><?php echo e($request->request_date->format('M d, Y')); ?></div>
-                                                </li>
-                                                <li class="list-group-item" style="display: flex; justify-content: space-between; align-items: center; min-width: 100%; flex-wrap: nowrap;">
-                                                    <div style="flex: 0 1 auto; white-space: nowrap; padding-right: 10px;">Due Date</div>
-                                                    <div style="flex: 0 0 auto; text-align: right; min-width: 100px;"><?php echo e($request->due_date->format('M d, Y')); ?></div>
-                                                </li>
-                                                <li class="list-group-item" style="display: flex; justify-content: space-between; align-items: center; min-width: 100%; flex-wrap: nowrap;">
-                                                    <div style="flex: 0 1 auto; white-space: nowrap; padding-right: 10px;">Total Items</div>
-                                                    <div style="flex: 0 0 auto; text-align: right; min-width: 30px;"><?php echo e(count($items)); ?></div>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="card mb-4">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="card-title mb-0"><?php if($request->request_type == 'user'): ?>User Information <?php else: ?> Client Information <?php endif; ?></h5>
-                                        <?php if(auth()->user()->role !== 'super_admin'): ?>
-                                        <button class="btn btn-sm btn-outline-primary edit-client-info-btn" title="<?php if($request->request_type == 'user'): ?>Edit User Information <?php else: ?> Edit Client Information <?php endif; ?>">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="client-info-view">
-                                            <div class="mb-3">
-                                                <h6 class="fw-bold">Name</h6>
-                                                <p><?php echo e(htmlspecialchars($request->name)); ?></p>
-                                            </div>
-                                            <div>
-                                                <h6 class="fw-bold">Email</h6>
-                                                <p class="mb-0"><?php echo e(htmlspecialchars($request->email)); ?></p>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <!-- Info Cards Grid: Request Info and Client Info side by side -->
+                        <div class="info-cards-grid">
+                            <!-- Request Information Card -->
+                            <div class="custom-card">
+                                <div class="custom-card-header">
+                                    <h5>Request Information</h5>
                                     <?php if(auth()->user()->role !== 'super_admin'): ?>
-                                        <?php if($request->status == 'pending'): ?>
-                                            <div class="card-footer">
-                                                <form action="<?php echo e(route('requests.send-email', $request->id)); ?>" method="POST" style="margin: 0;">
-                                                    <?php echo csrf_field(); ?>
-                                                    <button type="submit" class="btn btn-success w-100" id="sendEmailBtn">
-                                                        <i class="fas fa-envelope me-1"></i> 
-                                                        <?php if($request->request_type == 'user'): ?>
-                                                            Send Email to User
-                                                        <?php else: ?>
-                                                            Send Email to Client
-                                                        <?php endif; ?>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        <?php elseif($request->status == 'sent'): ?>
-                                            <div class="card-footer">
-                                                <form action="<?php echo e(route('requests.send-email', $request->id)); ?>" method="POST" style="margin: 0;">
-                                                    <?php echo csrf_field(); ?>
-                                                    <button type="submit" class="btn btn-warning w-100" id="resendEmailBtn">
-                                                        <i class="fas fa-redo me-1"></i> 
-                                                        <?php if($request->request_type == 'user'): ?>
-                                                            Resend Email to User
-                                                        <?php else: ?>
-                                                            Resend Email to Client
-                                                        <?php endif; ?>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        <?php endif; ?>
+                                    <button class="edit-btn edit-request-info-btn" title="Edit Request Information">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
                                     <?php endif; ?>
+                                </div>
+                                <div style="padding: 0;">
+                                    <div class="info-row">
+                                        <span class="info-label">Status</span>
+                                        <span class="info-value">
+                                            <?php if($request->status == 'pending'): ?>
+                                                <span class="status-badge status-pending">Pending</span>
+                                            <?php elseif($request->status == 'sent' || $request->status == 'responded'): ?>
+                                                <span class="status-badge status-responded">Responded</span>
+                                            <?php else: ?>
+                                                <span class="status-badge status-cancelled">Cancelled</span>
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Request Date</span>
+                                        <span class="info-value"><?php echo e($request->request_date->format('M d, Y')); ?></span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Due Date</span>
+                                        <span class="info-value"><?php echo e($request->due_date->format('M d, Y')); ?></span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Total Items</span>
+                                        <span class="info-value"><?php echo e(count($items)); ?></span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-8">
-                                <div class="card">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="card-title mb-0">Requested Items</h5>
-                                        <?php if(auth()->user()->role !== 'super_admin'): ?>
-                                        <button class="btn btn-sm btn-outline-primary edit-items-btn" title="Edit Items">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <?php endif; ?>
+                            <!-- Client/User Information Card -->
+                            <div class="custom-card">
+                                <div class="custom-card-header">
+                                    <h5><?php if($request->request_type == 'user'): ?>User Information <?php else: ?> Client Information <?php endif; ?></h5>
+                                    <?php if(auth()->user()->role !== 'super_admin'): ?>
+                                    <button class="edit-btn edit-client-info-btn" title="<?php if($request->request_type == 'user'): ?>Edit User Information <?php else: ?> Edit Client Information <?php endif; ?>">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="custom-card-body">
+                                    <div style="margin-bottom: 15px;">
+                                        <div class="info-label" style="margin-bottom: 5px;">Name</div>
+                                        <div class="info-value"><?php echo e(htmlspecialchars($request->name)); ?></div>
                                     </div>
-                                    <div class="card-body p-0">
-                                        <div id="items-table-view" class="table-responsive">
-                                            <table class="table table-striped mb-0" style="table-layout: fixed; width: 100%;">
-                                                <thead>
+                                    <div>
+                                        <div class="info-label" style="margin-bottom: 5px;">Email</div>
+                                        <div class="info-value"><?php echo e(htmlspecialchars($request->email)); ?></div>
+                                    </div>
+                                </div>
+                                <?php if(auth()->user()->role !== 'super_admin'): ?>
+                                    <?php if($request->status == 'pending'): ?>
+                                        <div class="action-buttons">
+                                            <form action="<?php echo e(route('requests.send-email', $request->id)); ?>" method="POST" style="flex: 1; margin: 0;">
+                                                <?php echo csrf_field(); ?>
+                                                <button type="submit" class="action-btn action-btn-success" id="sendEmailBtn">
+                                                    <i class="fas fa-envelope"></i>
+                                                    <?php if($request->request_type == 'user'): ?>
+                                                        Send Email to User
+                                                    <?php else: ?>
+                                                        Send Email to Client
+                                                    <?php endif; ?>
+                                                </button>
+                                            </form>
+                                            
+                                            <form action="<?php echo e(route('requests.send-response', $request->id)); ?>" method="POST" style="flex: 1; margin: 0;" 
+                                                  onsubmit="return confirm('This will mark the inquiry as responded and notify the user. Continue?');">
+                                                <?php echo csrf_field(); ?>
+                                                <button type="submit" class="action-btn action-btn-primary" id="sendResponseBtn">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                    <?php if($request->request_type == 'user'): ?>
+                                                        Send Response to User
+                                                    <?php else: ?>
+                                                        Send Response to Client
+                                                    <?php endif; ?>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    <?php elseif($request->status == 'sent'): ?>
+                                        <div class="action-buttons">
+                                            <form action="<?php echo e(route('requests.send-email', $request->id)); ?>" method="POST" style="flex: 1; margin: 0;">
+                                                <?php echo csrf_field(); ?>
+                                                <button type="submit" class="action-btn action-btn-warning" id="resendEmailBtn">
+                                                    <i class="fas fa-redo"></i>
+                                                    <?php if($request->request_type == 'user'): ?>
+                                                        Resend Email to User
+                                                    <?php else: ?>
+                                                        Resend Email to Client
+                                                    <?php endif; ?>
+                                                </button>
+                                            </form>
+                                            
+                                            <form action="<?php echo e(route('requests.send-response', $request->id)); ?>" method="POST" style="flex: 1; margin: 0;" 
+                                                  onsubmit="return confirm('This will mark the inquiry as responded and notify the user. Continue?');">
+                                                <?php echo csrf_field(); ?>
+                                                <button type="submit" class="action-btn action-btn-primary" id="sendResponseBtn">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                    <?php if($request->request_type == 'user'): ?>
+                                                        Send Response to User
+                                                    <?php else: ?>
+                                                        Send Response to Client
+                                                    <?php endif; ?>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    <?php elseif($request->status == 'responded'): ?>
+                                        <div class="response-alert">
+                                            <i class="fas fa-check-circle"></i>
+                                            Response sent on <?php echo e($request->response_sent_at ? \Carbon\Carbon::parse($request->response_sent_at)->format('M d, Y') : 'N/A'); ?>
+
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- Requested Items Section - Full Width Below -->
+                        <div class="items-section">
+                            <div class="custom-card">
+                                <div class="custom-card-header">
+                                    <h5><i class="fas fa-leaf me-2"></i>Requested Items</h5>
+                                    <?php if(auth()->user()->role !== 'super_admin'): ?>
+                                    <button class="edit-btn edit-items-btn" title="Edit Items">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <?php endif; ?>
+                                </div>
+                                <div style="padding: 0;">
+                                    <div class="items-table-container">
+                                        <table class="items-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align: center; width: 50px;">#</th>
+                                                    <th style="text-align: center; width: 60px;">Qty</th>
+                                                    <th style="min-width: 150px;">Plant Name</th>
+                                                    <th style="text-align: center; width: 80px;">Code</th>
+                                                    <th style="text-align: center; width: 90px;">Height<br><small>(mm)</small></th>
+                                                    <th style="text-align: center; width: 90px;">Spread<br><small>(mm)</small></th>
+                                                    <th style="text-align: center; width: 90px;">Spacing<br><small>(mm)</small></th>
+                                                    <th style="min-width: 120px;">Remarks</th>
+                                                    <th style="text-align: center; width: 120px;">Availability</th>
+                                                    <?php if($request->request_type == 'client'): ?>
+                                                    <th style="text-align: center; width: 100px;">Unit Price</th>
+                                                    <th style="text-align: center; width: 100px;">Total</th>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                    <?php
+                                                        $remarks = $item['remarks'] ?? '';
+                                                        $availability = $item['availability'] ?? 'Available';
+                                                    ?>
                                                     <tr>
-                                                        <th style="width: 5%; text-align: center;">#</th>
-                                                        <th style="width: 5%; text-align: center;">Qty</th>
-                                                        <th style="width: 15%;">Plant Name</th>
-                                                        <th style="width: 8%; text-align: center;">Code</th>
-                                                        <th style="width: 8%; text-align: center;">Height<br><small>(mm)</small></th>
-                                                        <th style="width: 8%; text-align: center;">Spread<br><small>(mm)</small></th>
-                                                        <th style="width: 8%; text-align: center;">Spacing<br><small>(mm)</small></th>
-                                                        <th style="width: 18%;">Remarks</th>
-                                                        <?php if($request->request_type == 'user'): ?>
-                                                        <th style="width: 25%; text-align: center;">Availability</th>
-                                                        <?php else: ?>
-                                                        <th style="width: 10%; text-align: right;">Unit<br>Price</th>
-                                                        <th style="width: 15%; text-align: right;">Total</th>
+                                                        <td style="text-align: center; font-weight: 600; color: #198754;"><?php echo e($index + 1); ?></td>
+                                                        <td style="text-align: center;"><?php echo e($item['quantity'] ?? 1); ?></td>
+                                                        <td style="font-weight: 500;"><?php echo e(htmlspecialchars($item['name'] ?? 'N/A')); ?></td>
+                                                        <td style="text-align: center;"><?php echo e(htmlspecialchars($item['code'] ?? '—')); ?></td>
+                                                        <td style="text-align: center;"><?php echo e(!empty($item['height']) ? $item['height'] : '—'); ?></td>
+                                                        <td style="text-align: center;"><?php echo e(!empty($item['spread']) ? $item['spread'] : '—'); ?></td>
+                                                        <td style="text-align: center;"><?php echo e(!empty($item['spacing']) ? $item['spacing'] : '—'); ?></td>
+                                                        <td style="font-size: 0.85rem;"><?php echo e(htmlspecialchars($remarks ?: '—')); ?></td>
+                                                        <td style="text-align: center;">
+                                                            <?php if($availability == 'Available'): ?>
+                                                                <span class="status-badge status-sent">Available</span>
+                                                            <?php elseif($availability == 'Limited Stock'): ?>
+                                                                <span class="status-badge status-pending">Limited Stock</span>
+                                                            <?php elseif($availability == 'Out of Stock'): ?>
+                                                                <span class="status-badge status-cancelled">Out of Stock</span>
+                                                            <?php elseif($availability == 'Pre-order'): ?>
+                                                                <span class="status-badge status-responded">Pre-order</span>
+                                                            <?php else: ?>
+                                                                <span style="color: #6c757d;"><?php echo e($availability); ?></span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <?php if($request->request_type == 'client'): ?>
+                                                        <td style="text-align: center; color: #198754; font-weight: 600;">
+                                                            <?php if(!empty($item['unit_price']) && $item['unit_price'] > 0): ?>
+                                                                ₱<?php echo e(number_format($item['unit_price'], 2)); ?>
+
+                                                            <?php else: ?>
+                                                                —
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <td style="text-align: center; color: #198754; font-weight: 700;">
+                                                            <?php if(!empty($item['total_price']) && $item['total_price'] > 0): ?>
+                                                                ₱<?php echo e(number_format($item['total_price'], 2)); ?>
+
+                                                            <?php else: ?>
+                                                                —
+                                                            <?php endif; ?>
+                                                        </td>
                                                         <?php endif; ?>
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                        <?php
-                                                            $remarks = $item['remarks'] ?? '';
-                                                            $isLongRemarks = strlen($remarks) > 30;
-                                                            $remarksPreview = $isLongRemarks ? substr($remarks, 0, 30) . '...' : $remarks;
-                                                        ?>
-                                                        <tr>
-                                                            <td style="text-align: center; white-space: nowrap; padding: 6px;"><?php echo e($index + 1); ?></td>
-                                                            <td style="text-align: center; padding: 6px;"><?php echo e($item['quantity'] ?? 1); ?></td>
-                                                            <td style="padding: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?php echo e(htmlspecialchars($item['name'] ?? 'N/A')); ?></td>
-                                                            <td style="text-align: center; padding: 6px;"><?php echo e(htmlspecialchars($item['code'] ?? '')); ?></td>
-                                                            <td style="text-align: center; padding: 6px;"><?php echo e(!empty($item['height']) ? $item['height'] : ''); ?></td>
-                                                            <td style="text-align: center; padding: 6px;"><?php echo e(!empty($item['spread']) ? $item['spread'] : ''); ?></td>
-                                                            <td style="text-align: center; padding: 6px;"><?php echo e(!empty($item['spacing']) ? $item['spacing'] : ''); ?></td>
-                                                            <td style="padding: 6px;">
-                                                                <?php if($isLongRemarks): ?>
-                                                                    <div class="remarks-container">
-                                                                        <div class="remarks-preview"><?php echo e(htmlspecialchars($remarksPreview)); ?></div>
-                                                                        <button type="button" class="remarks-view-btn" data-bs-toggle="modal" data-bs-target="#remarksModal<?php echo e($index); ?>">
-                                                                            <i class="fas fa-eye"></i>
-                                                                        </button>
-                                                                    </div>
-                                                                <?php else: ?>
-                                                                    <div class="remarks-preview"><?php echo e(htmlspecialchars($remarks)); ?></div>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                            <?php if($request->request_type == 'user'): ?>
-                                                            <td style="text-align: center; padding: 6px;">
-                                                                <span class="badge bg-success"><?php echo e($item['availability'] ?? 'Available'); ?></span>
-                                                            </td>
-                                                            <?php else: ?>
-                                                            <td style="text-align: right; padding: 6px;">
-                                                                <?php if(!empty($item['unit_price']) && $item['unit_price'] > 0): ?>
-                                                                    ₱<?php echo e(number_format($item['unit_price'], 2)); ?>
-
-                                                                <?php endif; ?>
-                                                            </td>
-                                                            <td style="text-align: right; padding: 6px;">
-                                                                <?php if(!empty($item['total_price']) && $item['total_price'] > 0): ?>
-                                                                    ₱<?php echo e(number_format($item['total_price'], 2)); ?>
-
-                                                                <?php endif; ?>
-                                                            </td>
-                                                            <?php endif; ?>
-                                                        </tr>
-                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -321,7 +641,7 @@
                             <label for="status" class="form-label">Status</label>
                             <select class="form-select" id="status" name="status" required>
                                 <option value="pending" <?php echo e($request->status == 'pending' ? 'selected' : ''); ?>>Pending</option>
-                                <option value="sent" <?php echo e($request->status == 'sent' ? 'selected' : ''); ?>>Sent</option>
+                                <option value="responded" <?php echo e($request->status == 'responded' || $request->status == 'sent' ? 'selected' : ''); ?>>Responded</option>
                                 <option value="cancelled" <?php echo e($request->status == 'cancelled' ? 'selected' : ''); ?>>Cancelled</option>
                             </select>
                         </div>
@@ -366,7 +686,7 @@
 
     <!-- Edit Items Modal -->
     <div class="modal fade" id="editItemsModal" tabindex="-1" aria-labelledby="editItemsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl" style="max-width: 95%; margin: 1.75rem auto;">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editItemsModalLabel">Edit Requested Items</h5>
@@ -374,69 +694,67 @@
                 </div>
                 <form id="editItemsForm" method="POST" action="<?php echo e(route('requests.update-items', $request->id)); ?>">
                     <?php echo csrf_field(); ?>
-                    <div class="modal-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
+                    <div class="modal-body" style="padding: 15px;">
+                        <div class="table-responsive" style="max-height: 500px; overflow-x: auto; overflow-y: auto;">
+                            <table class="table table-bordered table-sm" style="font-size: 0.875rem;">
+                                <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
                                     <tr>
-                                        <th>Plant Name</th>
-                                        <th>Code</th>
-                                        <th>Qty</th>
-                                        <th>Height (mm)</th>
-                                        <th>Spread (mm)</th>
-                                        <th>Spacing (mm)</th>
-                                        <th>Remarks</th>
-                                        <?php if($request->request_type == 'user'): ?>
-                                        <th>Availability</th>
-                                        <?php else: ?>
-                                        <th>Unit Price</th>
-                                        <th>Total</th>
+                                        <th style="padding: 8px; white-space: nowrap;">Plant Name</th>
+                                        <th style="padding: 8px; white-space: nowrap;">Code</th>
+                                        <th style="padding: 8px; white-space: nowrap;">Qty</th>
+                                        <th style="padding: 8px; white-space: nowrap;">Height (mm)</th>
+                                        <th style="padding: 8px; white-space: nowrap;">Spread (mm)</th>
+                                        <th style="padding: 8px; white-space: nowrap;">Spacing (mm)</th>
+                                        <th style="padding: 8px; white-space: nowrap;">Remarks</th>
+                                        <th style="padding: 8px; white-space: nowrap;">Availability</th>
+                                        <?php if($request->request_type == 'client'): ?>
+                                        <th style="padding: 8px; white-space: nowrap;">Unit Price</th>
+                                        <th style="padding: 8px; white-space: nowrap;">Total</th>
                                         <?php endif; ?>
                                     </tr>
                                 </thead>
                                 <tbody id="editItemsTableBody">
                                     <?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <tr>
-                                            <td>
+                                            <td style="padding: 6px;">
                                                 <input type="hidden" name="items[<?php echo e($index); ?>][name]" value="<?php echo e($item['name'] ?? ''); ?>">
                                                 <?php echo e($item['name'] ?? 'N/A'); ?>
 
                                             </td>
-                                            <td>
+                                            <td style="padding: 6px;">
                                                 <input type="hidden" name="items[<?php echo e($index); ?>][code]" value="<?php echo e($item['code'] ?? ''); ?>">
                                                 <?php echo e($item['code'] ?? 'N/A'); ?>
 
                                             </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" name="items[<?php echo e($index); ?>][quantity]" value="<?php echo e($item['quantity'] ?? 1); ?>" min="1" style="width: 80px;">
+                                            <td style="padding: 6px;">
+                                                <input type="number" class="form-control form-control-sm" name="items[<?php echo e($index); ?>][quantity]" value="<?php echo e($item['quantity'] ?? 1); ?>" min="1" style="width: 60px; padding: 4px;">
                                             </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" name="items[<?php echo e($index); ?>][height]" value="<?php echo e($item['height'] ?? ''); ?>" style="width: 100px;">
+                                            <td style="padding: 6px;">
+                                                <input type="number" class="form-control form-control-sm" name="items[<?php echo e($index); ?>][height]" value="<?php echo e($item['height'] ?? ''); ?>" style="width: 80px; padding: 4px;">
                                             </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" name="items[<?php echo e($index); ?>][spread]" value="<?php echo e($item['spread'] ?? ''); ?>" style="width: 100px;">
+                                            <td style="padding: 6px;">
+                                                <input type="number" class="form-control form-control-sm" name="items[<?php echo e($index); ?>][spread]" value="<?php echo e($item['spread'] ?? ''); ?>" style="width: 80px; padding: 4px;">
                                             </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" name="items[<?php echo e($index); ?>][spacing]" value="<?php echo e($item['spacing'] ?? ''); ?>" style="width: 100px;">
+                                            <td style="padding: 6px;">
+                                                <input type="number" class="form-control form-control-sm" name="items[<?php echo e($index); ?>][spacing]" value="<?php echo e($item['spacing'] ?? ''); ?>" style="width: 80px; padding: 4px;">
                                             </td>
-                                            <td>
-                                                <textarea class="form-control form-control-sm" name="items[<?php echo e($index); ?>][remarks]" rows="2" style="width: 150px;"><?php echo e($item['remarks'] ?? ''); ?></textarea>
+                                            <td style="padding: 6px;">
+                                                <textarea class="form-control form-control-sm" name="items[<?php echo e($index); ?>][remarks]" rows="2" style="width: 120px; padding: 4px; font-size: 0.8rem;"><?php echo e($item['remarks'] ?? ''); ?></textarea>
                                             </td>
-                                            <?php if($request->request_type == 'user'): ?>
-                                            <td>
-                                                <select class="form-select form-select-sm" name="items[<?php echo e($index); ?>][availability]" style="width: 120px;">
+                                            <td style="padding: 6px;">
+                                                <select class="form-select form-select-sm" name="items[<?php echo e($index); ?>][availability]" style="width: 110px; padding: 4px; font-size: 0.8rem;">
                                                     <option value="Available" <?php echo e(($item['availability'] ?? 'Available') == 'Available' ? 'selected' : ''); ?>>Available</option>
                                                     <option value="Limited Stock" <?php echo e(($item['availability'] ?? '') == 'Limited Stock' ? 'selected' : ''); ?>>Limited Stock</option>
                                                     <option value="Out of Stock" <?php echo e(($item['availability'] ?? '') == 'Out of Stock' ? 'selected' : ''); ?>>Out of Stock</option>
                                                     <option value="Pre-order" <?php echo e(($item['availability'] ?? '') == 'Pre-order' ? 'selected' : ''); ?>>Pre-order</option>
                                                 </select>
                                             </td>
-                                            <?php else: ?>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm unit-price-input" name="items[<?php echo e($index); ?>][unit_price]" value="<?php echo e($item['unit_price'] ?? ''); ?>" step="0.01" style="width: 100px;" data-index="<?php echo e($index); ?>">
+                                            <?php if($request->request_type == 'client'): ?>
+                                            <td style="padding: 6px;">
+                                                <input type="number" class="form-control form-control-sm unit-price-input" name="items[<?php echo e($index); ?>][unit_price]" value="<?php echo e($item['unit_price'] ?? ''); ?>" step="0.01" style="width: 85px; padding: 4px;" data-index="<?php echo e($index); ?>">
                                             </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm total-price-display" name="items[<?php echo e($index); ?>][total_price]" value="<?php echo e($item['total_price'] ?? ''); ?>" step="0.01" style="width: 100px;" readonly>
+                                            <td style="padding: 6px;">
+                                                <input type="number" class="form-control form-control-sm total-price-display" name="items[<?php echo e($index); ?>][total_price]" value="<?php echo e($item['total_price'] ?? ''); ?>" step="0.01" style="width: 85px; padding: 4px;" readonly>
                                             </td>
                                             <?php endif; ?>
                                         </tr>
@@ -460,6 +778,34 @@
     <script src="<?php echo e(asset('js/push-notifications.js')); ?>?v=<?php echo e(time()); ?>"></script>
     <!-- Add your JavaScript for print functionality and other interactions here -->
     <script>
+        // Handle push notification auto-dismiss and close button
+        document.addEventListener('DOMContentLoaded', function() {
+            const notifications = document.querySelectorAll('.push-notification');
+            
+            notifications.forEach(notification => {
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    notification.classList.add('fade');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 5000);
+                
+                // Handle close button click
+                const closeBtn = notification.querySelector('.notification-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        notification.classList.remove('show');
+                        notification.classList.add('fade');
+                        setTimeout(() => {
+                            notification.remove();
+                        }, 300);
+                    });
+                }
+            });
+        });
+        
         $(document).ready(function() {
             // Edit button functionality - show modal forms
             $('.edit-request-info-btn').on('click', function(e) {

@@ -1,3 +1,5 @@
+<?php $__env->startSection('title', 'Inventory - Salenga Farm'); ?>
+
 <?php $__env->startSection('content'); ?>
 <style>
     /* Fix spacing between Low Stock Alert header and first item */

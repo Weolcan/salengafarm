@@ -1,3 +1,5 @@
+<?php $__env->startSection('title', 'Requests - Salenga Farm'); ?>
+
 <?php $__env->startSection('content'); ?>
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -87,8 +89,8 @@
                                         <td>
                                             <?php if($request->status == 'pending'): ?>
                                                 <span class="badge bg-warning">Pending</span>
-                                            <?php elseif($request->status == 'sent'): ?>
-                                                <span class="badge bg-success">Sent</span>
+                                            <?php elseif($request->status == 'sent' || $request->status == 'responded'): ?>
+                                                <span class="badge bg-success">Responded</span>
                                             <?php elseif($request->status == 'cancelled'): ?>
                                                 <span class="badge bg-danger">Cancelled</span>
                                             <?php endif; ?>
@@ -118,7 +120,7 @@
                                                         <i class="fas fa-envelope"></i>
                                                     </button>
                                                 </form>
-                                                <?php elseif($request->status == 'sent' && $request->pdf_path): ?>
+                                                <?php elseif(($request->status == 'sent' || $request->status == 'responded') && $request->pdf_path): ?>
                                                 <a href="<?php echo e(route('requests.download-pdf', $request->id)); ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Download PDF">
                                                     <i class="fas fa-download"></i>
                                                 </a>
@@ -174,8 +176,8 @@
                                         <td>
                                             <?php if($request->status == 'pending'): ?>
                                                 <span class="badge bg-warning">Pending</span>
-                                            <?php elseif($request->status == 'sent'): ?>
-                                                <span class="badge bg-success">Sent</span>
+                                            <?php elseif($request->status == 'sent' || $request->status == 'responded'): ?>
+                                                <span class="badge bg-success">Responded</span>
                                             <?php elseif($request->status == 'cancelled'): ?>
                                                 <span class="badge bg-danger">Cancelled</span>
                                             <?php endif; ?>
@@ -193,7 +195,7 @@
                                                         <i class="fas fa-envelope"></i>
                                                     </button>
                                                 </form>
-                                                <?php elseif($request->status == 'sent' && $request->pdf_path): ?>
+                                                <?php elseif(($request->status == 'sent' || $request->status == 'responded') && $request->pdf_path): ?>
                                                 <a href="<?php echo e(route('requests.download-pdf', $request->id)); ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Download PDF">
                                                     <i class="fas fa-download"></i>
                                                 </a>

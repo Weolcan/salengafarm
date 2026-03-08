@@ -23,6 +23,33 @@ class WalkInSalesController extends Controller
     }
     
     /**
+     * Display sales records page for Super Admin
+     */
+    public function showRecords(Request $request)
+    {
+        $query = Sale::with('plant')
+                    ->orderBy('created_at', 'desc');
+                    
+        // Apply date range filter if provided
+        if ($request->has('start_date') && $request->start_date) {
+            $query->where('sale_date', '>=', $request->input('start_date'));
+        }
+        
+        if ($request->has('end_date') && $request->end_date) {
+            $query->where('sale_date', '<=', $request->input('end_date') . ' 23:59:59');
+        }
+        
+        $sales = $query->paginate(50);
+        
+        // Calculate totals
+        $totalRevenue = Sale::sum('total_price');
+        $totalSales = Sale::count();
+        $totalQuantity = Sale::sum('quantity');
+        
+        return view('walk-in.records', compact('sales', 'totalRevenue', 'totalSales', 'totalQuantity'));
+    }
+    
+    /**
      * Process a new walk-in sale
      */
     public function processSale(Request $request)

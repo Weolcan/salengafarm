@@ -226,6 +226,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Walk-in sales routes
         Route::get('/walk-in', [WalkInSalesController::class, 'index'])->name('walk-in.index');
+        Route::get('/walk-in/sales-records', [WalkInSalesController::class, 'showRecords'])->name('walk-in.sales-records');
         Route::post('/walk-in/process-sale', [WalkInSalesController::class, 'processSale'])->name('walk-in.process-sale');
         Route::get('/walk-in/records', [WalkInSalesController::class, 'getSalesRecords'])->name('walk-in.records');
         Route::get('/walk-in/percentages', [WalkInSalesController::class, 'getSalesPercentages'])->name('walk-in.percentages');

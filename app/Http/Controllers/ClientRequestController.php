@@ -118,7 +118,7 @@ class ClientRequestController extends Controller
             // Provide appropriate feedback based on email sending result
             if ($emailSent) {
                 // Only update status if email was actually sent
-                $request->status = 'sent';
+                $request->status = 'responded';
                 $request->save();
                 
                 // Create notification for the user/client if they have an account
@@ -641,7 +641,7 @@ class ClientRequestController extends Controller
             
             // Validate the request
             $validator = Validator::make($request->all(), [
-                'status' => 'required|string|in:pending,sent,cancelled',
+                'status' => 'required|string|in:pending,responded,cancelled',
                 'request_date' => 'required|date',
                 'due_date' => 'nullable|date|after_or_equal:request_date',
             ]);
