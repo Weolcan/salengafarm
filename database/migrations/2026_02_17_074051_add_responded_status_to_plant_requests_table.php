@@ -12,8 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Modify the status enum to include 'responded'
-        DB::statement("ALTER TABLE plant_requests MODIFY COLUMN status ENUM('pending', 'sent', 'cancelled', 'responded') DEFAULT 'pending'");
+        // Check if using MySQL
+        if (DB::connection()->getDriverName() === 'mysql') {
+            // Modify the status enum to include 'responded'
+            DB::statement("ALTER TABLE plant_requests MODIFY COLUMN status ENUM('pending', 'sent', 'cancelled', 'responded') DEFAULT 'pending'");
+        } else {
+            // For SQLite and other databases, we need to recreate the column
+            // SQLite doesn't support MODIFY COLUMN, so we skip this migration
+            // The column should already exist from the original migration
+        }
     }
 
     /**
@@ -21,7 +28,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert back to original enum values
-        DB::statement("ALTER TABLE plant_requests MODIFY COLUMN status ENUM('pending', 'sent', 'cancelled') DEFAULT 'pending'");
+        // Check if using MySQL
+        if (DB::connection()->getDriverName() === 'mysql') {
+            // Revert back to original enum values
+            DB::statement("ALTER TABLE plant_requests MODIFY COLUMN status ENUM('pending', 'sent', 'cancelled') DEFAULT 'pending'");
+        }
     }
 };
